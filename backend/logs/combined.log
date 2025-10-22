@@ -1,0 +1,1950 @@
+{
+  message: '🔌 Connecting to MongoDB: mongodb://localhost:27017/elog_warehouse',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:16'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:16'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:16'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:16'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:16'
+}
+{
+  message: '❌ MongoDB Connection Error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017',
+  level: 'error',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:21'
+}
+{
+  message: '🔌 Connecting to MongoDB: mongodb://localhost:27017/elog_warehouse',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:40'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:40'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:40'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:40'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:40'
+}
+{
+  message: '❌ MongoDB Connection Error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017',
+  level: 'error',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:39:45'
+}
+{
+  message: '🔌 Connecting to MongoDB: mongodb+srv://***:***@cluster0.dcohbnv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:40:55'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:40:55'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:40:55'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:40:55'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:40:55'
+}
+{
+  message: '✅ MongoDB Connected: ac-4afxdnq-shard-00-01.dcohbnv.mongodb.net',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:40:55'
+}
+{
+  message: '📊 Database: test',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:40:55'
+}
+{
+  message: '🔌 Connecting to MongoDB: mongodb+srv://***:***@cluster0.dcohbnv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:42:13'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:42:13'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:42:13'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:42:13'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:42:13'
+}
+{
+  message: '✅ MongoDB Connected: ac-4afxdnq-shard-00-00.dcohbnv.mongodb.net',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:42:14'
+}
+{
+  message: '📊 Database: test',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:42:14'
+}
+{
+  message: '🔌 Connecting to MongoDB: mongodb+srv://***:***@cluster0.dcohbnv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:55'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:55'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:55'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:55'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:55'
+}
+{
+  message: '✅ MongoDB Connected: ac-4afxdnq-shard-00-02.dcohbnv.mongodb.net',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:56'
+}
+{
+  message: '📊 Database: test',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:56'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:58'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:58'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:58'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:45:58'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:02'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:02'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:02'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:02'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:06'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:06'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:06'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:06'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:12'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:12'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:12'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:46:12'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:49:57'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:49:57'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:49:57'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:49:57'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:01'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:01'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:01'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:01'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:22'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:22'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:22'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:22'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:43'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:43'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:43'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:43'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:49'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:49'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:49'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:50:49'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:51:30'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:51:30'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:51:30'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 14:51:30'
+}
+{
+  message: 'SIGINT received, shutting down gracefully',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 15:05:55'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 15:21:17'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 15:21:17'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 15:21:17'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 15:21:17'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 17:47:13'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 17:47:13'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 17:47:13'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 17:47:13'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/register',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'curl/8.14.1',
+    userId: null
+  },
+  timestamp: '2025-10-21 18:03:38',
+  level: 'error'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/register',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'curl/8.14.1',
+    userId: null
+  },
+  timestamp: '2025-10-21 18:03:39',
+  level: 'error'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:05:52'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:05:52'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:05:52'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:05:52'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:05:54'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:05:54'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:05:54'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:05:54'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:06:52'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:06:52'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:06:52'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:06:52'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'curl/8.14.1',
+    userId: null
+  },
+  timestamp: '2025-10-21 18:06:57',
+  level: 'error'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'curl/8.14.1',
+    userId: null
+  },
+  timestamp: '2025-10-21 18:07:00',
+  level: 'error'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:07:24'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:07:24'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:07:24'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:07:24'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:07:44'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:07:44'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:07:44'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:07:44'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:08:24'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:08:24'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:08:24'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:08:24'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:08:34'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:08:34'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:08:34'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:08:34'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:10:52'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:10:52'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:10:52'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:10:52'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:14:27'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:14:27'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:14:27'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:14:27'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'curl/8.14.1',
+    userId: null
+  },
+  timestamp: '2025-10-21 18:14:31',
+  level: 'error'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.6725',
+    userId: null
+  },
+  timestamp: '2025-10-21 18:14:35',
+  level: 'error'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.6725',
+    userId: null
+  },
+  timestamp: '2025-10-21 18:17:18',
+  level: 'error'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:18:32'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:18:32'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:18:32'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:18:32'
+}
+{
+  message: 'SIGINT received, shutting down gracefully',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:22:08'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:22:23'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:22:23'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:22:23'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:22:23'
+}
+{
+  message: "❌ MongoDB Connection Error: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/",
+  level: 'error',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:22:28'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:22:57'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:22:57'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:22:57'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:22:57'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'curl/8.14.1',
+    userId: null
+  },
+  timestamp: '2025-10-21 18:33:31',
+  level: 'error'
+}
+{
+  message: 'SIGINT received, shutting down gracefully',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:41:17'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:41:29'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:41:29'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:41:29'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:41:29'
+}
+{
+  message: 'SIGINT received, shutting down gracefully',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 18:46:20'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 20:38:26'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 20:38:26'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 20:38:26'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 20:38:26'
+}
+{
+  message: "❌ MongoDB Connection Error: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/",
+  level: 'error',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 20:38:31'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 20:38:56'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 20:38:56'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 20:38:56'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 20:38:56'
+}
+{
+  message: 'SIGINT received, shutting down gracefully',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-21 20:42:28'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:28:37'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:28:37'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:28:37'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:28:37'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:34:57'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:34:57'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:34:57'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:34:57'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:35:03'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:35:03'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:35:03'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:35:03'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:35:13'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:35:13'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:35:13'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 07:35:13'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:00'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:00'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:00'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:00'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:53'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:53'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:53'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:53'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:57'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:57'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:57'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:01:57'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:12'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:12'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:12'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:12'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:15'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:15'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:15'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:15'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:21'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:21'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:21'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:21'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:30'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:30'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:30'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:02:30'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:03:09'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:03:09'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:03:09'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:03:09'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:03:17'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:03:17'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:03:17'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:03:17'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:04:28'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:04:28'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:04:28'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:04:28'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:05:28'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:05:28'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:05:28'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:05:28'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'curl/8.14.1',
+    userId: null
+  },
+  timestamp: '2025-10-22 08:06:07',
+  level: 'error'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'curl/8.14.1',
+    userId: null
+  },
+  timestamp: '2025-10-22 08:06:09',
+  level: 'error'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:06:27'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:06:27'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:06:27'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:06:27'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:06:44'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:06:44'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:06:44'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:06:44'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:07:21'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:07:21'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:07:21'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:07:21'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:07:41'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:07:41'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:07:41'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:07:41'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:15:18'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:15:18'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:15:18'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:15:18'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:15:24'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:15:24'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:15:24'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:15:24'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:17:59'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:17:59'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:17:59'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:17:59'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:37:06'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:37:06'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:37:06'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 08:37:06'
+}
