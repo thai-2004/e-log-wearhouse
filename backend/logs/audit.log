@@ -248,3 +248,12 @@
 {"level":"info","message":"📚 API Documentation available at http://localhost:5000/api-docs","service":"elog-backend","timestamp":"2025-10-22 08:37:06","version":"1.0.0"}
 {"level":"info","message":"🏥 Health check available at http://localhost:5000/health","service":"elog-backend","timestamp":"2025-10-22 08:37:06","version":"1.0.0"}
 {"level":"info","message":"🌍 Environment: development","service":"elog-backend","timestamp":"2025-10-22 08:37:06","version":"1.0.0"}
+{"level":"info","message":"🚀 E-Log Backend Server running on port 5000","service":"elog-backend","timestamp":"2025-10-22 18:04:39","version":"1.0.0"}
+{"level":"info","message":"📚 API Documentation available at http://localhost:5000/api-docs","service":"elog-backend","timestamp":"2025-10-22 18:04:39","version":"1.0.0"}
+{"level":"info","message":"🏥 Health check available at http://localhost:5000/health","service":"elog-backend","timestamp":"2025-10-22 18:04:39","version":"1.0.0"}
+{"level":"info","message":"🌍 Environment: development","service":"elog-backend","timestamp":"2025-10-22 18:04:39","version":"1.0.0"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"elog-backend","timestamp":"2025-10-22 18:43:38","version":"1.0.0"}
+{"level":"info","message":"🚀 E-Log Backend Server running on port 5000","service":"elog-backend","timestamp":"2025-10-22 18:43:47","version":"1.0.0"}
+{"level":"info","message":"📚 API Documentation available at http://localhost:5000/api-docs","service":"elog-backend","timestamp":"2025-10-22 18:43:47","version":"1.0.0"}
+{"level":"info","message":"🏥 Health check available at http://localhost:5000/health","service":"elog-backend","timestamp":"2025-10-22 18:43:47","version":"1.0.0"}
+{"level":"info","message":"🌍 Environment: development","service":"elog-backend","timestamp":"2025-10-22 18:43:47","version":"1.0.0"}

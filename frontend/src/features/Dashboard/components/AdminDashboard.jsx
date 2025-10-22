@@ -203,9 +203,10 @@ const AdminDashboard = () => {
         <title>Dashboard Admin - E-Log</title>
       </Helmet>
       
-      <div className="space-y-6">
+      <div className="h-full">
+        <div className="space-y-6">
         {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white">
+        <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white mx-6 mt-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">Chào mừng Admin!</h1>
@@ -237,7 +238,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Admin Stats Grid */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 px-6">
           {adminStats.map((stat) => {
             const Icon = stat.icon
             return (
@@ -274,7 +275,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Charts Toggle */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-6">
           <h2 className="text-xl font-semibold text-gray-900">Biểu đồ & Phân tích</h2>
           <button
             onClick={() => setShowCharts(!showCharts)}
@@ -287,7 +288,7 @@ const AdminDashboard = () => {
 
         {/* Charts and Activities */}
         {showCharts && (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 px-6">
             {/* Revenue Chart */}
             <RevenueChart data={revenueData} height={300} />
 
@@ -298,7 +299,7 @@ const AdminDashboard = () => {
 
         {/* Additional Charts Row */}
         {showCharts && (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 px-6">
             {/* Activity Chart */}
             <ActivityChart data={activityData} height={300} />
 
@@ -308,7 +309,7 @@ const AdminDashboard = () => {
         )}
 
         {/* Recent Activities */}
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white shadow rounded-lg p-6 mx-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900">
               Hoạt động gần đây
@@ -387,7 +388,7 @@ const AdminDashboard = () => {
         )}
 
         {/* Admin Quick Actions */}
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white shadow rounded-lg p-6 mx-6 mb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Thao tác quản trị
           </h3>
@@ -407,6 +408,7 @@ const AdminDashboard = () => {
               )
             })}
           </div>
+        </div>
         </div>
       </div>
     </>
