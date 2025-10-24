@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { FiPlus, FiEdit, FiTrash2, FiChevronRight, FiChevronDown, FiFolder, FiFolderOpen } from 'react-icons/fi'
+import { FiPlus, FiEdit, FiTrash2, FiChevronRight, FiChevronDown, FiFolder } from 'react-icons/fi'
 import Button from '@components/ui/Button'
 import Table from '@components/ui/Table'
 import Modal from '@components/ui/Modal'
@@ -68,11 +68,7 @@ const CategoryList = () => {
                 <div className="w-6 mr-2" />
               )}
               
-              {expandedCategories.has(category.id) ? (
-                <FiFolderOpen className="h-4 w-4 text-blue-500 mr-2" />
-              ) : (
-                <FiFolder className="h-4 w-4 text-blue-500 mr-2" />
-              )}
+              <FiFolder className={`h-4 w-4 mr-2 ${expandedCategories.has(category.id) ? 'text-blue-600' : 'text-blue-500'}`} />
               
               <div>
                 <div className="text-sm font-medium text-gray-900">{category.name}</div>

@@ -18,7 +18,11 @@ import {
   FiChevronDown,
   FiChevronRight,
   FiBell,
-  FiSearch
+  FiSearch,
+  FiTag,
+  FiMapPin,
+  FiClipboard,
+  FiDollarSign
 } from 'react-icons/fi'
 import { useAuthStore } from '@store/authStore'
 
@@ -35,63 +39,84 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
         label: 'Dashboard',
         icon: FiHome,
         path: '/dashboard',
-        roles: ['admin', 'manager', 'employee']
+        roles: ['admin', 'manager', 'staff']
       },
       {
         id: 'products',
-        label: 'Products',
+        label: 'Sản phẩm',
         icon: FiPackage,
         path: '/products',
-        roles: ['admin', 'manager', 'employee']
+        roles: ['admin', 'manager', 'staff']
       },
       {
-        id: 'orders',
-        label: 'Orders',
-        icon: FiShoppingCart,
-        path: '/orders',
-        roles: ['admin', 'manager', 'employee']
+        id: 'categories',
+        label: 'Danh mục',
+        icon: FiTag,
+        path: '/categories',
+        roles: ['admin', 'manager', 'staff']
+      },
+      {
+        id: 'inventory',
+        label: 'Tồn kho',
+        icon: FiArchive,
+        path: '/inventory',
+        roles: ['admin', 'manager', 'staff']
+      },
+      {
+        id: 'warehouses',
+        label: 'Kho hàng',
+        icon: FiMapPin,
+        path: '/warehouses',
+        roles: ['admin', 'manager', 'staff']
       }
     ]
 
-    const adminItems = [
+    const managementItems = [
+      {
+        id: 'orders',
+        label: 'Đơn hàng',
+        icon: FiShoppingCart,
+        path: '/orders',
+        roles: ['admin', 'manager', 'staff']
+      },
+      {
+        id: 'suppliers',
+        label: 'Nhà cung cấp',
+        icon: FiTruck,
+        path: '/suppliers',
+        roles: ['admin', 'manager']
+      },
       {
         id: 'users',
-        label: 'Team',
+        label: 'Người dùng',
         icon: FiUsers,
         path: '/users',
         roles: ['admin', 'manager']
-      },
-      {
-        id: 'warehouse',
-        label: 'Projects',
-        icon: FiArchive,
-        path: '/warehouse',
-        roles: ['admin', 'manager']
-      },
+      }
+    ]
+
+    const reportsItems = [
       {
         id: 'reports',
-        label: 'Reports',
+        label: 'Báo cáo',
         icon: FiBarChart,
         path: '/reports',
         roles: ['admin', 'manager']
-      }
-    ]
-
-    const employeeItems = [
+      },
       {
-        id: 'profile',
-        label: 'Profile',
-        icon: FiUser,
-        path: '/profile',
-        roles: ['admin', 'manager', 'employee']
+        id: 'analytics',
+        label: 'Phân tích',
+        icon: FiTrendingUp,
+        path: '/analytics',
+        roles: ['admin', 'manager']
       }
     ]
 
-    return [...baseItems, ...adminItems, ...employeeItems]
+    return [...baseItems, ...managementItems, ...reportsItems]
   }
 
   const menuItems = getMenuItems().filter(item => 
-    item.roles.includes(user?.role || 'employee')
+    item.roles.includes(user?.role || 'staff')
   )
 
   const toggleMenu = (menuId) => {
@@ -116,7 +141,7 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
       {/* Logo Section */}
       <div className="p-6 border-b border-slate-700">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">E</span>
           </div>
           {!isCollapsed && (
@@ -126,7 +151,8 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 p-4">
+      <nav className="flex-1 p-4 overflow-y-auto">
+        {/* Main Navigation */}
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon
@@ -136,16 +162,16 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
               <li key={item.id}>
                 <Link
                   to={item.path}
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                     isItemActive
-                      ? 'bg-slate-800 text-white'
+                      ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                   }`}
                   title={isCollapsed ? item.label : ''}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-5 h-5 flex-shrink-0" />
                   {!isCollapsed && (
-                    <span className="font-medium">{item.label}</span>
+                    <span className="font-medium text-sm">{item.label}</span>
                   )}
                 </Link>
               </li>
@@ -153,40 +179,47 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
           })}
         </ul>
 
-        {/* Teams Section */}
-        {!isCollapsed && (user?.role === 'admin' || user?.role === 'manager') && (
-          <div className="mt-8">
-            <div className="px-3 py-2">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Your Teams
-              </h3>
+        {/* Quick Stats Section */}
+        {!isCollapsed && (
+          <div className="mt-8 p-4 bg-slate-800 rounded-lg">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+              Thống kê nhanh
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-300">Tổng sản phẩm</span>
+                <span className="text-xs font-semibold text-blue-400">1,234</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-300">Đơn hàng hôm nay</span>
+                <span className="text-xs font-semibold text-green-400">56</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-300">Tồn kho thấp</span>
+                <span className="text-xs font-semibold text-red-400">12</span>
+              </div>
             </div>
-            <ul className="mt-2 space-y-1">
-              <li>
-                <div className="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                  <div className="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-medium text-white">A</span>
-                  </div>
-                  <span className="text-sm">Admin Team</span>
-                </div>
-              </li>
-              <li>
-                <div className="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                  <div className="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-medium text-white">M</span>
-                  </div>
-                  <span className="text-sm">Manager Team</span>
-                </div>
-              </li>
-              <li>
-                <div className="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                  <div className="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-medium text-white">S</span>
-                  </div>
-                  <span className="text-sm">Staff Team</span>
-                </div>
-              </li>
-            </ul>
+          </div>
+        )}
+
+        {/* User Info Section */}
+        {!isCollapsed && (
+          <div className="mt-6 p-3 bg-slate-800 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold text-xs">
+                  {user?.name?.charAt(0) || 'U'}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">
+                  {user?.name || 'Người dùng'}
+                </p>
+                <p className="text-xs text-slate-400 capitalize">
+                  {user?.role || 'staff'}
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </nav>
@@ -197,27 +230,27 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
           <li>
             <Link
               to="/settings"
-              className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+              className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                 isActive('/settings')
                   ? 'bg-slate-800 text-white'
                   : 'text-slate-300 hover:bg-slate-800 hover:text-white'
               }`}
-              title={isCollapsed ? 'Settings' : ''}
+              title={isCollapsed ? 'Cài đặt' : ''}
             >
               <FiSettings className="w-5 h-5" />
-              {!isCollapsed && <span className="font-medium">Settings</span>}
+              {!isCollapsed && <span className="font-medium text-sm">Cài đặt</span>}
             </Link>
           </li>
           <li>
             <button
               onClick={handleLogout}
-              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors ${
+              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-red-600 hover:text-white transition-all duration-200 ${
                 isCollapsed ? 'justify-center' : ''
               }`}
-              title={isCollapsed ? 'Logout' : ''}
+              title={isCollapsed ? 'Đăng xuất' : ''}
             >
               <FiLogOut className="w-5 h-5" />
-              {!isCollapsed && <span className="font-medium">Logout</span>}
+              {!isCollapsed && <span className="font-medium text-sm">Đăng xuất</span>}
             </button>
           </li>
         </ul>

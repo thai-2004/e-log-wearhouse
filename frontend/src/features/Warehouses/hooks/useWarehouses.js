@@ -1129,3 +1129,59 @@ export const useWarehousesByLocationCount = (params = {}) => {
     }
   )
 }
+
+// Hook để cập nhật trạng thái kho
+export const useUpdateWarehouseStatus = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation(
+    ({ id, status }) => warehousesAPI.updateWarehouseStatus(id, status),
+    {
+      onSuccess: (data, variables) => {
+        queryClient.invalidateQueries(['warehouses'])
+        queryClient.invalidateQueries(['warehouse', variables.id])
+        toast.success('Cập nhật trạng thái kho thành công!')
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Cập nhật trạng thái kho thất bại')
+      },
+    }
+  )
+}
+
+// Hook để xuất danh sách kho
+export const useExportWarehouses = () => {
+  return useMutation(warehousesAPI.exportWarehouses, {
+    onSuccess: (data) => {
+      // Tạo file download
+      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `warehouses-export-${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      toast.success('Xuất danh sách kho thành công!')
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Xuất danh sách kho thất bại')
+    },
+  })
+}
+
+// Hook để import danh sách kho
+export const useImportWarehouses = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation(warehousesAPI.importWarehouses, {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(['warehouses'])
+      toast.success(`Import thành công ${data.importedCount} kho!`)
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Import danh sách kho thất bại')
+    },
+  })
+}

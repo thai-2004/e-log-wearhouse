@@ -508,6 +508,32 @@ export const warehousesAPI = {
   getWarehousesByLocationCount: async (params = {}) => {
     const response = await api.get(`${API_ENDPOINTS.WAREHOUSES.BASE}/location-count`, { params })
     return response.data
+  },
+
+  // Cập nhật trạng thái kho
+  updateWarehouseStatus: async (id, status) => {
+    const response = await api.patch(`${API_ENDPOINTS.WAREHOUSES.BASE}/${id}/status`, { status })
+    return response.data
+  },
+
+  // Xuất danh sách kho
+  exportWarehouses: async (filters = {}) => {
+    const response = await api.post(`${API_ENDPOINTS.WAREHOUSES.BASE}/export`, filters, {
+      responseType: 'blob'
+    })
+    return response.data
+  },
+
+  // Import danh sách kho
+  importWarehouses: async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post(`${API_ENDPOINTS.WAREHOUSES.BASE}/import`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
   }
 }
 

@@ -13,30 +13,22 @@ const createUsers = async () => {
     const staffData = {
       username: 'staff',
       email: 'staff@company.com',
-      password: await bcrypt.hash('staff123', 12),
+      passwordHash: 'staff123', // Will be hashed by pre-save hook
+      fullName: 'Staff User',
+      phone: '0123456789',
       role: 'staff',
-      isActive: true,
-      profile: {
-        firstName: 'Staff',
-        lastName: 'User',
-        phone: '0123456789',
-        address: '123 Staff Street, City'
-      }
+      isActive: true
     };
 
     // Create Manager user
     const managerData = {
       username: 'manager',
       email: 'manager@company.com',
-      password: await bcrypt.hash('manager123', 12),
+      passwordHash: 'manager123', // Will be hashed by pre-save hook
+      fullName: 'Manager User',
+      phone: '0987654321',
       role: 'manager',
-      isActive: true,
-      profile: {
-        firstName: 'Manager',
-        lastName: 'User',
-        phone: '0987654321',
-        address: '456 Manager Avenue, City'
-      }
+      isActive: true
     };
 
     // Check if users already exist

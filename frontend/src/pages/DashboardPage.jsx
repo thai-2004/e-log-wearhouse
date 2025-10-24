@@ -31,11 +31,15 @@ const DashboardPage = () => {
       <Helmet>
         <title>Dashboard - E-Logistics</title>
       </Helmet>
-      <div className="flex h-screen bg-slate-50">
+      
+      <div className="flex h-screen bg-gray-100">
         {/* Sidebar */}
-        <Sidebar />
+        <Sidebar 
+          isCollapsed={isSidebarCollapsed} 
+          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+        />
         
-        {/* Main Content Area */}
+        {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
           <Header 
@@ -44,9 +48,22 @@ const DashboardPage = () => {
           />
           
           {/* Dashboard Content */}
-          <div className="flex-1 overflow-auto bg-slate-50">
-            {renderDashboard()}
-          </div>
+          <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Dashboard
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  Chào mừng bạn đến với hệ thống quản lý kho hàng E-Logistics
+                </p>
+              </div>
+              
+              <div className="space-y-6">
+                {renderDashboard()}
+              </div>
+            </div>
+          </main>
         </div>
       </div>
     </>

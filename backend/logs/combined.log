@@ -2011,3 +2011,854 @@
   version: '1.0.0',
   timestamp: '2025-10-22 18:43:47'
 }
+{
+  message: 'SIGINT received, shutting down gracefully',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-22 19:12:21'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:27:14'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:27:14'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:27:14'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:27:14'
+}
+{
+  message: "❌ MongoDB Connection Error: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/",
+  level: 'error',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:27:35'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:28:45'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:28:45'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:28:45'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:28:45'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:36:43'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:36:43'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:36:43'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:36:43'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'curl/8.14.1',
+    userId: null
+  },
+  timestamp: '2025-10-23 18:37:04',
+  level: 'error'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:37:09'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:37:09'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:37:09'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:37:09'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:37:59'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:37:59'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:37:59'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:37:59'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:38:39'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:38:39'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:38:39'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:38:39'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:38:49'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:38:49'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:38:49'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:38:49'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:39:21'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:39:21'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:39:21'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:39:21'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:39:45'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:39:45'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:39:45'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:39:45'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:25'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:25'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:25'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:25'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:37'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:37'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:37'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:37'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:39'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:39'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:39'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:39'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:41'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:41'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:41'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:41'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:44'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:44'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:44'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:40:44'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:41:11'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:41:11'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:41:11'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:41:11'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:43:19'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:43:19'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:43:19'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:43:19'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:47:31'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:47:31'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:47:31'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:47:31'
+}
+{
+  message: "❌ MongoDB Connection Error: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/",
+  level: 'error',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:47:36'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:48:48'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:48:48'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:48:48'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:48:48'
+}
+{
+  message: "❌ MongoDB Connection Error: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/",
+  level: 'error',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:48:53'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:51:25'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:51:25'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:51:25'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:51:25'
+}
+{
+  message: 'SIGINT received, shutting down gracefully',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:57:36'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:57:39'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:57:39'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:57:39'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 18:57:39'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:03:08'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:03:08'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:03:08'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:03:08'
+}
+{
+  message: "❌ MongoDB Connection Error: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/",
+  level: 'error',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:03:30'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:15:22'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:15:22'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:15:22'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:15:22'
+}
+{
+  message: 'SIGINT received, shutting down gracefully',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:15:31'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:15:51'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:15:51'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:15:51'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:15:51'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'curl/8.14.1',
+    userId: null
+  },
+  timestamp: '2025-10-23 19:16:59',
+  level: 'error'
+}
+{
+  service: 'elog-backend',
+  version: '1.0.0',
+  message: "Application Error Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+  stack: "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n" +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parse (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n' +
+    '    at D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n' +
+    '    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n' +
+    '    at invokeCallback (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:238:16)\n' +
+    '    at done (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:227:7)\n' +
+    '    at IncomingMessage.onEnd (D:\\code\\e-log_cuoi-ky\\backend\\node_modules\\raw-body\\index.js:287:7)\n' +
+    '    at IncomingMessage.emit (node:events:519:28)\n' +
+    '    at endReadableNT (node:internal/streams/readable:1698:12)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)',
+  name: 'SyntaxError',
+  code: undefined,
+  context: {
+    url: '/api/auth/login',
+    method: 'POST',
+    ip: '::1',
+    userAgent: 'Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.6899',
+    userId: null
+  },
+  timestamp: '2025-10-23 19:17:03',
+  level: 'error'
+}
+{
+  message: 'SIGINT received, shutting down gracefully',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:19:46'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:19:57'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:19:57'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:19:57'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:19:57'
+}
+{
+  message: 'SIGINT received, shutting down gracefully',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-23 19:20:25'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-24 07:19:22'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-24 07:19:22'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-24 07:19:22'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-24 07:19:22'
+}
+{
+  message: "❌ MongoDB Connection Error: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/",
+  level: 'error',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-24 07:19:27'
+}

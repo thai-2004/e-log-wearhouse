@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FiChevronRight, FiChevronDown, FiFolder, FiFolderOpen, FiEdit, FiTrash2, FiPlus } from 'react-icons/fi'
+import { FiChevronRight, FiChevronDown, FiFolder, FiEdit, FiTrash2, FiPlus } from 'react-icons/fi'
 import Button from '@components/ui/Button'
 
 const CategoryTree = ({ 
@@ -53,11 +53,7 @@ const CategoryTree = ({
 
           {/* Category Icon */}
           <div className="mr-2">
-            {isExpanded ? (
-              <FiFolderOpen className="h-4 w-4 text-blue-500" />
-            ) : (
-              <FiFolder className="h-4 w-4 text-blue-500" />
-            )}
+            <FiFolder className={`h-4 w-4 ${isExpanded ? 'text-blue-600' : 'text-blue-500'}`} />
           </div>
 
           {/* Category Info */}

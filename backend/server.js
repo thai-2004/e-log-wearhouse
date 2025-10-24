@@ -76,12 +76,16 @@ app.use('/api', limiter);
 // Stricter rate limiting for auth endpoints
 const authLimiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
-  max: config.rateLimit.authMaxRequests,
+  max: config.app.environment === 'development' ? 1000 : config.rateLimit.authMaxRequests, // Very high limit for development
   message: {
     success: false,
     message: 'Too many authentication attempts, please try again later.'
   },
-  skipSuccessfulRequests: true
+  skipSuccessfulRequests: true,
+  // Skip rate limiting for development environment
+  skip: (req) => {
+    return config.app.environment === 'development'
+  }
 });
 
 app.use('/api/auth/login', authLimiter);
