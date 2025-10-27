@@ -369,3 +369,7 @@
 {"level":"info","message":"🏥 Health check available at http://localhost:5000/health","service":"elog-backend","timestamp":"2025-10-24 07:19:22","version":"1.0.0"}
 {"level":"info","message":"🌍 Environment: development","service":"elog-backend","timestamp":"2025-10-24 07:19:22","version":"1.0.0"}
 {"level":"error","message":"❌ MongoDB Connection Error: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/","service":"elog-backend","timestamp":"2025-10-24 07:19:27","version":"1.0.0"}
+{"level":"info","message":"🚀 E-Log Backend Server running on port 5000","service":"elog-backend","timestamp":"2025-10-27 09:57:32","version":"1.0.0"}
+{"level":"info","message":"📚 API Documentation available at http://localhost:5000/api-docs","service":"elog-backend","timestamp":"2025-10-27 09:57:32","version":"1.0.0"}
+{"level":"info","message":"🏥 Health check available at http://localhost:5000/health","service":"elog-backend","timestamp":"2025-10-27 09:57:32","version":"1.0.0"}
+{"level":"info","message":"🌍 Environment: development","service":"elog-backend","timestamp":"2025-10-27 09:57:32","version":"1.0.0"}

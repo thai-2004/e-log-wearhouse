@@ -2862,3 +2862,31 @@
   version: '1.0.0',
   timestamp: '2025-10-24 07:19:27'
 }
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-27 09:57:32'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-27 09:57:32'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-27 09:57:32'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-27 09:57:32'
+}
