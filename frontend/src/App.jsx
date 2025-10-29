@@ -54,7 +54,7 @@ function App() {
         <title>E-Log Warehouse Management System</title>
         <meta name="description" content="Modern warehouse management system" />
       </Helmet>
-      
+
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={
@@ -62,138 +62,24 @@ function App() {
             <LoginPage />
           </AuthLayout>
         } />
-        
-        {/* Protected Routes */}
-        <Route path="/" element={
-          isAuthenticated ? (
-            <Layout>
-              <DashboardPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/dashboard" element={
-          isAuthenticated ? (
-            <Layout>
-              <DashboardPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/products" element={
-          isAuthenticated ? (
-            <Layout>
-              <ProductsPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/categories" element={
-          isAuthenticated ? (
-            <Layout>
-              <CategoriesPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/users" element={
-          isAuthenticated ? (
-            <Layout>
-              <UsersPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/inventory" element={
-          isAuthenticated ? (
-            <Layout>
-              <InventoryPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/warehouses" element={
-          isAuthenticated ? (
-            <Layout>
-              <WarehousesPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/customers" element={
-          isAuthenticated ? (
-            <Layout>
-              <CustomersPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/suppliers" element={
-          isAuthenticated ? (
-            <Layout>
-              <SuppliersPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/inbound" element={
-          isAuthenticated ? (
-            <Layout>
-              <InboundPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/outbound" element={
-          isAuthenticated ? (
-            <Layout>
-              <OutboundPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/reports" element={
-          isAuthenticated ? (
-            <Layout>
-              <ReportsPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
-        <Route path="/profile" element={
-          isAuthenticated ? (
-            <Layout>
-              <ProfilePage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        
+
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
+
+        <Route path="/dashboard" element={isAuthenticated ? <Layout /> : <Navigate to="/login" replace />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="products" element={<ProductsPage />} />
+          <Route path="categories" element={<CategoriesPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="inventory" element={<InventoryPage />} />
+          <Route path="warehouses" element={<WarehousesPage />} />
+          <Route path="customers" element={<CustomersPage />} />
+          <Route path="suppliers" element={<SuppliersPage />} />
+          <Route path="inbound" element={<InboundPage />} />
+          <Route path="outbound" element={<OutboundPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+        </Route>
+
         {/* 404 Route */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

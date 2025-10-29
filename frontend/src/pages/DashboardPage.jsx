@@ -4,7 +4,6 @@ import { useAuthStore } from '@store/authStore'
 import AdminDashboard from '@features/Dashboard/components/AdminDashboard'
 import ManagerDashboard from '@features/Dashboard/components/ManagerDashboard'
 import StaffDashboard from '@features/Dashboard/components/StaffDashboard'
-import Sidebar from '@components/Sidebar'
 import Header from '@components/Header'
 
 const DashboardPage = () => {
@@ -31,22 +30,16 @@ const DashboardPage = () => {
       <Helmet>
         <title>Dashboard - E-Logistics</title>
       </Helmet>
-      
+
       <div className="flex h-screen bg-gray-100">
-        {/* Sidebar */}
-        <Sidebar 
-          isCollapsed={isSidebarCollapsed} 
-          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
-        />
-        
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <Header 
+          <Header
             onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             isSidebarCollapsed={isSidebarCollapsed}
           />
-          
+
           {/* Dashboard Content */}
           <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
@@ -58,7 +51,7 @@ const DashboardPage = () => {
                   Chào mừng bạn đến với hệ thống quản lý kho hàng E-Logistics
                 </p>
               </div>
-              
+
               <div className="space-y-6">
                 {renderDashboard()}
               </div>
