@@ -9,7 +9,6 @@ import Header from '@components/Header'
 const DashboardPage = () => {
   const { getUserRole } = useAuthStore()
   const userRole = getUserRole()
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   // Render dashboard based on user role
   const renderDashboard = () => {
@@ -35,10 +34,7 @@ const DashboardPage = () => {
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <Header
-            onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            isSidebarCollapsed={isSidebarCollapsed}
-          />
+
 
           {/* Dashboard Content */}
           <main className="flex-1 overflow-y-auto bg-gray-50 p-6">

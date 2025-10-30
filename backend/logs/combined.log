@@ -2890,3 +2890,87 @@
   version: '1.0.0',
   timestamp: '2025-10-27 09:57:32'
 }
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-29 16:55:09'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-29 16:55:09'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-29 16:55:09'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-29 16:55:09'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-30 16:57:20'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-30 16:57:20'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-30 16:57:20'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-30 16:57:20'
+}
+{
+  message: '🚀 E-Log Backend Server running on port 5000',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-30 19:09:57'
+}
+{
+  message: '📚 API Documentation available at http://localhost:5000/api-docs',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-30 19:09:57'
+}
+{
+  message: '🏥 Health check available at http://localhost:5000/health',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-30 19:09:57'
+}
+{
+  message: '🌍 Environment: development',
+  level: 'info',
+  service: 'elog-backend',
+  version: '1.0.0',
+  timestamp: '2025-10-30 19:09:57'
+}
