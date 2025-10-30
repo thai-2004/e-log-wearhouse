@@ -233,10 +233,10 @@ const updateProduct = async(req, res) => {
 // Xóa sản phẩm
 const deleteProduct = async(req, res) => {
   try {
-    const { productId } = req.params;
+    const { id } = req.params;
 
     // Kiểm tra sản phẩm có trong inventory không
-    const inventoryCount = await Inventory.countDocuments({ productId });
+    const inventoryCount = await Inventory.countDocuments({ productId: id });
     if (inventoryCount > 0) {
       return res.status(400).json({
         success: false,
@@ -244,7 +244,7 @@ const deleteProduct = async(req, res) => {
       });
     }
 
-    const product = await Product.findByIdAndDelete(productId);
+    const product = await Product.findByIdAndDelete(id);
 
     if (!product) {
       return res.status(404).json({

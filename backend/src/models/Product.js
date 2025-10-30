@@ -26,6 +26,11 @@ const productSchema = new mongoose.Schema({
     ref: 'Category',
     required: true
   },
+  supplierId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Supplier',
+    required: false
+  },
   unit: {
     type: String,
     required: true,

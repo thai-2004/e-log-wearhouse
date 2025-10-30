@@ -4,6 +4,8 @@ import { FiUpload, FiX, FiImage } from 'react-icons/fi'
 import Button from '@components/ui/Button'
 import Input from '@components/ui/Input'
 import { useCreateProduct, useUpdateProduct, useUploadProductImage } from '../hooks/useProducts'
+import { useCategories } from '../../Categories/hooks/useCategories'
+import { useSuppliers } from '../../Suppliers/hooks/useSuppliers'
 
 const ProductForm = ({ product, onClose }) => {
   const [images, setImages] = useState([])
@@ -12,6 +14,8 @@ const ProductForm = ({ product, onClose }) => {
   const createProductMutation = useCreateProduct()
   const updateProductMutation = useUpdateProduct()
   const uploadImageMutation = useUploadProductImage()
+  const { data: categoriesData, isLoading: loadingCategories } = useCategories({ limit: 1000 })
+  const { data: suppliersData, isLoading: loadingSuppliers } = useSuppliers({ limit: 1000 })
 
   const {
     register,
@@ -19,7 +23,8 @@ const ProductForm = ({ product, onClose }) => {
     formState: { errors },
     setValue,
     watch,
-    reset
+    reset,
+    setError
   } = useForm({
     defaultValues: {
       name: '',
@@ -29,6 +34,8 @@ const ProductForm = ({ product, onClose }) => {
       price: '',
       cost: '',
       categoryId: '',
+      supplierId: '',
+      unit: '',
       minStock: '',
       maxStock: '',
       status: 'active',
@@ -54,6 +61,8 @@ const ProductForm = ({ product, onClose }) => {
         price: product.price || '',
         cost: product.cost || '',
         categoryId: product.categoryId || '',
+        supplierId: (product.supplierId && (product.supplierId._id || product.supplierId)) || '',
+        unit: product.unit || '',
         minStock: product.minStock || '',
         maxStock: product.maxStock || '',
         status: product.status || 'active',
@@ -73,34 +82,59 @@ const ProductForm = ({ product, onClose }) => {
   // Xử lý submit form
   const onSubmit = async (data) => {
     try {
-      const productData = {
-        ...data,
-        price: parseFloat(data.price),
-        cost: parseFloat(data.cost),
-        minStock: parseInt(data.minStock),
-        maxStock: parseInt(data.maxStock),
-        weight: parseFloat(data.weight),
-        dimensions: {
-          length: parseFloat(data.dimensions.length),
-          width: parseFloat(data.dimensions.width),
-          height: parseFloat(data.dimensions.height)
-        },
-        tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
-        images: images.map(img => img.url || img)
+      // Không gửi dimensions để tránh xung đột validator (object) vs schema (string)
+      const payload = {
+        sku: data.sku,
+        barcode: data.barcode || undefined,
+        name: data.name,
+        description: data.description || undefined,
+        categoryId: data.categoryId,
+        supplierId: data.supplierId || undefined,
+        unit: data.unit, // bắt buộc theo schema backend
+        weight: data.weight ? parseFloat(data.weight) : 0,
+        // Gửi cả 2 cặp trường để tương thích validator và schema
+        price: data.price ? parseFloat(data.price) : 0, // cho validator
+        cost: data.cost ? parseFloat(data.cost) : 0,    // cho validator
+        sellingPrice: data.price ? parseFloat(data.price) : 0, // cho schema
+        costPrice: data.cost ? parseFloat(data.cost) : 0,      // cho schema
+        minStock: data.minStock ? parseInt(data.minStock) : 0,
+        maxStock: data.maxStock ? parseInt(data.maxStock) : 0,
+        isActive: data.isActive !== false,
       }
 
       if (product) {
         await updateProductMutation.mutateAsync({
-          id: product.id,
-          data: productData
+          id: product.id || product._id,
+          data: payload
         })
       } else {
-        await createProductMutation.mutateAsync(productData)
+        await createProductMutation.mutateAsync(payload)
       }
       
       onClose()
     } catch (error) {
       console.error('Error saving product:', error)
+      const resp = error.response?.data
+      if (resp?.errors && Array.isArray(resp.errors)) {
+        resp.errors.forEach((err) => {
+          const field = err.field || err.param
+          const message = err.message || err.msg || resp.message || 'Dữ liệu không hợp lệ'
+          if (field) {
+            // Map các field backend về form field nếu cần
+            const fieldMap = {
+              sellingPrice: 'price',
+              costPrice: 'cost',
+            }
+            const formField = fieldMap[field] || field
+            try {
+              // setError được provide bởi react-hook-form
+              // eslint-disable-next-line no-undef
+              setError(formField, { type: 'server', message })
+            } catch {}
+          }
+        })
+      }
+      console.error('Response:', resp)
     }
   }
 
@@ -114,7 +148,7 @@ const ProductForm = ({ product, onClose }) => {
         
         if (product) {
           const result = await uploadImageMutation.mutateAsync({
-            id: product.id,
+            id: product.id || product._id,
             formData
           })
           return result.image
@@ -171,10 +205,16 @@ const ProductForm = ({ product, onClose }) => {
             {...register('sku', {
               required: 'SKU là bắt buộc',
               pattern: {
-                value: /^[A-Z0-9-_]+$/,
-                message: 'SKU chỉ được chứa chữ hoa, số, dấu gạch ngang và gạch dưới'
+                value: /^[A-Z0-9-]+$/,
+                message: 'SKU chỉ được chứa CHỮ HOA, số và dấu gạch ngang (-)'
               }
             })}
+            onChange={(e) => {
+              // Auto normalize to backend rules: uppercase, remove invalid chars, replace '_' with '-'
+              const raw = e.target.value || ''
+              const normalized = raw.toUpperCase().replace(/_/g, '-').replace(/[^A-Z0-9-]/g, '')
+              e.target.value = normalized
+            }}
           />
         </div>
 
@@ -183,16 +223,73 @@ const ProductForm = ({ product, onClose }) => {
             label="Barcode"
             placeholder="Nhập mã vạch"
             error={errors.barcode?.message}
-            {...register('barcode')}
+            {...register('barcode', {
+              pattern: {
+                value: /^[0-9]*$/,
+                message: 'Barcode chỉ được chứa số'
+              }
+            })}
           />
         </div>
 
         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Danh mục
+          </label>
+          <select
+            {...register('categoryId', {
+              required: 'Danh mục là bắt buộc'
+            })}
+            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            disabled={loadingCategories}
+          >
+            <option value="">Chọn danh mục</option>
+            {categoriesData?.data?.categories?.map((cat) => (
+              <option key={cat._id || cat.id} value={cat._id || cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+          {errors.categoryId && (
+            <p className="mt-1 text-sm text-red-600">{errors.categoryId.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Nhà cung cấp
+          </label>
+          <select
+            {...register('supplierId')}
+            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            disabled={loadingSuppliers}
+          >
+            <option value="">Chọn nhà cung cấp</option>
+            {suppliersData?.data?.suppliers?.map((sup) => (
+              <option key={sup._id || sup.id} value={sup._id || sup.id}>
+                {sup.name}
+              </option>
+            ))}
+          </select>
+          {errors.supplierId && (
+            <p className="mt-1 text-sm text-red-600">{errors.supplierId.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Đơn vị tính *
+          </label>
           <Input
-            label="Danh mục"
-            placeholder="Chọn danh mục"
-            error={errors.categoryId?.message}
-            {...register('categoryId')}
+            placeholder="Ví dụ: cái, hộp, kg"
+            error={errors.unit?.message}
+            {...register('unit', {
+              required: 'Đơn vị tính là bắt buộc',
+              minLength: {
+                value: 1,
+                message: 'Đơn vị tính không được để trống'
+              }
+            })}
           />
         </div>
       </div>

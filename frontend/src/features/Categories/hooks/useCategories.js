@@ -34,8 +34,8 @@ export const useCreateCategory = () => {
 
   return useMutation(categoryAPI.createCategory, {
     onSuccess: (data) => {
-      queryClient.invalidateQueries(['categories'])
-      queryClient.invalidateQueries(['categoryTree'])
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: ['categoryTree'] })
       toast.success('Tạo danh mục thành công!')
     },
     onError: (error) => {

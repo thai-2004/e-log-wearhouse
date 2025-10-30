@@ -20,15 +20,6 @@ const createCategory = async(req, res) => {
 
     const categoryData = req.body;
 
-    // Kiểm tra code đã tồn tại
-    const existingCategory = await Category.findOne({ code: categoryData.code });
-    if (existingCategory) {
-      return res.status(400).json({
-        success: false,
-        message: 'Category with this code already exists'
-      });
-    }
-
     // Kiểm tra parent category tồn tại (nếu có)
     if (categoryData.parentId) {
       const parentCategory = await Category.findById(categoryData.parentId);
@@ -121,7 +112,7 @@ const getCategories = async(req, res) => {
 // Lấy category theo ID
 const getCategoryById = async(req, res) => {
   try {
-    const { categoryId } = req.params;
+    const categoryId = req.params.id;
 
     const category = await Category.findById(categoryId)
       .populate('parentId', 'name code');
@@ -158,23 +149,8 @@ const updateCategory = async(req, res) => {
       });
     }
 
-    const { categoryId } = req.params;
+    const categoryId = req.params.id;
     const updateData = req.body;
-
-    // Kiểm tra code trùng lặp (trừ category hiện tại)
-    if (updateData.code) {
-      const existingCategory = await Category.findOne({
-        _id: { $ne: categoryId },
-        code: updateData.code
-      });
-
-      if (existingCategory) {
-        return res.status(400).json({
-          success: false,
-          message: 'Category with this code already exists'
-        });
-      }
-    }
 
     // Kiểm tra parent category tồn tại (nếu có)
     if (updateData.parentId) {
@@ -225,7 +201,7 @@ const updateCategory = async(req, res) => {
 // Xóa category
 const deleteCategory = async(req, res) => {
   try {
-    const { categoryId } = req.params;
+    const categoryId = req.params.id;
 
     // Kiểm tra category có products không
     const productCount = await Product.countDocuments({ categoryId });
@@ -308,7 +284,7 @@ const getCategoryTree = async(req, res) => {
 // Lấy báo cáo category
 const getCategoryReport = async(req, res) => {
   try {
-    const { categoryId } = req.params;
+    const categoryId = req.params.id;
     const { startDate, endDate } = req.query;
 
     const category = await Category.findById(categoryId);
@@ -477,7 +453,7 @@ const moveCategory = async(req, res) => {
       });
     }
 
-    const { categoryId } = req.params;
+    const categoryId = req.params.id;
     const { newParentId } = req.body;
 
     const category = await Category.findById(categoryId);

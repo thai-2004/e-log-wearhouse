@@ -70,26 +70,26 @@ const SupplierList = () => {
     {
       header: 'Nhà cung cấp',
       accessor: 'supplier',
-      render: (supplier) => (
+      render: (_value, row) => (
         <div className="flex items-center">
           <div className="flex-shrink-0 h-10 w-10">
             <img
               className="h-10 w-10 rounded-full object-cover"
-              src={supplier.logo || '/images/default-supplier.png'}
-              alt={supplier.name}
+              src={row?.logo || '/images/default-supplier.png'}
+              alt={row?.name || 'supplier'}
             />
           </div>
           <div className="ml-3">
             <div className="flex items-center">
               <div className="text-sm font-medium text-gray-900">
-                {supplier.name}
+                {row?.name || ''}
               </div>
-              {supplier.isTopSupplier && (
+              {row?.isTopSupplier && (
                 <FiStar className="h-4 w-4 text-yellow-500 ml-2" />
               )}
             </div>
             <div className="text-sm text-gray-500">
-              {supplier.email}
+              {row?.email || ''}
             </div>
           </div>
         </div>
@@ -98,41 +98,41 @@ const SupplierList = () => {
     {
       header: 'Danh mục',
       accessor: 'category',
-      render: (supplier) => (
+      render: (_value, row) => (
         <span className="text-sm text-gray-900">
-          {supplier.category || 'Chưa phân loại'}
+          {row?.category || 'Chưa phân loại'}
         </span>
       )
     },
     {
       header: 'Điện thoại',
       accessor: 'phone',
-      render: (supplier) => (
+      render: (_value, row) => (
         <span className="text-sm text-gray-900">
-          {supplier.phone || 'Chưa có'}
+          {row?.phone || 'Chưa có'}
         </span>
       )
     },
     {
       header: 'Địa chỉ',
       accessor: 'address',
-      render: (supplier) => (
+      render: (_value, row) => (
         <div className="text-sm text-gray-900 max-w-xs truncate">
-          {supplier.defaultAddress?.address || 'Chưa có địa chỉ'}
+          {row?.defaultAddress?.address || 'Chưa có địa chỉ'}
         </div>
       )
     },
     {
       header: 'Đánh giá',
       accessor: 'rating',
-      render: (supplier) => (
+      render: (_value, row) => (
         <div className="flex items-center">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
               <FiStar
                 key={i}
                 className={`h-4 w-4 ${
-                  i < Math.floor(supplier.averageRating || 0)
+                  i < Math.floor(row?.averageRating || 0)
                     ? 'text-yellow-400 fill-current'
                     : 'text-gray-300'
                 }`}
@@ -140,7 +140,7 @@ const SupplierList = () => {
             ))}
           </div>
           <span className="ml-2 text-sm text-gray-600">
-            ({supplier.totalRatings || 0})
+            ({row?.totalRatings || 0})
           </span>
         </div>
       )
@@ -148,47 +148,47 @@ const SupplierList = () => {
     {
       header: 'Sản phẩm',
       accessor: 'products',
-      render: (supplier) => (
+      render: (_value, row) => (
         <span className="text-sm font-medium text-blue-600">
-          {supplier.totalProducts || 0} sản phẩm
+          {row?.totalProducts || 0} sản phẩm
         </span>
       )
     },
     {
       header: 'Trạng thái',
       accessor: 'status',
-      render: (supplier) => (
+      render: (_value, row) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          supplier.status === 'active' 
+          row?.status === 'active' 
             ? 'bg-green-100 text-green-800' 
-            : supplier.status === 'inactive'
+            : row?.status === 'inactive'
             ? 'bg-red-100 text-red-800'
             : 'bg-yellow-100 text-yellow-800'
         }`}>
-          {supplier.status === 'active' ? 'Hoạt động' : 
-           supplier.status === 'inactive' ? 'Không hoạt động' : 'Chờ xác nhận'}
+          {row?.status === 'active' ? 'Hoạt động' : 
+           row?.status === 'inactive' ? 'Không hoạt động' : 'Chờ xác nhận'}
         </span>
       )
     },
     {
       header: 'Ngày tạo',
       accessor: 'createdAt',
-      render: (supplier) => (
+      render: (_value, row) => (
         <span className="text-sm text-gray-900">
-          {new Date(supplier.createdAt).toLocaleDateString('vi-VN')}
+          {row?.createdAt ? new Date(row.createdAt).toLocaleDateString('vi-VN') : ''}
         </span>
       )
     },
     {
       header: 'Thao tác',
       accessor: 'actions',
-      render: (supplier) => (
+      render: (_value, row) => (
         <div className="flex space-x-2">
           <Button
             size="sm"
             variant="outline"
             onClick={() => {
-              setSelectedSupplier(supplier)
+              setSelectedSupplier(row)
               setShowCard(true)
             }}
           >
@@ -199,7 +199,7 @@ const SupplierList = () => {
             size="sm"
             variant="outline"
             onClick={() => {
-              setSelectedSupplier(supplier)
+              setSelectedSupplier(row)
               setShowForm(true)
             }}
           >
@@ -209,16 +209,16 @@ const SupplierList = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => handleUpdateStatus(supplier.id, supplier.status === 'active' ? 'inactive' : 'active')}
+            onClick={() => row?._id && handleUpdateStatus(row._id, row.status === 'active' ? 'inactive' : 'active')}
             loading={updateStatusMutation.isLoading}
           >
-            {supplier.status === 'active' ? <FiXCircle className="h-4 w-4" /> : <FiCheckCircle className="h-4 w-4" />}
+            {row?.status === 'active' ? <FiXCircle className="h-4 w-4" /> : <FiCheckCircle className="h-4 w-4" />}
           </Button>
           
           <Button
             size="sm"
             variant="outline"
-            onClick={() => handleDeleteSupplier(supplier.id)}
+            onClick={() => row?._id && handleDeleteSupplier(row._id)}
             loading={deleteSupplierMutation.isLoading}
             className="text-red-600 hover:text-red-700"
           >
@@ -364,9 +364,9 @@ const SupplierList = () => {
       {viewMode === 'table' ? (
         <Table
           columns={columns}
-          data={suppliersData?.suppliers || []}
+          data={suppliersData?.data?.suppliers || []}
           loading={isLoading}
-          emptyMessage="Không có dữ liệu nhà cung cấp"
+          emptyMessage="Không có nhà cung cấp nào"
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -390,13 +390,13 @@ const SupplierList = () => {
       )}
 
       {/* Pagination */}
-      {suppliersData?.pagination && (
+      {suppliersData?.data?.pagination && (
         <div className="bg-white shadow rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Hiển thị {((currentPage - 1) * pageSize) + 1} đến{' '}
-              {Math.min(currentPage * pageSize, suppliersData.pagination.total)} trong tổng số{' '}
-              {suppliersData.pagination.total} bản ghi
+              {Math.min(currentPage * pageSize, suppliersData.data.pagination.total)} trong tổng số{' '}
+              {suppliersData.data.pagination.total} nhà cung cấp
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -408,13 +408,13 @@ const SupplierList = () => {
                 Trước
               </Button>
               <span className="text-sm text-gray-700">
-                Trang {currentPage} / {suppliersData.pagination.totalPages}
+                Trang {currentPage} / {suppliersData.data.pagination.pages}
               </span>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => setCurrentPage(prev => prev + 1)}
-                disabled={currentPage === suppliersData.pagination.totalPages}
+                disabled={currentPage === suppliersData.data.pagination.pages}
               >
                 Sau
               </Button>

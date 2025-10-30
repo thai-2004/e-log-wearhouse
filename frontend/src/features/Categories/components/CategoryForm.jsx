@@ -53,13 +53,26 @@ const CategoryForm = ({ category, onClose }) => {
 
   // Xử lý submit form
   const onSubmit = async (data) => {
-    try {
-      const categoryData = {
-        ...data,
-        sortOrder: parseInt(data.sortOrder),
-        image: image
-      }
+    console.log('Form data:', data)
+    
+    // Chỉ gửi các trường mà backend accept (theo validation rules)
+    const categoryData = {
+      name: data.name,
+      isActive: data.isActive
+    }
+    
+    // Chỉ thêm các trường optional nếu có giá trị
+    if (data.description && data.description.trim() !== '') {
+      categoryData.description = data.description
+    }
+    
+    if (data.parentId && data.parentId !== '') {
+      categoryData.parentId = data.parentId
+    }
 
+    console.log('Sending to API:', categoryData)
+
+    try {
       if (category?.id) {
         await updateCategoryMutation.mutateAsync({
           id: category.id,

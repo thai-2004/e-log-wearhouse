@@ -32,9 +32,11 @@ const SupplierForm = ({ supplier, onClose }) => {
     formState: { errors },
     setValue,
     watch,
-    reset
+    reset,
+    setError
   } = useForm({
     defaultValues: {
+      code: '',
       name: '',
       email: '',
       phone: '',
@@ -51,6 +53,7 @@ const SupplierForm = ({ supplier, onClose }) => {
   useEffect(() => {
     if (supplier) {
       reset({
+        code: supplier.code || '',
         name: supplier.name || '',
         email: supplier.email || '',
         phone: supplier.phone || '',
@@ -191,32 +194,52 @@ const SupplierForm = ({ supplier, onClose }) => {
   // Xử lý submit form
   const onSubmit = async (data) => {
     try {
+      const payload = {
+        code: (data.code || '').toUpperCase().trim(),
+        name: (data.name || '').trim(),
+        email: data.email || undefined,
+        phone: data.phone || undefined,
+        category: data.category || undefined,
+        status: data.status || 'active',
+        website: data.website || undefined,
+        taxCode: data.taxCode || undefined,
+        description: data.description || undefined,
+        isTopSupplier: !!data.isTopSupplier,
+        addresses,
+        contacts,
+      }
+
       let supplierId = null
 
       if (supplier?.id) {
-        // Cập nhật nhà cung cấp
-        await updateSupplierMutation.mutateAsync({
-          id: supplier.id,
-          data: { ...data, addresses, contacts }
-        })
+        await updateSupplierMutation.mutateAsync({ id: supplier.id, data: payload })
         supplierId = supplier.id
       } else {
-        // Tạo nhà cung cấp mới
-        const newSupplier = await createSupplierMutation.mutateAsync({ ...data, addresses, contacts })
-        supplierId = newSupplier.id
+        const result = await createSupplierMutation.mutateAsync(payload)
+        supplierId = result.id || result._id
       }
 
-      // Upload logo nếu có
       if (logoFile && supplierId) {
-        await uploadLogoMutation.mutateAsync({
-          id: supplierId,
-          file: logoFile
-        })
+        await uploadLogoMutation.mutateAsync({ id: supplierId, file: logoFile })
       }
       
       onClose()
     } catch (error) {
       console.error('Error saving supplier:', error)
+      const resp = error.response?.data
+      if (Array.isArray(resp?.errors)) {
+        resp.errors.forEach((err) => {
+          const field = err.field || err.param
+          const message = err.message || resp.message || 'Dữ liệu không hợp lệ'
+          if (field) {
+            try {
+              setValue(field, (watch(field) || '').toString())
+              // eslint-disable-next-line no-undef
+              setError(field, { type: 'server', message })
+            } catch {}
+          }
+        })
+      }
     }
   }
 
@@ -284,31 +307,29 @@ const SupplierForm = ({ supplier, onClose }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Input
-            label="Tên công ty *"
-            placeholder="Nhập tên công ty"
-            error={errors.name?.message}
-            {...register('name', {
-              required: 'Tên công ty là bắt buộc',
-              minLength: {
-                value: 2,
-                message: 'Tên công ty phải có ít nhất 2 ký tự'
-              }
+            label="Mã nhà cung cấp (CODE) *"
+            placeholder="VD: SUP-001"
+            error={errors.code?.message}
+            {...register('code', {
+              required: 'Mã nhà cung cấp là bắt buộc',
+              pattern: { value: /^[A-Z0-9-]+$/, message: 'Chỉ CHỮ HOA, số, gạch ngang' },
+              minLength: { value: 2, message: 'Tối thiểu 2 ký tự' }
             })}
+            onChange={(e) => {
+              const raw = e.target.value || ''
+              e.target.value = raw.toUpperCase().replace(/_/g,'-').replace(/[^A-Z0-9-]/g,'')
+            }}
           />
         </div>
 
         <div>
           <Input
-            label="Email *"
-            type="email"
-            placeholder="Nhập email"
-            error={errors.email?.message}
-            {...register('email', {
-              required: 'Email là bắt buộc',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Email không hợp lệ'
-              }
+            label="Tên công ty *"
+            placeholder="Nhập tên công ty"
+            error={errors.name?.message}
+            {...register('name', {
+              required: 'Tên công ty là bắt buộc',
+              minLength: { value: 2, message: 'Tên công ty phải có ít nhất 2 ký tự' }
             })}
           />
         </div>

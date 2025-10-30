@@ -65,13 +65,13 @@ const ProductList = () => {
   const columns = useMemo(() => [
     {
       header: 'Hình ảnh',
-      accessor: 'image',
-      render: (product) => (
+      accessor: 'imageUrl',
+      render: (_value, row) => (
         <div className="flex-shrink-0 h-10 w-10">
           <img
             className="h-10 w-10 rounded-lg object-cover"
-            src={product.image || '/images/no-image.png'}
-            alt={product.name}
+            src={(row?.imageUrl || row?.image || '/images/no-image.png')}
+            alt={row?.name || 'product'}
           />
         </div>
       )
@@ -79,77 +79,77 @@ const ProductList = () => {
     {
       header: 'Tên sản phẩm',
       accessor: 'name',
-      render: (product) => (
+      render: (_value, row) => (
         <div>
-          <div className="text-sm font-medium text-gray-900">{product.name}</div>
-          <div className="text-sm text-gray-500">SKU: {product.sku}</div>
+          <div className="text-sm font-medium text-gray-900">{row?.name || ''}</div>
+          <div className="text-sm text-gray-500">SKU: {row?.sku || ''}</div>
         </div>
       )
     },
     {
       header: 'Danh mục',
-      accessor: 'category',
-      render: (product) => (
+      accessor: 'categoryId',
+      render: (_value, row) => (
         <span className="text-sm text-gray-900">
-          {product.category?.name || 'Chưa phân loại'}
+          {row?.categoryId?.name || 'Chưa phân loại'}
         </span>
       )
     },
     {
       header: 'Giá',
-      accessor: 'price',
-      render: (product) => (
+      accessor: 'sellingPrice',
+      render: (_value, row) => (
         <span className="text-sm font-medium text-gray-900">
           {new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
-          }).format(product.price)}
+          }).format(row?.sellingPrice || 0)}
         </span>
       )
     },
     {
       header: 'Tồn kho',
       accessor: 'stock',
-      render: (product) => (
+      render: (_value, row) => (
         <div className="flex items-center">
           <span className={`text-sm font-medium ${
-            product.stock <= product.minStock 
+            (row?.stock || 0) <= (row?.minStock || 0)
               ? 'text-red-600' 
-              : product.stock <= product.minStock * 2 
+              : (row?.stock || 0) <= (row?.minStock || 0) * 2 
                 ? 'text-yellow-600' 
                 : 'text-green-600'
           }`}>
-            {product.stock}
+            {row?.stock ?? 0}
           </span>
           <span className="text-sm text-gray-500 ml-1">
-            / {product.minStock} min
+            / {row?.minStock ?? 0} min
           </span>
         </div>
       )
     },
     {
       header: 'Trạng thái',
-      accessor: 'status',
-      render: (product) => (
+      accessor: 'isActive',
+      render: (_value, row) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          product.status === 'active' 
-            ? 'bg-green-100 text-green-800'
-            : 'bg-gray-100 text-gray-800'
+          row?.isActive === false 
+            ? 'bg-gray-100 text-gray-800'
+            : 'bg-green-100 text-green-800'
         }`}>
-          {product.status === 'active' ? 'Hoạt động' : 'Ngừng bán'}
+          {row?.isActive === false ? 'Ngừng bán' : 'Hoạt động'}
         </span>
       )
     },
     {
       header: 'Thao tác',
       accessor: 'actions',
-      render: (product) => (
+      render: (_value, row) => (
         <div className="flex space-x-2">
           <Button
             size="sm"
             variant="outline"
             onClick={() => {
-              setSelectedProduct(product)
+              setSelectedProduct(row)
               setShowForm(true)
             }}
           >
@@ -158,8 +158,8 @@ const ProductList = () => {
           <Button
             size="sm"
             variant="error"
-            onClick={() => handleDelete(product.id)}
-            disabled={deleteProductMutation.isLoading}
+            onClick={() => row?._id && handleDelete(row._id)}
+            disabled={deleteProductMutation.isLoading || !row?._id}
           >
             Xóa
           </Button>
@@ -230,19 +230,19 @@ const ProductList = () => {
       {/* Products Table */}
       <Table
         columns={columns}
-        data={productsData?.products || []}
+        data={productsData?.data?.products || []}
         loading={isLoading}
         emptyMessage="Không có sản phẩm nào"
       />
 
       {/* Pagination */}
-      {productsData?.pagination && (
+      {productsData?.data?.pagination && (
         <div className="bg-white shadow rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Hiển thị {((currentPage - 1) * pageSize) + 1} đến{' '}
-              {Math.min(currentPage * pageSize, productsData.pagination.total)} trong tổng số{' '}
-              {productsData.pagination.total} sản phẩm
+              {Math.min(currentPage * pageSize, productsData.data.pagination.total)} trong tổng số{' '}
+              {productsData.data.pagination.total} sản phẩm
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -254,13 +254,13 @@ const ProductList = () => {
                 Trước
               </Button>
               <span className="text-sm text-gray-700">
-                Trang {currentPage} / {productsData.pagination.totalPages}
+                Trang {currentPage} / {productsData.data.pagination.pages}
               </span>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => setCurrentPage(prev => prev + 1)}
-                disabled={currentPage === productsData.pagination.totalPages}
+                disabled={currentPage === productsData.data.pagination.pages}
               >
                 Sau
               </Button>

@@ -4,7 +4,7 @@ import Button from '@components/ui/Button'
 import Table from '@components/ui/Table'
 import Modal from '@components/ui/Modal'
 import CategoryForm from './CategoryForm'
-import { useCategories, useDeleteCategory, useMoveCategory } from '../hooks/useCategories'
+import { useCategoryTree, useDeleteCategory, useMoveCategory } from '../hooks/useCategories'
 
 const CategoryList = () => {
   const [showForm, setShowForm] = useState(false)
@@ -12,13 +12,10 @@ const CategoryList = () => {
   const [expandedCategories, setExpandedCategories] = useState(new Set())
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const [isCreating, setIsCreating] = useState(false)
 
   // API hooks
-  const { data: categoriesData, isLoading, error } = useCategories({
-    page: currentPage,
-    limit: pageSize,
-    includeChildren: true
-  })
+  const { data, isLoading, error } = useCategoryTree()
   
   const deleteCategoryMutation = useDeleteCategory()
   const moveCategoryMutation = useMoveCategory()
@@ -35,9 +32,11 @@ const CategoryList = () => {
   }
 
   // Xử lý xóa danh mục
-  const handleDelete = async (id) => {
+  const handleDelete = async (categoryOrId) => {
+    const categoryId = typeof categoryOrId === 'string' ? categoryOrId : (categoryOrId?._id || categoryOrId?.id)
+    if (!categoryId) return
     if (window.confirm('Bạn có chắc chắn muốn xóa danh mục này? Tất cả danh mục con và sản phẩm sẽ bị ảnh hưởng.')) {
-      await deleteCategoryMutation.mutateAsync(id)
+      await deleteCategoryMutation.mutateAsync(categoryId)
     }
   }
 
@@ -49,16 +48,16 @@ const CategoryList = () => {
   // Render danh mục con
   const renderSubCategories = (categories, level = 0) => {
     return categories.map((category) => (
-      <React.Fragment key={category.id}>
+      <React.Fragment key={category.id || category._id}>
         <tr className="hover:bg-gray-50">
           <td className="px-6 py-4 whitespace-nowrap">
             <div className="flex items-center" style={{ paddingLeft: `${level * 20}px` }}>
               {category.children && category.children.length > 0 ? (
                 <button
-                  onClick={() => toggleExpanded(category.id)}
+                  onClick={() => toggleExpanded(category.id || category._id)}
                   className="mr-2 text-gray-400 hover:text-gray-600"
                 >
-                  {expandedCategories.has(category.id) ? (
+                  {expandedCategories.has(category.id || category._id) ? (
                     <FiChevronDown className="h-4 w-4" />
                   ) : (
                     <FiChevronRight className="h-4 w-4" />
@@ -68,7 +67,7 @@ const CategoryList = () => {
                 <div className="w-6 mr-2" />
               )}
               
-              <FiFolder className={`h-4 w-4 mr-2 ${expandedCategories.has(category.id) ? 'text-blue-600' : 'text-blue-500'}`} />
+              <FiFolder className={`h-4 w-4 mr-2 ${expandedCategories.has(category.id || category._id) ? 'text-blue-600' : 'text-blue-500'}`} />
               
               <div>
                 <div className="text-sm font-medium text-gray-900">{category.name}</div>
@@ -112,6 +111,7 @@ const CategoryList = () => {
                 variant="outline"
                 onClick={() => {
                   setSelectedCategory(category)
+                  setIsCreating(false)
                   setShowForm(true)
                 }}
               >
@@ -121,7 +121,8 @@ const CategoryList = () => {
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  setSelectedCategory({ ...category, parentId: category.parent?.id })
+                  setSelectedCategory({ ...category, parentId: category.parent?._id || category.parent?.id })
+                  setIsCreating(true)
                   setShowForm(true)
                 }}
               >
@@ -130,7 +131,7 @@ const CategoryList = () => {
               <Button
                 size="sm"
                 variant="error"
-                onClick={() => handleDelete(category.id)}
+                onClick={() => handleDelete(category)}
                 disabled={deleteCategoryMutation.isLoading}
               >
                 <FiTrash2 className="h-4 w-4" />
@@ -140,7 +141,7 @@ const CategoryList = () => {
         </tr>
         
         {/* Render children if expanded */}
-        {expandedCategories.has(category.id) && category.children && (
+        {expandedCategories.has(category.id || category._id) && category.children && (
           <>
             {renderSubCategories(category.children, level + 1)}
           </>
@@ -237,6 +238,7 @@ const CategoryList = () => {
             variant="outline"
             onClick={() => {
               setSelectedCategory(category)
+              setIsCreating(false)
               setShowForm(true)
             }}
           >
@@ -247,7 +249,8 @@ const CategoryList = () => {
             size="sm"
             variant="outline"
             onClick={() => {
-              setSelectedCategory({ parentId: category.id })
+              setSelectedCategory({ parentId: category._id || category.id })
+              setIsCreating(true)
               setShowForm(true)
             }}
           >
@@ -257,7 +260,7 @@ const CategoryList = () => {
           <Button
             size="sm"
             variant="error"
-            onClick={() => handleDelete(category.id)}
+            onClick={() => handleDelete(category._id || category.id)}
             disabled={deleteCategoryMutation.isLoading}
           >
             <FiTrash2 className="h-4 w-4 mr-1" />
@@ -268,6 +271,7 @@ const CategoryList = () => {
     }
   ], [deleteCategoryMutation.isLoading])
 
+  // Phần trả về giao diện:
   if (error) {
     return (
       <div className="bg-white shadow rounded-lg p-6">
@@ -288,19 +292,19 @@ const CategoryList = () => {
             <p className="text-gray-600">Quản lý cấu trúc danh mục sản phẩm</p>
           </div>
           <div className="flex space-x-3">
-            <Button
-              onClick={() => {
-                setSelectedCategory(null)
-                setShowForm(true)
-              }}
-            >
-              <FiPlus className="h-4 w-4 mr-2" />
-              Thêm danh mục
-            </Button>
+              <Button
+                onClick={() => {
+                  setSelectedCategory(null)
+                  setIsCreating(true)
+                  setShowForm(true)
+                }}
+              >
+                <FiPlus className="h-4 w-4 mr-2" />
+                Thêm danh mục
+              </Button>
           </div>
         </div>
       </div>
-
       {/* Categories Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
@@ -337,64 +341,36 @@ const CategoryList = () => {
                     <div className="animate-pulse">Đang tải...</div>
                   </td>
                 </tr>
-              ) : categoriesData?.categories?.length > 0 ? (
-                renderSubCategories(categoriesData.categories)
+              ) : (data?.data?.categories?.length > 0 ? (
+                renderSubCategories(data.data.categories)
               ) : (
                 <tr>
                   <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
                     Không có danh mục nào
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
       </div>
-
-      {/* Pagination */}
-      {categoriesData?.pagination && (
-        <div className="bg-white shadow rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Hiển thị {((currentPage - 1) * pageSize) + 1} đến{' '}
-              {Math.min(currentPage * pageSize, categoriesData.pagination.total)} trong tổng số{' '}
-              {categoriesData.pagination.total} danh mục
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                Trước
-              </Button>
-              <span className="text-sm text-gray-700">
-                Trang {currentPage} / {categoriesData.pagination.totalPages}
-              </span>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setCurrentPage(prev => prev + 1)}
-                disabled={currentPage === categoriesData.pagination.totalPages}
-              >
-                Sau
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Category Form Modal */}
       <Modal
         isOpen={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={() => {
+          setShowForm(false)
+          setSelectedCategory(null)
+        }}
         title={selectedCategory?.id ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
         size="md"
       >
         <CategoryForm
           category={selectedCategory}
-          onClose={() => setShowForm(false)}
+          onClose={() => {
+            setShowForm(false)
+            setSelectedCategory(null)
+            setIsCreating(false)
+          }}
         />
       </Modal>
     </div>
