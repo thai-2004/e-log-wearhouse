@@ -98,7 +98,7 @@ const getSuppliers = async(req, res) => {
 // Lấy supplier theo ID
 const getSupplierById = async(req, res) => {
   try {
-    const { supplierId } = req.params;
+    const { id: supplierId } = req.params;
 
     const supplier = await Supplier.findById(supplierId);
 
@@ -134,7 +134,7 @@ const updateSupplier = async(req, res) => {
       });
     }
 
-    const { supplierId } = req.params;
+    const { id: supplierId } = req.params;
     const updateData = req.body;
 
     // Kiểm tra code trùng lặp (trừ supplier hiện tại)
@@ -182,7 +182,7 @@ const updateSupplier = async(req, res) => {
 // Xóa supplier
 const deleteSupplier = async(req, res) => {
   try {
-    const { supplierId } = req.params;
+    const { id: supplierId } = req.params;
 
     // Kiểm tra supplier có inbound không
     const inboundCount = await Inbound.countDocuments({ supplierId });
@@ -218,7 +218,7 @@ const deleteSupplier = async(req, res) => {
 // Lấy báo cáo supplier
 const getSupplierReport = async(req, res) => {
   try {
-    const { supplierId } = req.params;
+    const { id: supplierId } = req.params;
     const { startDate, endDate } = req.query;
 
     const supplier = await Supplier.findById(supplierId);
@@ -283,11 +283,75 @@ const getSupplierReport = async(req, res) => {
   }
 };
 
+// Cập nhật trạng thái hoạt động của supplier (active/inactive)
+const updateSupplierStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (typeof status === 'undefined') {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing status in request body'
+      });
+    }
+
+    // Map accepted status formats to boolean isActive
+    let isActive;
+    if (typeof status === 'boolean') {
+      isActive = status;
+    } else if (typeof status === 'string') {
+      const normalized = status.toLowerCase();
+      if (normalized === 'active' || normalized === 'true' || normalized === '1') {
+        isActive = true;
+      } else if (normalized === 'inactive' || normalized === 'false' || normalized === '0') {
+        isActive = false;
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid status value. Use active/inactive or boolean.'
+        });
+      }
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status type'
+      });
+    }
+
+    const supplier = await Supplier.findByIdAndUpdate(
+      id,
+      { isActive },
+      { new: true }
+    );
+
+    if (!supplier) {
+      return res.status(404).json({
+        success: false,
+        message: 'Supplier not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Supplier status updated successfully',
+      data: { supplier }
+    });
+  } catch (error) {
+    console.error('Update supplier status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   createSupplier,
   getSuppliers,
   getSupplierById,
   updateSupplier,
   deleteSupplier,
-  getSupplierReport
+  getSupplierReport,
+  updateSupplierStatus
 };

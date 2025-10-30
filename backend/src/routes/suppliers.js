@@ -47,5 +47,13 @@ router.get('/', authenticateToken, supplierController.getSuppliers);
 router.get('/:id', authenticateToken, param('id').isMongoId().withMessage('Valid supplier ID is required'), supplierController.getSupplierById);
 router.put('/:id', authenticateToken, authorize('admin', 'manager'), updateSupplierValidation, supplierController.updateSupplier);
 router.delete('/:id', authenticateToken, authorize('admin'), param('id').isMongoId().withMessage('Valid supplier ID is required'), supplierController.deleteSupplier);
+// Update supplier status (active/inactive)
+router.patch(
+  '/:id/status',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  param('id').isMongoId().withMessage('Valid supplier ID is required'),
+  supplierController.updateSupplierStatus
+);
 
 module.exports = router;
