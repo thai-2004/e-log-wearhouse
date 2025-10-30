@@ -1,31 +1,7 @@
-import { API_CONFIG, API_ENDPOINTS } from '@config'
-import axios from 'axios'
+import { API_ENDPOINTS } from '@config'
+import apiClient from '@api/client'
 
-const api = axios.create({
-  baseURL: API_CONFIG.BASE_URL,
-  timeout: API_CONFIG.TIMEOUT,
-})
-
-// Request interceptor để thêm token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
-
-// Response interceptor để xử lý lỗi
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token')
-      window.location.href = '/login'
-    }
-    return Promise.reject(error)
-  }
-)
+const api = apiClient
 
 export const suppliersAPI = {
   // Lấy danh sách nhà cung cấp
@@ -68,11 +44,8 @@ export const suppliersAPI = {
   uploadSupplierLogo: async (id, file) => {
     const formData = new FormData()
     formData.append('logo', file)
-    
     const response = await api.post(`${API_ENDPOINTS.SUPPLIERS.BASE}/${id}/logo`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+      headers: { 'Content-Type': 'multipart/form-data' }
     })
     return response.data
   },
@@ -119,136 +92,89 @@ export const suppliersAPI = {
     return response.data
   },
 
-  // Lấy danh sách địa chỉ của nhà cung cấp
+  // Địa chỉ
   getSupplierAddresses: async (supplierId) => {
     const response = await api.get(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/addresses`)
     return response.data
   },
-
-  // Thêm địa chỉ cho nhà cung cấp
   addSupplierAddress: async (supplierId, data) => {
     const response = await api.post(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/addresses`, data)
     return response.data
   },
-
-  // Cập nhật địa chỉ nhà cung cấp
   updateSupplierAddress: async (supplierId, addressId, data) => {
     const response = await api.put(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/addresses/${addressId}`, data)
     return response.data
   },
-
-  // Xóa địa chỉ nhà cung cấp
   deleteSupplierAddress: async (supplierId, addressId) => {
     const response = await api.delete(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/addresses/${addressId}`)
     return response.data
   },
-
-  // Đặt địa chỉ mặc định
   setDefaultSupplierAddress: async (supplierId, addressId) => {
     const response = await api.patch(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/addresses/${addressId}/default`)
     return response.data
   },
 
-  // Lấy danh sách liên hệ của nhà cung cấp
+  // Liên hệ
   getSupplierContacts: async (supplierId) => {
     const response = await api.get(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/contacts`)
     return response.data
   },
-
-  // Thêm liên hệ cho nhà cung cấp
   addSupplierContact: async (supplierId, data) => {
     const response = await api.post(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/contacts`, data)
     return response.data
   },
-
-  // Cập nhật liên hệ nhà cung cấp
   updateSupplierContact: async (supplierId, contactId, data) => {
     const response = await api.put(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/contacts/${contactId}`, data)
     return response.data
   },
-
-  // Xóa liên hệ nhà cung cấp
   deleteSupplierContact: async (supplierId, contactId) => {
     const response = await api.delete(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/contacts/${contactId}`)
     return response.data
   },
 
-  // Lấy thống kê tổng quan nhà cung cấp
+  // Tổng quan / export / import / search / top
   getSuppliersOverview: async () => {
     const response = await api.get(`${API_ENDPOINTS.SUPPLIERS.BASE}/overview`)
     return response.data
   },
-
-  // Xuất danh sách nhà cung cấp
   exportSuppliers: async (params = {}) => {
-    const response = await api.get(`${API_ENDPOINTS.SUPPLIERS.BASE}/export`, {
-      params,
-      responseType: 'blob'
-    })
+    const response = await api.get(`${API_ENDPOINTS.SUPPLIERS.BASE}/export`, { params, responseType: 'blob' })
     return response.data
   },
-
-  // Import danh sách nhà cung cấp
   importSuppliers: async (file) => {
     const formData = new FormData()
     formData.append('file', file)
-    
-    const response = await api.post(`${API_ENDPOINTS.SUPPLIERS.BASE}/import`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+    const response = await api.post(`${API_ENDPOINTS.SUPPLIERS.BASE}/import`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
     return response.data
   },
-
-  // Tìm kiếm nhà cung cấp
   searchSuppliers: async (query) => {
-    const response = await api.get(`${API_ENDPOINTS.SUPPLIERS.BASE}/search`, {
-      params: { q: query }
-    })
+    const response = await api.get(`${API_ENDPOINTS.SUPPLIERS.BASE}/search`, { params: { q: query } })
     return response.data
   },
-
-  // Lấy nhà cung cấp tốt nhất
   getTopSuppliers: async () => {
     const response = await api.get(`${API_ENDPOINTS.SUPPLIERS.BASE}/top`)
     return response.data
   },
-
-  // Đánh giá nhà cung cấp
   rateSupplier: async (supplierId, rating, comment) => {
-    const response = await api.post(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/rating`, {
-      rating,
-      comment
-    })
+    const response = await api.post(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/rating`, { rating, comment })
     return response.data
   },
-
-  // Lấy lịch sử đánh giá
   getSupplierRatings: async (supplierId, params = {}) => {
     const response = await api.get(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/ratings`, { params })
     return response.data
   },
-
-  // Lấy danh sách hợp đồng
   getSupplierContracts: async (supplierId, params = {}) => {
     const response = await api.get(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/contracts`, { params })
     return response.data
   },
-
-  // Tạo hợp đồng mới
   createSupplierContract: async (supplierId, data) => {
     const response = await api.post(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/contracts`, data)
     return response.data
   },
-
-  // Cập nhật hợp đồng
   updateSupplierContract: async (supplierId, contractId, data) => {
     const response = await api.put(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/contracts/${contractId}`, data)
     return response.data
   },
-
-  // Xóa hợp đồng
   deleteSupplierContract: async (supplierId, contractId) => {
     const response = await api.delete(`${API_ENDPOINTS.SUPPLIERS.BASE}/${supplierId}/contracts/${contractId}`)
     return response.data

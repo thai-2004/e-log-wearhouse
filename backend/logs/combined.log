@@ -2917,19 +2917,27 @@
   service: 'elog-backend',
   version: '1.0.0',
   timestamp: '2025-10-29 16:55:09'
+=======
+  timestamp: '2025-10-27 11:07:09'
+>>>>>>> main
 }
 {
   message: '🚀 E-Log Backend Server running on port 5000',
   level: 'info',
   service: 'elog-backend',
   version: '1.0.0',
+<<<<<<< HEAD
   timestamp: '2025-10-30 16:57:20'
+
+  timestamp: '2025-10-27 11:07:24'
+>>>>>>> main
 }
 {
   message: '📚 API Documentation available at http://localhost:5000/api-docs',
   level: 'info',
   service: 'elog-backend',
   version: '1.0.0',
+<<<<<<< HEAD
   timestamp: '2025-10-30 16:57:20'
 }
 {
