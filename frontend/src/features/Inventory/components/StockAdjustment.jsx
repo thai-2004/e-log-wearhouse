@@ -1,44 +1,61 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { FiPackage, FiTrendingUp, FiTrendingDown, FiRefreshCw } from 'react-icons/fi'
+import { FiTrendingUp, FiTrendingDown } from 'react-icons/fi'
 import Button from '@components/ui/Button'
 import Input from '@components/ui/Input'
-import { useAdjustInventory } from '../hooks/useInventory'
+import { useAdjustInventory, useInventory } from '../hooks/useInventory'
 
-const StockAdjustment = ({ onClose }) => {
-  const [adjustmentType, setAdjustmentType] = useState('increase') // increase, decrease, set
-  
+const StockAdjustment = ({ inventory, onClose }) => {
   const adjustInventoryMutation = useAdjustInventory()
+  const [selectedInventoryId, setSelectedInventoryId] = useState('')
+  const [adjustmentType, setAdjustmentType] = useState('increase') // increase, decrease
+  
+  // Lấy danh sách inventory để chọn
+  const { data: inventoriesData } = useInventory({ limit: 100 })
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
-    reset
+    setValue
   } = useForm({
     defaultValues: {
-      productId: '',
-      warehouseId: '',
-      locationId: '',
-      currentStock: '',
-      adjustmentQuantity: '',
-      reason: '',
-      notes: '',
-      reference: ''
+      inventoryId: '',
+      adjustment: '',
+      notes: ''
     }
   })
 
-  const watchedValues = watch()
+  // Set inventoryId nếu được truyền vào
+  useEffect(() => {
+    if (inventory?._id || inventory?.id) {
+      const invId = inventory._id || inventory.id
+      setSelectedInventoryId(invId)
+      setValue('inventoryId', invId)
+    }
+  }, [inventory, setValue])
+
+  const watchedAdjustment = watch('adjustment')
+  const currentInventory = inventoriesData?.data?.inventories?.find(
+    inv => (inv._id || inv.id) === selectedInventoryId
+  ) || inventory
 
   // Xử lý submit form
   const onSubmit = async (data) => {
     try {
+      // Tính adjustment dựa trên type
+      let adjustmentValue = parseFloat(data.adjustment) || 0
+      if (adjustmentType === 'decrease') {
+        adjustmentValue = -Math.abs(adjustmentValue)
+      } else {
+        adjustmentValue = Math.abs(adjustmentValue)
+      }
+
       const formData = {
-        ...data,
-        adjustmentType,
-        currentStock: parseFloat(data.currentStock),
-        adjustmentQuantity: parseFloat(data.adjustmentQuantity)
+        inventoryId: data.inventoryId,
+        adjustment: adjustmentValue,
+        notes: data.notes || ''
       }
 
       await adjustInventoryMutation.mutateAsync(formData)
@@ -50,18 +67,13 @@ const StockAdjustment = ({ onClose }) => {
 
   // Tính toán tồn kho sau điều chỉnh
   const calculateNewStock = () => {
-    const current = parseFloat(watchedValues.currentStock) || 0
-    const adjustment = parseFloat(watchedValues.adjustmentQuantity) || 0
+    const current = currentInventory?.quantity || 0
+    const adjustment = parseFloat(watchedAdjustment) || 0
     
-    switch (adjustmentType) {
-      case 'increase':
-        return current + adjustment
-      case 'decrease':
-        return Math.max(0, current - adjustment)
-      case 'set':
-        return adjustment
-      default:
-        return current
+    if (adjustmentType === 'increase') {
+      return current + adjustment
+    } else {
+      return Math.max(0, current - adjustment)
     }
   }
 
@@ -69,85 +81,64 @@ const StockAdjustment = ({ onClose }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Product Selection */}
+      {/* Inventory Selection */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Sản phẩm *
+          Chọn bản ghi tồn kho *
         </label>
         <select
           className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-          {...register('productId', {
-            required: 'Sản phẩm là bắt buộc'
+          value={selectedInventoryId}
+          onChange={(e) => {
+            setSelectedInventoryId(e.target.value)
+            setValue('inventoryId', e.target.value)
+          }}
+          disabled={!!inventory}
+          {...register('inventoryId', {
+            required: 'Vui lòng chọn bản ghi tồn kho'
           })}
         >
-          <option value="">Chọn sản phẩm</option>
-          <option value="product1">Sản phẩm 1</option>
-          <option value="product2">Sản phẩm 2</option>
+          <option value="">Chọn bản ghi tồn kho</option>
+          {inventoriesData?.data?.inventories?.map((inv) => (
+            <option key={inv._id || inv.id} value={inv._id || inv.id}>
+              {inv.productId?.name || inv.product?.name} - {inv.warehouseId?.name || inv.warehouse?.name} 
+              {inv.locationId?.name ? ` - ${inv.locationId.name}` : ''} 
+              (Tồn: {inv.quantity || 0})
+            </option>
+          ))}
         </select>
-        {errors.productId && (
-          <p className="text-sm text-red-600 mt-1">{errors.productId.message}</p>
+        {errors.inventoryId && (
+          <p className="text-sm text-red-600 mt-1">{errors.inventoryId.message}</p>
         )}
       </div>
 
-      {/* Warehouse Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Kho *
-        </label>
-        <select
-          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-          {...register('warehouseId', {
-            required: 'Kho là bắt buộc'
-          })}
-        >
-          <option value="">Chọn kho</option>
-          <option value="warehouse1">Kho chính</option>
-          <option value="warehouse2">Kho phụ</option>
-        </select>
-        {errors.warehouseId && (
-          <p className="text-sm text-red-600 mt-1">{errors.warehouseId.message}</p>
-        )}
-      </div>
-
-      {/* Location Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Vị trí
-        </label>
-        <select
-          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-          {...register('locationId')}
-        >
-          <option value="">Chọn vị trí</option>
-          <option value="location1">Khu A - Tầng 1</option>
-          <option value="location2">Khu B - Tầng 2</option>
-        </select>
-      </div>
-
-      {/* Current Stock */}
-      <div>
-        <Input
-          label="Tồn kho hiện tại *"
-          type="number"
-          step="0.01"
-          placeholder="0"
-          error={errors.currentStock?.message}
-          {...register('currentStock', {
-            required: 'Tồn kho hiện tại là bắt buộc',
-            min: {
-              value: 0,
-              message: 'Tồn kho phải lớn hơn hoặc bằng 0'
-            }
-          })}
-        />
-      </div>
+      {/* Current Stock Info */}
+      {currentInventory && (
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-gray-900 mb-2">Thông tin hiện tại</h4>
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <span className="text-gray-600">Tồn kho:</span>
+              <span className="ml-2 font-medium text-gray-900">{currentInventory.quantity || 0}</span>
+            </div>
+            <div>
+              <span className="text-gray-600">Đã giữ:</span>
+              <span className="ml-2 font-medium text-gray-900">{currentInventory.reservedQuantity || 0}</span>
+            </div>
+            <div>
+              <span className="text-gray-600">Có thể dùng:</span>
+              <span className="ml-2 font-medium text-gray-900">{currentInventory.availableQuantity || 0}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Adjustment Type */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Loại điều chỉnh *
         </label>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={() => setAdjustmentType('increase')}
@@ -173,31 +164,18 @@ const StockAdjustment = ({ onClose }) => {
             <FiTrendingDown className="h-5 w-5 mr-2" />
             <span className="text-sm font-medium">Giảm</span>
           </button>
-          
-          <button
-            type="button"
-            onClick={() => setAdjustmentType('set')}
-            className={`p-3 border rounded-lg text-center flex items-center justify-center ${
-              adjustmentType === 'set' 
-                ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <FiRefreshCw className="h-5 w-5 mr-2" />
-            <span className="text-sm font-medium">Đặt lại</span>
-          </button>
         </div>
       </div>
 
       {/* Adjustment Quantity */}
       <div>
         <Input
-          label={`Số lượng ${adjustmentType === 'increase' ? 'tăng' : adjustmentType === 'decrease' ? 'giảm' : 'đặt lại'} *`}
+          label={`Số lượng ${adjustmentType === 'increase' ? 'tăng' : 'giảm'} *`}
           type="number"
           step="0.01"
           placeholder="0"
-          error={errors.adjustmentQuantity?.message}
-          {...register('adjustmentQuantity', {
+          error={errors.adjustment?.message}
+          {...register('adjustment', {
             required: 'Số lượng điều chỉnh là bắt buộc',
             min: {
               value: 0,
@@ -208,63 +186,32 @@ const StockAdjustment = ({ onClose }) => {
       </div>
 
       {/* Stock Preview */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-2">Xem trước</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <span className="text-sm text-gray-600">Tồn kho hiện tại:</span>
-            <span className="ml-2 text-sm font-medium text-gray-900">
-              {watchedValues.currentStock || 0}
-            </span>
+      {currentInventory && (
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-gray-900 mb-2">Xem trước</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="text-sm text-gray-600">Tồn kho hiện tại:</span>
+              <span className="ml-2 text-sm font-medium text-gray-900">
+                {currentInventory.quantity || 0}
+              </span>
+            </div>
+            <div>
+              <span className="text-sm text-gray-600">Tồn kho sau điều chỉnh:</span>
+              <span className={`ml-2 text-sm font-medium ${
+                newStock < 0 ? 'text-red-600' : 'text-green-600'
+              }`}>
+                {newStock}
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="text-sm text-gray-600">Tồn kho sau điều chỉnh:</span>
-            <span className={`ml-2 text-sm font-medium ${
-              newStock < 0 ? 'text-red-600' : 'text-green-600'
-            }`}>
-              {newStock}
-            </span>
-          </div>
+          {newStock < 0 && (
+            <p className="text-sm text-red-600 mt-2">
+              ⚠️ Tồn kho không thể âm. Vui lòng kiểm tra lại số lượng.
+            </p>
+          )}
         </div>
-        {newStock < 0 && (
-          <p className="text-sm text-red-600 mt-2">
-            ⚠️ Tồn kho không thể âm. Vui lòng kiểm tra lại số lượng.
-          </p>
-        )}
-      </div>
-
-      {/* Reason */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Lý do điều chỉnh *
-        </label>
-        <select
-          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-          {...register('reason', {
-            required: 'Lý do điều chỉnh là bắt buộc'
-          })}
-        >
-          <option value="">Chọn lý do</option>
-          <option value="damage">Hàng hỏng</option>
-          <option value="loss">Hàng mất</option>
-          <option value="found">Hàng tìm thấy</option>
-          <option value="return">Hàng trả về</option>
-          <option value="stocktake">Kiểm kê</option>
-          <option value="other">Khác</option>
-        </select>
-        {errors.reason && (
-          <p className="text-sm text-red-600 mt-1">{errors.reason.message}</p>
-        )}
-      </div>
-
-      {/* Reference */}
-      <div>
-        <Input
-          label="Số tham chiếu"
-          placeholder="Nhập số tham chiếu (phiếu nhập, phiếu xuất, etc.)"
-          {...register('reference')}
-        />
-      </div>
+      )}
 
       {/* Notes */}
       <div>
@@ -291,7 +238,7 @@ const StockAdjustment = ({ onClose }) => {
         <Button
           type="submit"
           loading={adjustInventoryMutation.isLoading}
-          disabled={adjustInventoryMutation.isLoading || newStock < 0}
+          disabled={adjustInventoryMutation.isLoading || newStock < 0 || !selectedInventoryId}
         >
           Điều chỉnh tồn kho
         </Button>

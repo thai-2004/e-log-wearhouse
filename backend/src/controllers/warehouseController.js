@@ -110,7 +110,7 @@ const getWarehouses = async(req, res) => {
 // Lấy warehouse theo ID
 const getWarehouseById = async(req, res) => {
   try {
-    const { warehouseId } = req.params;
+    const { id: warehouseId } = req.params;
 
     const warehouse = await Warehouse.findById(warehouseId)
       .populate('managerId', 'username fullName email phone');
@@ -147,7 +147,7 @@ const updateWarehouse = async(req, res) => {
       });
     }
 
-    const { warehouseId } = req.params;
+    const { id: warehouseId } = req.params;
     const updateData = req.body;
 
     // Kiểm tra code trùng lặp (trừ warehouse hiện tại)
@@ -206,7 +206,7 @@ const updateWarehouse = async(req, res) => {
 // Xóa warehouse
 const deleteWarehouse = async(req, res) => {
   try {
-    const { warehouseId } = req.params;
+    const { id: warehouseId } = req.params;
 
     // Kiểm tra warehouse có inventory không
     const inventoryCount = await Inventory.countDocuments({ warehouseId });

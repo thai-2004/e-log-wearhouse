@@ -134,7 +134,7 @@ const getProducts = async(req, res) => {
 // Lấy sản phẩm theo ID
 const getProductById = async(req, res) => {
   try {
-    const { productId } = req.params;
+    const { id: productId } = req.params;
 
     const product = await Product.findById(productId)
       .populate('categoryId', 'name description');
@@ -171,7 +171,7 @@ const updateProduct = async(req, res) => {
       });
     }
 
-    const { productId } = req.params;
+    const { id: productId } = req.params;
     const updateData = req.body;
 
     // Kiểm tra SKU/barcode trùng lặp (trừ sản phẩm hiện tại)

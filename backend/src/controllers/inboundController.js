@@ -153,7 +153,7 @@ const getInbounds = async(req, res) => {
 // Lấy inbound theo ID
 const getInboundById = async(req, res) => {
   try {
-    const { inboundId } = req.params;
+    const { id: inboundId } = req.params;
 
     const inbound = await Inbound.findById(inboundId)
       .populate('warehouseId', 'name code address')
@@ -194,7 +194,7 @@ const updateInbound = async(req, res) => {
       });
     }
 
-    const { inboundId } = req.params;
+    const { id: inboundId } = req.params;
     const updateData = req.body;
 
     const inbound = await Inbound.findById(inboundId);
@@ -281,7 +281,7 @@ const updateInbound = async(req, res) => {
 // Submit inbound để approval
 const submitInbound = async(req, res) => {
   try {
-    const { inboundId } = req.params;
+    const { id: inboundId } = req.params;
 
     const inbound = await Inbound.findById(inboundId);
     if (!inbound) {
@@ -318,7 +318,7 @@ const submitInbound = async(req, res) => {
 // Approve inbound
 const approveInbound = async(req, res) => {
   try {
-    const { inboundId } = req.params;
+    const { id: inboundId } = req.params;
 
     const inbound = await Inbound.findById(inboundId)
       .populate('items.productId', 'sku name')
@@ -361,7 +361,7 @@ const approveInbound = async(req, res) => {
 // Complete inbound (nhập kho)
 const completeInbound = async(req, res) => {
   try {
-    const { inboundId } = req.params;
+    const { id: inboundId } = req.params;
 
     const inbound = await Inbound.findById(inboundId)
       .populate('items.productId', 'sku name')
@@ -450,7 +450,7 @@ const completeInbound = async(req, res) => {
 // Cancel inbound
 const cancelInbound = async(req, res) => {
   try {
-    const { inboundId } = req.params;
+    const { id: inboundId } = req.params;
     const { reason } = req.body;
 
     const inbound = await Inbound.findById(inboundId);
@@ -491,7 +491,7 @@ const cancelInbound = async(req, res) => {
 // Xóa inbound
 const deleteInbound = async(req, res) => {
   try {
-    const { inboundId } = req.params;
+    const { id: inboundId } = req.params;
 
     const inbound = await Inbound.findById(inboundId);
     if (!inbound) {

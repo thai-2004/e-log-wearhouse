@@ -46,8 +46,29 @@ inventorySchema.index({ warehouseId: 1 });
 
 // Pre-save middleware to calculate available quantity
 inventorySchema.pre('save', function(next) {
-  this.availableQuantity = this.quantity - this.reservedQuantity;
+  // Đảm bảo reservedQuantity không vượt quá quantity
+  if (this.reservedQuantity > this.quantity) {
+    this.reservedQuantity = this.quantity;
+  }
+
+  // Tính availableQuantity
+  this.availableQuantity = Math.max(0, this.quantity - this.reservedQuantity);
   this.lastUpdated = new Date();
+  next();
+});
+
+// Virtual để validate
+inventorySchema.pre('validate', function(next) {
+  // Đảm bảo reservedQuantity không âm
+  if (this.reservedQuantity < 0) {
+    this.reservedQuantity = 0;
+  }
+
+  // Đảm bảo quantity không âm
+  if (this.quantity < 0) {
+    this.quantity = 0;
+  }
+
   next();
 });
 

@@ -4,11 +4,13 @@ import Button from '@components/ui/Button'
 import Table from '@components/ui/Table'
 import Modal from '@components/ui/Modal'
 import InventoryForm from './InventoryForm'
+import StockAdjustment from './StockAdjustment'
 import StockAlert from './StockAlert'
 import { useInventory, useLowStockItems, useZeroStockItems, useOverstockItems, useExportInventory } from '../hooks/useInventory'
 
 const InventoryList = () => {
   const [showForm, setShowForm] = useState(false)
+  const [showAdjustment, setShowAdjustment] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedInventory, setSelectedInventory] = useState(null)
   const [filters, setFilters] = useState({
@@ -88,23 +90,26 @@ const InventoryList = () => {
       )
     },
     {
-      header: 'Tồn kho hiện tại',
-      accessor: 'currentStock',
+      header: 'Tồn kho',
+      accessor: 'quantity',
       render: (inventory) => (
-        <div className="flex items-center">
-          <span className={`text-sm font-medium ${
-            inventory.currentStock <= inventory.product?.minStock 
-              ? 'text-red-600' 
-              : inventory.currentStock <= inventory.product?.minStock * 2 
-                ? 'text-yellow-600' 
-                : 'text-green-600'
-          }`}>
-            {inventory.currentStock}
+        <div className="flex flex-col">
+          <span className="text-sm font-medium text-gray-900">
+            {inventory.quantity || 0}
           </span>
-          <span className="text-sm text-gray-500 ml-1">
-            / {inventory.product?.minStock || 0} min
+          <span className="text-xs text-gray-500">
+            Có thể dùng: {inventory.availableQuantity || 0}
           </span>
         </div>
+      )
+    },
+    {
+      header: 'Đã giữ',
+      accessor: 'reservedQuantity',
+      render: (inventory) => (
+        <span className="text-sm text-gray-900">
+          {inventory.reservedQuantity || 0}
+        </span>
       )
     },
     {
@@ -141,28 +146,30 @@ const InventoryList = () => {
       header: 'Trạng thái',
       accessor: 'status',
       render: (inventory) => {
-        const stock = inventory.currentStock
-        const minStock = inventory.product?.minStock || 0
+        const quantity = inventory.quantity || 0
+        const available = inventory.availableQuantity || 0
+        const reserved = inventory.reservedQuantity || 0
+        const minStock = inventory.product?.reorderPoint || inventory.product?.minStock || 0
         
-        if (stock === 0) {
+        if (quantity === 0) {
           return (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
               <FiAlertTriangle className="h-3 w-3 mr-1" />
               Hết hàng
             </span>
           )
-        } else if (stock <= minStock) {
+        } else if (available <= minStock) {
           return (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
               <FiTrendingDown className="h-3 w-3 mr-1" />
               Sắp hết
             </span>
           )
-        } else if (inventory.product?.maxStock && stock >= inventory.product.maxStock) {
+        } else if (reserved > 0 && available === 0) {
           return (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              <FiTrendingUp className="h-3 w-3 mr-1" />
-              Tồn cao
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+              <FiPackage className="h-3 w-3 mr-1" />
+              Đã giữ hết
             </span>
           )
         } else {
@@ -194,7 +201,7 @@ const InventoryList = () => {
             variant="outline"
             onClick={() => {
               setSelectedInventory(inventory)
-              setShowForm(true)
+              setShowAdjustment(true)
             }}
           >
             Điều chỉnh
@@ -240,13 +247,24 @@ const InventoryList = () => {
               Xuất báo cáo
             </Button>
             <Button
+              variant="outline"
+              onClick={() => {
+                setSelectedInventory(null)
+                setShowAdjustment(true)
+              }}
+              className="mr-3"
+            >
+              <FiTrendingUp className="h-4 w-4 mr-2" />
+              Điều chỉnh tồn kho
+            </Button>
+            <Button
               onClick={() => {
                 setSelectedInventory(null)
                 setShowForm(true)
               }}
             >
               <FiPlus className="h-4 w-4 mr-2" />
-              Điều chỉnh tồn kho
+              Tạo bản ghi tồn kho
             </Button>
           </div>
         </div>
@@ -294,19 +312,19 @@ const InventoryList = () => {
       {/* Inventory Table */}
       <Table
         columns={columns}
-        data={inventoryData?.inventory || []}
+        data={inventoryData?.data?.inventories || inventoryData?.inventories || []}
         loading={isLoading}
         emptyMessage="Không có dữ liệu tồn kho"
       />
 
       {/* Pagination */}
-      {inventoryData?.pagination && (
+      {inventoryData?.data?.pagination && (
         <div className="bg-white shadow rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Hiển thị {((currentPage - 1) * pageSize) + 1} đến{' '}
-              {Math.min(currentPage * pageSize, inventoryData.pagination.total)} trong tổng số{' '}
-              {inventoryData.pagination.total} bản ghi
+              {Math.min(currentPage * pageSize, inventoryData.data.pagination.total)} trong tổng số{' '}
+              {inventoryData.data.pagination.total} bản ghi
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -318,13 +336,13 @@ const InventoryList = () => {
                 Trước
               </Button>
               <span className="text-sm text-gray-700">
-                Trang {currentPage} / {inventoryData.pagination.totalPages}
+                Trang {currentPage} / {inventoryData.data.pagination.pages}
               </span>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => setCurrentPage(prev => prev + 1)}
-                disabled={currentPage === inventoryData.pagination.totalPages}
+                disabled={currentPage === inventoryData.data.pagination.pages}
               >
                 Sau
               </Button>
@@ -333,16 +351,34 @@ const InventoryList = () => {
         </div>
       )}
 
-      {/* Inventory Form Modal */}
+      {/* Create Inventory Form Modal */}
       <Modal
         isOpen={showForm}
         onClose={() => setShowForm(false)}
-        title={selectedInventory ? 'Điều chỉnh tồn kho' : 'Tạo bản ghi tồn kho'}
+        title="Tạo bản ghi tồn kho mới"
         size="lg"
       >
         <InventoryForm
-          inventory={selectedInventory}
           onClose={() => setShowForm(false)}
+        />
+      </Modal>
+
+      {/* Stock Adjustment Modal */}
+      <Modal
+        isOpen={showAdjustment}
+        onClose={() => {
+          setShowAdjustment(false)
+          setSelectedInventory(null)
+        }}
+        title="Điều chỉnh tồn kho"
+        size="lg"
+      >
+        <StockAdjustment
+          inventory={selectedInventory}
+          onClose={() => {
+            setShowAdjustment(false)
+            setSelectedInventory(null)
+          }}
         />
       </Modal>
 

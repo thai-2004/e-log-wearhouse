@@ -307,7 +307,7 @@ const SupplierList = () => {
         </div>
 
         {/* Supplier Stats */}
-        {overviewData && (
+        {overviewData?.data && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center">
@@ -315,7 +315,7 @@ const SupplierList = () => {
                 <div className="ml-3">
                   <p className="text-sm font-medium text-blue-800">Tổng nhà cung cấp</p>
                   <p className="text-2xl font-bold text-blue-900">
-                    {overviewData.totalSuppliers}
+                    {overviewData.data.totalSuppliers}
                   </p>
                 </div>
               </div>
@@ -327,7 +327,7 @@ const SupplierList = () => {
                 <div className="ml-3">
                   <p className="text-sm font-medium text-green-800">Hoạt động</p>
                   <p className="text-2xl font-bold text-green-900">
-                    {overviewData.activeSuppliers}
+                    {overviewData.data.activeSuppliers}
                   </p>
                 </div>
               </div>
@@ -339,7 +339,7 @@ const SupplierList = () => {
                 <div className="ml-3">
                   <p className="text-sm font-medium text-yellow-800">Top nhà cung cấp</p>
                   <p className="text-2xl font-bold text-yellow-900">
-                    {overviewData.topSuppliers}
+                    {overviewData.data.topSuppliers}
                   </p>
                 </div>
               </div>
@@ -351,7 +351,7 @@ const SupplierList = () => {
                 <div className="ml-3">
                   <p className="text-sm font-medium text-purple-800">Sản phẩm</p>
                   <p className="text-2xl font-bold text-purple-900">
-                    {overviewData.totalProducts}
+                    {overviewData.data.totalProducts}
                   </p>
                 </div>
               </div>

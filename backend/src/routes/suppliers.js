@@ -43,6 +43,7 @@ const updateSupplierValidation = [
 
 // Routes
 router.post('/', authenticateToken, authorize('admin', 'manager'), createSupplierValidation, supplierController.createSupplier);
+router.get('/overview', authenticateToken, supplierController.getSuppliersOverview);
 router.get('/', authenticateToken, supplierController.getSuppliers);
 router.get('/:id', authenticateToken, param('id').isMongoId().withMessage('Valid supplier ID is required'), supplierController.getSupplierById);
 router.put('/:id', authenticateToken, authorize('admin', 'manager'), updateSupplierValidation, supplierController.updateSupplier);

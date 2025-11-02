@@ -173,7 +173,7 @@ const getOutbounds = async(req, res) => {
 // Lấy outbound theo ID
 const getOutboundById = async(req, res) => {
   try {
-    const { outboundId } = req.params;
+    const { id: outboundId } = req.params;
 
     const outbound = await Outbound.findById(outboundId)
       .populate('warehouseId', 'name code address')
@@ -214,7 +214,7 @@ const updateOutbound = async(req, res) => {
       });
     }
 
-    const { outboundId } = req.params;
+    const { id: outboundId } = req.params;
     const updateData = req.body;
 
     const outbound = await Outbound.findById(outboundId);
@@ -319,7 +319,7 @@ const updateOutbound = async(req, res) => {
 // Submit outbound để approval
 const submitOutbound = async(req, res) => {
   try {
-    const { outboundId } = req.params;
+    const { id: outboundId } = req.params;
 
     const outbound = await Outbound.findById(outboundId);
     if (!outbound) {
@@ -356,7 +356,7 @@ const submitOutbound = async(req, res) => {
 // Approve outbound
 const approveOutbound = async(req, res) => {
   try {
-    const { outboundId } = req.params;
+    const { id: outboundId } = req.params;
 
     const outbound = await Outbound.findById(outboundId)
       .populate('items.productId', 'sku name')
@@ -374,6 +374,37 @@ const approveOutbound = async(req, res) => {
         success: false,
         message: 'Can only approve outbound in pending status'
       });
+    }
+
+    // Reserve inventory khi approve
+    for (const item of outbound.items) {
+      const inventory = await Inventory.findOne({
+        productId: item.productId,
+        warehouseId: outbound.warehouseId,
+        locationId: item.locationId
+      });
+
+      if (!inventory) {
+        return res.status(400).json({
+          success: false,
+          message: `Inventory not found for product ${item.productId.sku} at location ${item.locationId}`
+        });
+      }
+
+      if (inventory.availableQuantity < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for product ${item.productId.sku}`,
+          data: {
+            requested: item.quantity,
+            available: inventory.availableQuantity
+          }
+        });
+      }
+
+      // Reserve hàng
+      inventory.reservedQuantity += item.quantity;
+      await inventory.save();
     }
 
     // Cập nhật status
@@ -399,7 +430,7 @@ const approveOutbound = async(req, res) => {
 // Complete outbound (xuất kho)
 const completeOutbound = async(req, res) => {
   try {
-    const { outboundId } = req.params;
+    const { id: outboundId } = req.params;
 
     const outbound = await Outbound.findById(outboundId)
       .populate('items.productId', 'sku name')
@@ -449,7 +480,20 @@ const completeOutbound = async(req, res) => {
       }
 
       const oldQuantity = inventory.quantity;
-      inventory.quantity -= item.quantity;
+      const oldReserved = inventory.reservedQuantity;
+      
+      // Giảm cả quantity và reservedQuantity khi xuất kho
+      if (inventory.reservedQuantity < item.quantity) {
+        // Nếu reservedQuantity < quantity cần xuất, có thể do logic lỗi hoặc đã bị điều chỉnh
+        // Vẫn giảm quantity, nhưng chỉ giảm reservedQuantity bằng số đã reserve
+        inventory.quantity -= item.quantity;
+        inventory.reservedQuantity = Math.max(0, inventory.reservedQuantity - item.quantity);
+      } else {
+        // Trường hợp bình thường: giảm cả quantity và reservedQuantity
+        inventory.quantity -= item.quantity;
+        inventory.reservedQuantity -= item.quantity;
+      }
+      
       await inventory.save();
 
       // Tạo stock movement record
@@ -496,10 +540,12 @@ const completeOutbound = async(req, res) => {
 // Cancel outbound
 const cancelOutbound = async(req, res) => {
   try {
-    const { outboundId } = req.params;
+    const { id: outboundId } = req.params;
     const { reason } = req.body;
 
-    const outbound = await Outbound.findById(outboundId);
+    const outbound = await Outbound.findById(outboundId)
+      .populate('items.productId', 'sku name');
+
     if (!outbound) {
       return res.status(404).json({
         success: false,
@@ -512,6 +558,22 @@ const cancelOutbound = async(req, res) => {
         success: false,
         message: 'Cannot cancel completed outbound'
       });
+    }
+
+    // Nếu đã approve (đã reserve hàng), cần release reserved quantity
+    if (outbound.status === OUTBOUND_STATUS.APPROVED) {
+      for (const item of outbound.items) {
+        const inventory = await Inventory.findOne({
+          productId: item.productId,
+          warehouseId: outbound.warehouseId,
+          locationId: item.locationId
+        });
+
+        if (inventory && inventory.reservedQuantity >= item.quantity) {
+          inventory.reservedQuantity -= item.quantity;
+          await inventory.save();
+        }
+      }
     }
 
     outbound.status = OUTBOUND_STATUS.CANCELLED;
@@ -537,7 +599,7 @@ const cancelOutbound = async(req, res) => {
 // Xóa outbound
 const deleteOutbound = async(req, res) => {
   try {
-    const { outboundId } = req.params;
+    const { id: outboundId } = req.params;
 
     const outbound = await Outbound.findById(outboundId);
     if (!outbound) {

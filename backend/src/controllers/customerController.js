@@ -99,7 +99,7 @@ const getCustomers = async(req, res) => {
 // Lấy customer theo ID
 const getCustomerById = async(req, res) => {
   try {
-    const { customerId } = req.params;
+    const { id: customerId } = req.params;
 
     const customer = await Customer.findById(customerId);
 
@@ -132,7 +132,7 @@ const updateCustomer = async(req, res) => {
       });
     }
 
-    const { customerId } = req.params;
+    const { id: customerId } = req.params;
     const updateData = req.body;
 
     // Kiểm tra code trùng lặp (trừ customer hiện tại)
@@ -173,7 +173,7 @@ const updateCustomer = async(req, res) => {
 // Xóa customer
 const deleteCustomer = async(req, res) => {
   try {
-    const { customerId } = req.params;
+    const { id: customerId } = req.params;
 
     // Kiểm tra customer có outbound không
     const outboundCount = await Outbound.countDocuments({ customerId });

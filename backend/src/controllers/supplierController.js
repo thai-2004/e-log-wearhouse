@@ -1,6 +1,7 @@
 // Supplier Controller
 const Supplier = require('../models/Supplier');
 const Inbound = require('../models/Inbound');
+const Product = require('../models/Product');
 const { validationResult } = require('express-validator');
 
 // Tạo supplier mới
@@ -346,6 +347,46 @@ const updateSupplierStatus = async (req, res) => {
   }
 };
 
+// Lấy tổng quan suppliers
+const getSuppliersOverview = async (req, res) => {
+  try {
+    // Tổng số suppliers
+    const totalSuppliers = await Supplier.countDocuments();
+
+    // Số suppliers đang hoạt động
+    const activeSuppliers = await Supplier.countDocuments({ isActive: true });
+
+    // Top suppliers (suppliers có nhiều products nhất, giới hạn top 5)
+    const suppliersWithProductCount = await Product.aggregate([
+      { $match: { supplierId: { $ne: null } } },
+      { $group: { _id: '$supplierId', productCount: { $sum: 1 } } },
+      { $sort: { productCount: -1 } },
+      { $limit: 5 }
+    ]);
+
+    const topSuppliersCount = suppliersWithProductCount.length;
+
+    // Tổng số products có supplier
+    const totalProducts = await Product.countDocuments({ supplierId: { $ne: null } });
+
+    res.json({
+      success: true,
+      data: {
+        totalSuppliers,
+        activeSuppliers,
+        topSuppliers: topSuppliersCount,
+        totalProducts
+      }
+    });
+  } catch (error) {
+    console.error('Get suppliers overview error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   createSupplier,
   getSuppliers,
@@ -353,5 +394,6 @@ module.exports = {
   updateSupplier,
   deleteSupplier,
   getSupplierReport,
-  updateSupplierStatus
+  updateSupplierStatus,
+  getSuppliersOverview
 };

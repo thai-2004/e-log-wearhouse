@@ -1,7 +1,6 @@
 // Inventory Controller
 const Inventory = require('../models/Inventory');
 const Product = require('../models/Product');
-const Warehouse = require('../models/Warehouse');
 const StockMovement = require('../models/StockMovement');
 const { validationResult } = require('express-validator');
 
@@ -123,7 +122,7 @@ const updateInventory = async(req, res) => {
       });
     }
 
-    const { inventoryId } = req.params;
+    const { id: inventoryId } = req.params;
     const { quantity, reservedQuantity, notes } = req.body;
 
     const inventory = await Inventory.findById(inventoryId)
@@ -138,7 +137,6 @@ const updateInventory = async(req, res) => {
     }
 
     const oldQuantity = inventory.quantity;
-    const oldReserved = inventory.reservedQuantity;
 
     // Cập nhật inventory
     inventory.quantity = quantity;
@@ -214,7 +212,6 @@ const reserveInventory = async(req, res) => {
       });
     }
 
-    const oldReserved = inventory.reservedQuantity;
     inventory.reservedQuantity += quantity;
     await inventory.save();
 
@@ -261,7 +258,7 @@ const releaseReservedInventory = async(req, res) => {
       });
     }
 
-    const { productId, warehouseId, locationId, quantity, notes } = req.body;
+    const { productId, warehouseId, locationId, quantity } = req.body;
 
     const inventory = await Inventory.findOne({
       productId,
@@ -543,16 +540,17 @@ const createInventory = async(req, res) => {
 
     const inventoryData = req.body;
 
-    // Kiểm tra inventory đã tồn tại
+    // Kiểm tra inventory đã tồn tại (theo unique constraint: productId + warehouseId + locationId)
     const existingInventory = await Inventory.findOne({
       productId: inventoryData.productId,
-      warehouseId: inventoryData.warehouseId
+      warehouseId: inventoryData.warehouseId,
+      locationId: inventoryData.locationId
     });
 
     if (existingInventory) {
       return res.status(400).json({
         success: false,
-        message: 'Inventory already exists for this product in this warehouse'
+        message: 'Inventory already exists for this product at this location in this warehouse'
       });
     }
 
@@ -566,9 +564,45 @@ const createInventory = async(req, res) => {
     });
   } catch (error) {
     console.error('Create inventory error:', error);
+
+    // Handle MongoDB duplicate key error (E11000)
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0];
+      return res.status(400).json({
+        success: false,
+        message: `Inventory already exists for this ${field || 'combination'}`,
+        code: 'DUPLICATE_INVENTORY'
+      });
+    }
+
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => ({
+        field: err.path,
+        message: err.message
+      }));
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors,
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    // Handle CastError (invalid ObjectId)
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid ${error.path}: ${error.value}`,
+        code: 'INVALID_ID'
+      });
+    }
+
+    // Generic error
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: error.message || 'Server error',
+      code: 'SERVER_ERROR'
     });
   }
 };
@@ -673,23 +707,119 @@ const deleteInventory = async(req, res) => {
 // Lấy items sắp hết hàng
 const getLowStockItems = async(req, res) => {
   try {
-    const inventories = await Inventory.find({
-      $expr: {
-        $lte: ['$quantity', '$reorderPoint']
+    // Lấy tất cả inventory và populate product để lấy reorderPoint
+    const allInventories = await Inventory.find({})
+      .populate({
+        path: 'productId',
+        select: 'name sku reorderPoint',
+        model: 'Product'
+      })
+      .populate({
+        path: 'warehouseId',
+        select: 'name code',
+        model: 'Warehouse'
+      });
+
+    // Filter những items có quantity <= reorderPoint
+    const lowStockInventories = allInventories.filter(inventory => {
+      const product = inventory.productId;
+      // Kiểm tra nếu product được populate và có reorderPoint
+      if (!product || typeof product === 'string' || !product.reorderPoint) {
+        return false;
       }
-    })
-    .populate('productId', 'name sku')
-    .populate('warehouseId', 'name');
+      return inventory.quantity <= product.reorderPoint;
+    });
 
     res.json({
       success: true,
-      data: { inventories }
+      data: {
+        inventories: lowStockInventories,
+        total: lowStockInventories.length
+      }
     });
   } catch (error) {
     console.error('Get low stock items error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+
+// Lấy items hết hàng (quantity = 0)
+const getZeroStockItems = async(req, res) => {
+  try {
+    const inventories = await Inventory.find({
+      quantity: 0
+    })
+      .populate({
+        path: 'productId',
+        select: 'name sku reorderPoint',
+        model: 'Product'
+      })
+      .populate({
+        path: 'warehouseId',
+        select: 'name code',
+        model: 'Warehouse'
+      });
+
+    res.json({
+      success: true,
+      data: {
+        inventories,
+        total: inventories.length
+      }
+    });
+  } catch (error) {
+    console.error('Get zero stock items error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+
+// Lấy items tồn kho cao (quantity > maxStock)
+const getOverstockItems = async(req, res) => {
+  try {
+    // Lấy tất cả inventory và populate product để lấy maxStock
+    const allInventories = await Inventory.find({})
+      .populate({
+        path: 'productId',
+        select: 'name sku maxStock',
+        model: 'Product'
+      })
+      .populate({
+        path: 'warehouseId',
+        select: 'name code',
+        model: 'Warehouse'
+      });
+
+    // Filter những items có quantity > maxStock (và maxStock > 0)
+    const overstockInventories = allInventories.filter(inventory => {
+      const product = inventory.productId;
+      // Kiểm tra nếu product được populate và có maxStock hợp lệ
+      if (!product || typeof product === 'string' || !product.maxStock || product.maxStock <= 0) {
+        return false;
+      }
+      return inventory.quantity > product.maxStock;
+    });
+
+    res.json({
+      success: true,
+      data: {
+        inventories: overstockInventories,
+        total: overstockInventories.length
+      }
+    });
+  } catch (error) {
+    console.error('Get overstock items error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
     });
   }
 };
@@ -697,9 +827,21 @@ const getLowStockItems = async(req, res) => {
 // Điều chỉnh inventory
 const adjustInventory = async(req, res) => {
   try {
-    const { inventoryId, adjustment, reason } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
 
-    const inventory = await Inventory.findById(inventoryId);
+    const { inventoryId, adjustment, notes } = req.body;
+
+    const inventory = await Inventory.findById(inventoryId)
+      .populate('productId', 'sku name')
+      .populate('warehouseId', 'name');
+
     if (!inventory) {
       return res.status(404).json({
         success: false,
@@ -708,15 +850,43 @@ const adjustInventory = async(req, res) => {
     }
 
     const oldQuantity = inventory.quantity;
-    inventory.quantity += adjustment;
+    const newQuantity = oldQuantity + adjustment;
+
+    // Kiểm tra nếu quantity sau khi điều chỉnh < 0
+    if (newQuantity < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot adjust inventory below zero',
+        data: {
+          currentQuantity: oldQuantity,
+          adjustment,
+          wouldResultIn: newQuantity
+        }
+      });
+    }
+
+    // Cập nhật quantity
+    inventory.quantity = newQuantity;
+
+    // Nếu quantity mới < reservedQuantity, cần điều chỉnh reservedQuantity
+    if (inventory.quantity < inventory.reservedQuantity) {
+      inventory.reservedQuantity = inventory.quantity;
+    }
+
     await inventory.save();
 
     // Tạo stock movement record
     const stockMovement = new StockMovement({
-      inventoryId,
+      productId: inventory.productId._id,
+      warehouseId: inventory.warehouseId._id,
+      locationId: inventory.locationId,
       type: 'adjustment',
-      quantity: adjustment,
-      reason,
+      referenceType: 'adjustment',
+      referenceId: inventory._id,
+      quantityBefore: oldQuantity,
+      quantityChange: adjustment,
+      quantityAfter: inventory.quantity,
+      notes: notes || 'Manual inventory adjustment',
       userId: req.user._id
     });
     await stockMovement.save();
@@ -751,11 +921,13 @@ module.exports = {
   getInventoryByWarehouse,
   getInventoryByProduct,
   getInventoryByLocation,
+  getLowStockItems,
+  getZeroStockItems,
+  getOverstockItems,
   reserveInventory,
   releaseReservedInventory,
   transferInventory,
   getInventoryReport,
   getStockMovements,
-  getLowStockItems,
   adjustInventory
 };
