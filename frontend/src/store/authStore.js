@@ -19,15 +19,9 @@ const useAuthStore = create(
         // Check localStorage directly for debugging
         const storedData = localStorage.getItem('auth-storage')
         console.log('AuthStore: Raw localStorage data:', storedData)
-        
+
         const state = get()
-        console.log('AuthStore: initializeAuth called, current state:', {
-          token: !!state.token,
-          refreshToken: !!state.refreshToken,
-          user: !!state.user,
-          isAuthenticated: state.isAuthenticated
-        })
-        
+
         // Check if we have either token or refreshToken with user data
         if ((state.token || state.refreshToken) && state.user) {
           set({ isAuthenticated: true })
@@ -44,7 +38,7 @@ const useAuthStore = create(
           // Use apiClient for consistent API calls
           const response = await apiClient.post('/auth/login', credentials)
           const data = response.data
-          
+
           console.log('AuthStore: Login response:', data)
 
           if (!data.success) {
@@ -53,15 +47,6 @@ const useAuthStore = create(
 
           const { user, accessToken, refreshToken } = data.data
           const token = accessToken // Map accessToken to token for consistency
-          
-          console.log('AuthStore: Extracted data:', {
-            user: !!user,
-            accessToken: !!accessToken,
-            token: !!token,
-            refreshToken: !!refreshToken
-          })
-          
-          // Update state with authentication data
           set({
             user,
             token,
@@ -70,27 +55,13 @@ const useAuthStore = create(
             isLoading: false,
             error: null,
           })
-          
-          console.log('AuthStore: State updated, new state:', {
-            user: !!get().user,
-            token: !!get().token,
-            refreshToken: !!get().refreshToken,
-            isAuthenticated: get().isAuthenticated
-          })
-
-          console.log('AuthStore: Login successful, user authenticated:', user)
-          console.log('AuthStore: State after login:', {
-            token: !!token,
-            user: !!user,
-            isAuthenticated: true
-          })
+          localStorage.setItem('auth_token', token)
           return { user, token, refreshToken }
         } catch (error) {
-          // Handle rate limiting specifically
           if (error.response?.status === 429) {
             throw new Error('Quá nhiều lần thử đăng nhập. Vui lòng đợi 15 phút trước khi thử lại.')
           }
-          
+
           set({
             isLoading: false,
             error: error.message || 'Đăng nhập thất bại',
@@ -117,6 +88,7 @@ const useAuthStore = create(
             isLoading: false,
             error: null,
           })
+          localStorage.removeItem('auth_token')
         }
       },
 
@@ -152,7 +124,7 @@ const useAuthStore = create(
       hasPermission: (permission) => {
         const { user } = get()
         if (!user) return false
-        
+
         const role = user.role
         const permissions = {
           admin: ['*'], // Admin has all permissions
