@@ -28,6 +28,30 @@ const InventoryForm = ({ onClose }) => {
   // Xử lý submit form
   const onSubmit = async (data) => {
     try {
+      // Kiểm tra token trước khi submit
+      const authStorage = localStorage.getItem('auth-storage')
+      if (!authStorage) {
+        console.error('❌ [InventoryForm] Không tìm thấy auth-storage trong localStorage')
+        alert('Bạn chưa đăng nhập. Vui lòng đăng nhập lại.')
+        return
+      }
+
+      try {
+        const parsed = JSON.parse(authStorage)
+        const token = parsed?.state?.token
+        if (!token) {
+          console.error('❌ [InventoryForm] Không tìm thấy token trong auth-storage')
+          alert('Token không tồn tại. Vui lòng đăng nhập lại.')
+          return
+        }
+        console.log('✅ [InventoryForm] Token được tìm thấy:', token.substring(0, 20) + '...')
+        console.log('✅ [InventoryForm] Token sẽ được gửi trong Authorization header')
+      } catch (parseError) {
+        console.error('❌ [InventoryForm] Lỗi khi parse auth-storage:', parseError)
+        alert('Lỗi xác thực. Vui lòng đăng nhập lại.')
+        return
+      }
+
       const formData = {
         productId: data.productId,
         warehouseId: data.warehouseId,
@@ -36,10 +60,42 @@ const InventoryForm = ({ onClose }) => {
         reservedQuantity: parseInt(data.reservedQuantity) || 0,
       }
 
+      console.log('📤 [InventoryForm] Đang gửi request tạo tồn kho:', formData)
       await createInventoryMutation.mutateAsync(formData)
+      console.log('✅ [InventoryForm] Tạo tồn kho thành công')
       onClose()
     } catch (error) {
-      console.error('Error creating inventory:', error)
+      console.error('❌ [InventoryForm] Lỗi khi tạo tồn kho:', error)
+      console.error('❌ [InventoryForm] Response:', error.response?.data)
+      console.error('❌ [InventoryForm] Status:', error.response?.status)
+      
+      // Xử lý các loại lỗi khác nhau
+      const status = error.response?.status
+      const errorData = error.response?.data
+      
+      if (status === 400) {
+        // Validation error - hiển thị chi tiết lỗi
+        const errorMessage = errorData?.message || 'Dữ liệu không hợp lệ'
+        const errors = errorData?.errors || []
+        const errorDetails = errors.length > 0 
+          ? errors.map(e => e.msg || e.message).join('\n')
+          : errorMessage
+        alert(`Lỗi validation:\n${errorDetails}`)
+      } else if (status === 401) {
+        // Unauthorized - token invalid/expired
+        // KHÔNG logout ở đây, để apiClient interceptor xử lý
+        alert('Token không hợp lệ hoặc đã hết hạn. Hệ thống sẽ tự động refresh token hoặc yêu cầu đăng nhập lại.')
+      } else if (status === 403) {
+        // Forbidden - không đủ quyền
+        alert('Bạn không có quyền tạo tồn kho. Vui lòng liên hệ quản trị viên.')
+      } else if (status === 500) {
+        // Server error
+        alert('Lỗi server. Vui lòng thử lại sau.')
+      } else {
+        // Lỗi khác
+        const errorMessage = errorData?.message || error.message || 'Có lỗi xảy ra khi tạo tồn kho'
+        alert(`Lỗi: ${errorMessage}`)
+      }
     }
   }
 

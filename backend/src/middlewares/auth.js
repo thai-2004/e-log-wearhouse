@@ -10,7 +10,17 @@ const authenticateToken = async(req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+    // Log chi tiết cho inventory routes
+    if (req.path?.includes('/inventory') && req.method === 'POST') {
+      console.log('🔐 [Auth Middleware] Inventory CREATE request detected');
+      console.log('🔐 [Auth Middleware] Authorization header:', authHeader ? 'Present' : 'Missing');
+      console.log('🔐 [Auth Middleware] Token extracted:', token ? `${token.substring(0, 20)}...` : 'No token');
+    }
+
     if (!token) {
+      if (req.path?.includes('/inventory') && req.method === 'POST') {
+        console.error('❌ [Auth Middleware] CREATE INVENTORY failed - No token provided');
+      }
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: 'Access token required'
@@ -21,6 +31,9 @@ const authenticateToken = async(req, res, next) => {
     const user = await User.findById(decoded.userId).select('-password');
 
     if (!user) {
+      if (req.path?.includes('/inventory') && req.method === 'POST') {
+        console.error('❌ [Auth Middleware] CREATE INVENTORY failed - User not found');
+      }
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: 'User not found'
@@ -28,10 +41,18 @@ const authenticateToken = async(req, res, next) => {
     }
 
     if (!user.isActive) {
+      if (req.path?.includes('/inventory') && req.method === 'POST') {
+        console.error('❌ [Auth Middleware] CREATE INVENTORY failed - Account deactivated');
+      }
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: 'Account is deactivated'
       });
+    }
+
+    if (req.path?.includes('/inventory') && req.method === 'POST') {
+      console.log('✅ [Auth Middleware] Token verified successfully');
+      console.log('✅ [Auth Middleware] User authenticated:', `${user.username} (${user.role})`);
     }
 
     req.user = user;

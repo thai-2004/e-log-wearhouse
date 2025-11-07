@@ -529,8 +529,15 @@ const getStockMovements = async(req, res) => {
 // Tạo inventory mới
 const createInventory = async(req, res) => {
   try {
+    // Log thông tin token và user
+    console.log('📥 [InventoryController] createInventory called');
+    console.log('✅ [InventoryController] Token received:', req.headers.authorization ? 'Yes (Bearer token)' : 'No');
+    console.log('✅ [InventoryController] User authenticated:', req.user ? `${req.user.username} (${req.user.role})` : 'No user');
+    console.log('✅ [InventoryController] Request body:', req.body);
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ [InventoryController] Validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation errors',
@@ -556,6 +563,8 @@ const createInventory = async(req, res) => {
 
     const inventory = new Inventory(inventoryData);
     await inventory.save();
+
+    console.log('✅ [InventoryController] Inventory created successfully:', inventory._id);
 
     res.status(201).json({
       success: true,
