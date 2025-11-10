@@ -14,7 +14,7 @@ const inventorySchema = new mongoose.Schema({
   },
   locationId: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    required: false
   },
   quantity: {
     type: Number,
@@ -40,7 +40,22 @@ const inventorySchema = new mongoose.Schema({
 });
 
 // Indexes
-inventorySchema.index({ productId: 1, warehouseId: 1, locationId: 1 }, { unique: true });
+// Duy nhất theo bộ 3 khi có locationId
+inventorySchema.index(
+  { productId: 1, warehouseId: 1, locationId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { locationId: { $type: 'objectId' } }
+  }
+);
+// Duy nhất theo bộ 2 khi KHÔNG có locationId (inventory không gắn vị trí)
+inventorySchema.index(
+  { productId: 1, warehouseId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { locationId: { $exists: false } }
+  }
+);
 inventorySchema.index({ productId: 1 });
 inventorySchema.index({ warehouseId: 1 });
 

@@ -1,7 +1,8 @@
 // Inventory Routes
 const express = require('express');
 const router = express.Router();
-const { body, param, query } = require('express-validator');
+const { body, param, query, oneOf } = require('express-validator');
+const mongoose = require('mongoose');
 
 // Import controllers
 const inventoryController = require('../controllers/inventoryController');
@@ -17,6 +18,19 @@ const createInventoryValidation = [
   body('warehouseId')
     .isMongoId()
     .withMessage('ID kho hợp lệ là bắt buộc'),
+  // Cho phép bỏ trống; nếu cung cấp thì chấp nhận MongoId HOẶC mã vị trí
+  body('locationId')
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((val) => {
+      if (val === undefined || val === null || val === '') return true;
+      return mongoose.Types.ObjectId.isValid(val) || typeof val === 'string';
+    })
+    .withMessage('locationId phải là MongoId hoặc mã vị trí hợp lệ'),
+  body('locationCode')
+    .optional({ nullable: true, checkFalsy: true })
+    .isString()
+    .trim()
+    .withMessage('locationCode phải là chuỗi'),
   body('quantity')
     .isInt({ min: 0 })
     .withMessage('Số lượng phải là số nguyên không âm'),

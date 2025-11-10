@@ -78,13 +78,36 @@ const getWarehouses = async(req, res) => {
       query.isActive = isActive === 'true';
     }
 
-    const warehouses = await Warehouse.find(query)
-      .populate('managerId', 'username fullName email')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    // Lấy danh sách kho (lean để tối ưu) và đếm tổng
+    const [warehousesRaw, total] = await Promise.all([
+      Warehouse.find(query)
+        .populate('managerId', 'username fullName email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Warehouse.countDocuments(query)
+    ]);
 
-    const total = await Warehouse.countDocuments(query);
+    // Gom nhóm từ Inventory để lấy tổng số sản phẩm khác nhau theo warehouse
+    const warehouseIds = warehousesRaw.map(w => w._id);
+    const productCounts = await Inventory.aggregate([
+      { $match: { warehouseId: { $in: warehouseIds } } },
+      { $group: { _id: { warehouseId: '$warehouseId', productId: '$productId' } } },
+      { $group: { _id: '$_id.warehouseId', totalProducts: { $sum: 1 } } }
+    ]);
+    const warehouseIdToProductCount = productCounts.reduce((acc, cur) => {
+      acc[cur._id.toString()] = cur.totalProducts;
+      return acc;
+    }, {});
+
+    // Chuẩn hóa dữ liệu trả về theo frontend: thêm status, type, totalProducts
+    const warehouses = warehousesRaw.map(w => ({
+      ...w,
+      status: w.isActive ? 'active' : 'inactive',
+      type: w.type || 'standard',
+      totalProducts: warehouseIdToProductCount[w._id.toString()] || 0
+    }));
 
     res.json({
       success: true,
@@ -112,15 +135,31 @@ const getWarehouseById = async(req, res) => {
   try {
     const { id: warehouseId } = req.params;
 
-    const warehouse = await Warehouse.findById(warehouseId)
-      .populate('managerId', 'username fullName email phone');
+    const raw = await Warehouse.findById(warehouseId)
+      .populate('managerId', 'username fullName email phone')
+      .lean();
 
-    if (!warehouse) {
+    if (!raw) {
       return res.status(404).json({
         success: false,
         message: 'Warehouse not found'
       });
     }
+
+    // Tính tổng số sản phẩm
+    const productCountAgg = await Inventory.aggregate([
+      { $match: { warehouseId: raw._id } },
+      { $group: { _id: '$productId' } },
+      { $count: 'totalProducts' }
+    ]);
+    const totalProducts = productCountAgg[0]?.totalProducts || 0;
+
+    const warehouse = {
+      ...raw,
+      status: raw.isActive ? 'active' : 'inactive',
+      type: raw.type || 'standard',
+      totalProducts
+    };
 
     res.json({
       success: true,
@@ -232,6 +271,50 @@ const deleteWarehouse = async(req, res) => {
     });
   } catch (error) {
     console.error('Delete warehouse error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Cập nhật trạng thái warehouse (active | inactive | maintenance)
+const updateWarehouseStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!['active', 'inactive', 'maintenance'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status value'
+      });
+    }
+    // Hiện tại schema chưa có field status, map tạm: maintenance => inactive (và trả status theo yêu cầu UI)
+    const isActive = status === 'active';
+    const updated = await Warehouse.findByIdAndUpdate(
+      id,
+      { isActive },
+      { new: true }
+    ).lean();
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: 'Warehouse not found'
+      });
+    }
+    res.json({
+      success: true,
+      message: 'Status updated successfully',
+      data: {
+        warehouse: {
+          ...updated,
+          status,
+          type: updated.type || 'standard'
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Update warehouse status error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -645,17 +728,57 @@ const getWarehouseReport = async(req, res) => {
   }
 };
 
+// Tổng quan kho (overview)
+const getWarehousesOverview = async (req, res) => {
+  try {
+    const [totalWarehouses, activeWarehouses, inactiveWarehouses, recent] = await Promise.all([
+      Warehouse.countDocuments({}),
+      Warehouse.countDocuments({ isActive: true }),
+      Warehouse.countDocuments({ isActive: false }),
+      Warehouse.find({})
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('name code isActive createdAt')
+        .lean()
+    ]);
+    // Hiện chưa có trạng thái maintenance riêng => 0
+    const maintenanceWarehouses = 0;
+
+    res.json({
+      success: true,
+      data: {
+        totalWarehouses,
+        activeWarehouses,
+        inactiveWarehouses,
+        maintenanceWarehouses,
+        recent: recent.map(r => ({
+          ...r,
+          status: r.isActive ? 'active' : 'inactive'
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Get warehouses overview error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   createWarehouse,
   getWarehouses,
   getWarehouseById,
   updateWarehouse,
   deleteWarehouse,
+  updateWarehouseStatus,
   addZone,
   updateZone,
   deleteZone,
   addLocation,
   updateLocation,
   deleteLocation,
-  getWarehouseReport
+  getWarehouseReport,
+  getWarehousesOverview
 };

@@ -69,8 +69,8 @@ const WarehouseList = () => {
   const columns = useMemo(() => [
     {
       header: 'Kho',
-      accessor: 'warehouse',
-      render: (warehouse) => (
+      accessor: 'name',
+      render: (_, warehouse) => (
         <div className="flex items-center">
           <div className="flex-shrink-0 h-10 w-10">
             <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
@@ -79,10 +79,10 @@ const WarehouseList = () => {
           </div>
           <div className="ml-3">
             <div className="text-sm font-medium text-gray-900">
-              {warehouse.name}
+              {warehouse?.name || '—'}
             </div>
             <div className="text-sm text-gray-500">
-              {warehouse.code}
+              {warehouse?.code || ''}
             </div>
           </div>
         </div>
@@ -91,70 +91,70 @@ const WarehouseList = () => {
     {
       header: 'Loại kho',
       accessor: 'type',
-      render: (warehouse) => (
+      render: (_, warehouse) => (
         <span className="text-sm text-gray-900">
-          {warehouse.type === 'main' ? 'Kho chính' : 
-           warehouse.type === 'branch' ? 'Kho chi nhánh' : 
-           warehouse.type === 'cold' ? 'Kho lạnh' : 'Kho thường'}
+          {warehouse?.type === 'main' ? 'Kho chính' : 
+           warehouse?.type === 'branch' ? 'Kho chi nhánh' : 
+           warehouse?.type === 'cold' ? 'Kho lạnh' : 'Kho thường'}
         </span>
       )
     },
     {
       header: 'Địa chỉ',
       accessor: 'address',
-      render: (warehouse) => (
+      render: (_, warehouse) => (
         <div className="text-sm text-gray-900 max-w-xs truncate">
-          {warehouse.address || 'Chưa có địa chỉ'}
+          {warehouse?.address || 'Chưa có địa chỉ'}
         </div>
       )
     },
     {
       header: 'Dung tích',
       accessor: 'capacity',
-      render: (warehouse) => (
+      render: (_, warehouse) => (
         <span className="text-sm text-gray-900">
-          {warehouse.capacity ? `${warehouse.capacity} m²` : 'Chưa xác định'}
+          {warehouse?.capacity ? `${warehouse.capacity} m²` : 'Chưa xác định'}
         </span>
       )
     },
     {
       header: 'Sản phẩm',
-      accessor: 'products',
-      render: (warehouse) => (
+      accessor: 'totalProducts',
+      render: (_, warehouse) => (
         <span className="text-sm font-medium text-blue-600">
-          {warehouse.totalProducts || 0} sản phẩm
+          {warehouse?.totalProducts || 0} sản phẩm
         </span>
       )
     },
     {
       header: 'Trạng thái',
       accessor: 'status',
-      render: (warehouse) => (
+      render: (_, warehouse) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          warehouse.status === 'active' 
+          warehouse?.status === 'active' 
             ? 'bg-green-100 text-green-800' 
-            : warehouse.status === 'inactive'
+            : warehouse?.status === 'inactive'
             ? 'bg-red-100 text-red-800'
             : 'bg-yellow-100 text-yellow-800'
         }`}>
-          {warehouse.status === 'active' ? 'Hoạt động' : 
-           warehouse.status === 'inactive' ? 'Không hoạt động' : 'Bảo trì'}
+          {warehouse?.status === 'active' ? 'Hoạt động' : 
+           warehouse?.status === 'inactive' ? 'Không hoạt động' : 'Bảo trì'}
         </span>
       )
     },
     {
       header: 'Ngày tạo',
       accessor: 'createdAt',
-      render: (warehouse) => (
+      render: (_, warehouse) => (
         <span className="text-sm text-gray-900">
-          {new Date(warehouse.createdAt).toLocaleDateString('vi-VN')}
+          {warehouse?.createdAt ? new Date(warehouse.createdAt).toLocaleDateString('vi-VN') : '—'}
         </span>
       )
     },
     {
       header: 'Thao tác',
-      accessor: 'actions',
-      render: (warehouse) => (
+      accessor: 'name',
+      render: (_, warehouse) => (
         <div className="flex space-x-2">
           <Button
             size="sm"
@@ -181,16 +181,16 @@ const WarehouseList = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => handleUpdateStatus(warehouse.id, warehouse.status === 'active' ? 'inactive' : 'active')}
+            onClick={() => handleUpdateStatus(warehouse?._id, warehouse?.status === 'active' ? 'inactive' : 'active')}
             loading={updateStatusMutation.isLoading}
           >
-            {warehouse.status === 'active' ? <FiXCircle className="h-4 w-4" /> : <FiCheckCircle className="h-4 w-4" />}
+            {warehouse?.status === 'active' ? <FiXCircle className="h-4 w-4" /> : <FiCheckCircle className="h-4 w-4" />}
           </Button>
           
           <Button
             size="sm"
             variant="outline"
-            onClick={() => handleDeleteWarehouse(warehouse.id)}
+            onClick={() => handleDeleteWarehouse(warehouse?._id)}
             loading={deleteWarehouseMutation.isLoading}
             className="text-red-600 hover:text-red-700"
           >
@@ -336,15 +336,15 @@ const WarehouseList = () => {
       {viewMode === 'table' ? (
         <Table
           columns={columns}
-          data={warehousesData?.warehouses || []}
+          data={warehousesData?.data?.warehouses || []}
           loading={isLoading}
           emptyMessage="Không có dữ liệu kho"
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {warehousesData?.warehouses?.map((warehouse) => (
+          {warehousesData?.data?.warehouses?.map((warehouse) => (
             <WarehouseCard
-              key={warehouse.id}
+              key={warehouse._id}
               warehouse={warehouse}
               onEdit={() => {
                 setSelectedWarehouse(warehouse)
@@ -354,21 +354,21 @@ const WarehouseList = () => {
                 setSelectedWarehouse(warehouse)
                 setShowCard(true)
               }}
-              onDelete={() => handleDeleteWarehouse(warehouse.id)}
-              onToggleStatus={() => handleUpdateStatus(warehouse.id, warehouse.status === 'active' ? 'inactive' : 'active')}
+              onDelete={() => handleDeleteWarehouse(warehouse._id)}
+              onToggleStatus={() => handleUpdateStatus(warehouse._id, warehouse.status === 'active' ? 'inactive' : 'active')}
             />
           ))}
         </div>
       )}
 
       {/* Pagination */}
-      {warehousesData?.pagination && (
+      {warehousesData?.data?.pagination && (
         <div className="bg-white shadow rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Hiển thị {((currentPage - 1) * pageSize) + 1} đến{' '}
-              {Math.min(currentPage * pageSize, warehousesData.pagination.total)} trong tổng số{' '}
-              {warehousesData.pagination.total} bản ghi
+              {Math.min(currentPage * pageSize, warehousesData.data.pagination.total)} trong tổng số{' '}
+              {warehousesData.data.pagination.total} bản ghi
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -380,13 +380,13 @@ const WarehouseList = () => {
                 Trước
               </Button>
               <span className="text-sm text-gray-700">
-                Trang {currentPage} / {warehousesData.pagination.totalPages}
+                Trang {currentPage} / {warehousesData.data.pagination.pages}
               </span>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => setCurrentPage(prev => prev + 1)}
-                disabled={currentPage === warehousesData.pagination.totalPages}
+                disabled={currentPage === warehousesData.data.pagination.pages}
               >
                 Sau
               </Button>

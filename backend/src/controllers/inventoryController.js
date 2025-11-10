@@ -2,6 +2,7 @@
 const Inventory = require('../models/Inventory');
 const Product = require('../models/Product');
 const StockMovement = require('../models/StockMovement');
+const Warehouse = require('../models/Warehouse');
 const { validationResult } = require('express-validator');
 
 // Lấy tồn kho theo warehouse
@@ -546,6 +547,52 @@ const createInventory = async(req, res) => {
     }
 
     const inventoryData = req.body;
+
+    // Map locationCode -> locationId nếu client gửi locationCode hoặc gửi locationId nhưng là mã (không phải ObjectId)
+    const { warehouseId, locationId, locationCode } = inventoryData;
+    if ((!locationId && locationCode) || (locationId && typeof locationId === 'string' && !locationId.match(/^[0-9a-fA-F]{24}$/))) {
+      const warehouseDoc = await Warehouse.findById(warehouseId).lean();
+      if (!warehouseDoc) {
+        return res.status(400).json({
+          success: false,
+          message: 'Warehouse không tồn tại',
+          code: 'WAREHOUSE_NOT_FOUND'
+        });
+      }
+      let resolvedLocationId = null;
+      for (const zone of warehouseDoc.zones || []) {
+        const codeToMatch = locationCode || locationId; // ưu tiên locationCode, fallback dùng locationId như mã
+        const found = (zone.locations || []).find(loc => loc.code === codeToMatch);
+        if (found) {
+          resolvedLocationId = found._id;
+          break;
+        }
+      }
+      if (!resolvedLocationId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không tìm thấy location theo code trong warehouse',
+          code: 'LOCATION_CODE_NOT_FOUND'
+        });
+      }
+      inventoryData.locationId = resolvedLocationId;
+    }
+
+    // Nếu có locationId, đảm bảo location thuộc về warehouse chỉ định
+    const finalLocationId = inventoryData.locationId;
+    if (finalLocationId) {
+      const warehouse = await Warehouse.findOne({
+        _id: warehouseId,
+        'zones.locations._id': finalLocationId
+      }).select('_id');
+      if (!warehouse) {
+        return res.status(400).json({
+          success: false,
+          message: 'Location không thuộc warehouse hoặc không tồn tại',
+          code: 'LOCATION_NOT_IN_WAREHOUSE'
+        });
+      }
+    }
 
     // Kiểm tra inventory đã tồn tại (theo unique constraint: productId + warehouseId + locationId)
     const existingInventory = await Inventory.findOne({
