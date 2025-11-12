@@ -38,15 +38,11 @@ const createUser = async(req, res) => {
       });
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(userData.password, saltRounds);
-
     // Tạo user mới
     const user = new User({
       username: userData.username,
       email: userData.email,
-      passwordHash,
+      passwordHash: userData.password,
       fullName: userData.fullName,
       phone: userData.phone,
       role: userData.role || USER_ROLES.STAFF,
@@ -320,9 +316,8 @@ const changePassword = async(req, res) => {
       });
     }
 
-    // Hash mật khẩu mới
-    const saltRounds = 12;
-    user.passwordHash = await bcrypt.hash(newPassword, saltRounds);
+    // Gán mật khẩu mới để pre-save hook xử lý hash
+    user.passwordHash = newPassword;
     await user.save();
 
     res.json({
@@ -518,9 +513,8 @@ const resetPassword = async(req, res) => {
       });
     }
 
-    // Hash mật khẩu mới
-    const saltRounds = 12;
-    user.passwordHash = await bcrypt.hash(newPassword, saltRounds);
+    // Gán mật khẩu mới để pre-save hook xử lý hash
+    user.passwordHash = newPassword;
     await user.save();
 
     res.json({

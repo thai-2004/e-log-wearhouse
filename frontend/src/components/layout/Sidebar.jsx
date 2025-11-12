@@ -39,7 +39,7 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
         label: 'Dashboard',
         icon: FiHome,
         path: '/dashboard',
-        roles: ['admin', 'manager', 'staff']
+        roles: ['admin', 'manager']
       },
       {
         id: 'products',

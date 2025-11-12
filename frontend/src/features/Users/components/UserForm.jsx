@@ -237,7 +237,7 @@ const UserForm = ({ user, onClose }) => {
             })}
           />
         </div>
-      </div>
+        </div>
 
       {/* Contact Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -322,22 +322,8 @@ const UserForm = ({ user, onClose }) => {
         </div>
       )}
 
-      {/* Contact Information */}
+      {/* Address */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Input
-            label="Số điện thoại"
-            placeholder="Nhập số điện thoại"
-            error={errors.phone?.message}
-            {...register('phone', {
-              pattern: {
-                value: /^[0-9+\-\s()]+$/,
-                message: 'Số điện thoại không hợp lệ'
-              }
-            })}
-          />
-        </div>
-
         <div>
           <Input
             label="Địa chỉ"

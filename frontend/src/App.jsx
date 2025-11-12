@@ -64,10 +64,24 @@ function App() {
           </AuthLayout>
         } />
 
-        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
+        <Route
+          path="/"
+          element={
+            isAuthenticated
+              ? <Navigate to={user?.role === 'staff' ? '/dashboard/products' : '/dashboard'} replace />
+              : <Navigate to="/login" replace />
+          }
+        />
 
         <Route path="/dashboard" element={<Layout />}>
-          <Route index element={<DashboardPage />} />
+          <Route
+            index
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'manager']} redirectPath="/dashboard/products">
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="products" element={<ProductsPage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route

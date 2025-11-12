@@ -94,9 +94,18 @@ const login = async(req, res) => {
 
     const { username, password } = req.body;
 
-    // Tìm user theo username hoặc email
+    const identifier = typeof username === 'string' ? username.trim() : '';
+    if (!identifier) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+    const normalizedIdentifier = identifier.toLowerCase();
+
+    // Tìm user theo username hoặc email (không phân biệt hoa thường)
     const user = await User.findOne({
-      $or: [{ username }, { email: username }]
+      $or: [{ username: normalizedIdentifier }, { email: normalizedIdentifier }]
     });
 
     if (!user) {
@@ -405,11 +414,11 @@ const resetRateLimit = async(req, res) => {
   try {
     // This is a development-only endpoint
     // In production, this should be removed or properly secured
-    
+
     // Clear rate limit for the current IP
     // Note: This is a simple implementation. In production, you'd want to use Redis
     // or another proper rate limiting store
-    
+
     res.json({
       success: true,
       message: 'Rate limit reset successfully for development'

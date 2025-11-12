@@ -8,11 +8,13 @@ import { useAuthStore } from '@store/authStore'
  * @param {React.ReactNode} props.children - The component to render if authorized
  * @param {Array<string>} props.allowedRoles - Array of roles allowed to access this route
  * @param {boolean} props.requireAuth - Whether authentication is required (default: true)
+ * @param {string} props.redirectPath - Path to redirect unauthorized users
  */
 const ProtectedRoute = ({ 
   children, 
   allowedRoles = [], 
-  requireAuth = true 
+  requireAuth = true,
+  redirectPath = '/dashboard'
 }) => {
   const { isAuthenticated, user } = useAuthStore()
 
@@ -26,7 +28,7 @@ const ProtectedRoute = ({
     const userRole = user?.role
     if (!userRole || !allowedRoles.includes(userRole)) {
       // Redirect to dashboard with error message
-      return <Navigate to="/dashboard" replace />
+      return <Navigate to={redirectPath} replace />
     }
   }
 
