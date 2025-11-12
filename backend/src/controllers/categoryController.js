@@ -246,9 +246,26 @@ const deleteCategory = async(req, res) => {
 // Lấy category tree (hierarchical structure)
 const getCategoryTree = async(req, res) => {
   try {
-    const categories = await Category.find({ isActive: true })
+    const [categories, productCounts] = await Promise.all([
+      Category.find({ isActive: true })
       .populate('parentId', 'name code')
-      .sort({ name: 1 });
+      .sort({ name: 1 }),
+      Product.aggregate([
+        {
+          $group: {
+            _id: '$categoryId',
+            count: { $sum: 1 }
+          }
+        }
+      ])
+    ]);
+
+    const productCountMap = productCounts.reduce((acc, item) => {
+      if (item?._id) {
+        acc.set(item._id.toString(), item.count || 0);
+      }
+      return acc;
+    }, new Map());
 
     // Xây dựng category tree
     const buildTree = (parentId = null) => {
@@ -259,6 +276,7 @@ const getCategoryTree = async(req, res) => {
         })
         .map(cat => ({
           ...cat.toObject(),
+          productCount: productCountMap.get(cat._id.toString()) || 0,
           children: buildTree(cat._id)
         }));
     };

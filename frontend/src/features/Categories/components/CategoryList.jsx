@@ -1,40 +1,82 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { FiPlus, FiEdit, FiTrash2, FiChevronRight, FiChevronDown, FiFolder } from 'react-icons/fi'
 import Button from '@components/ui/Button'
-import Table from '@components/ui/Table'
 import Modal from '@components/ui/Modal'
 import CategoryForm from './CategoryForm'
-import { useCategoryTree, useDeleteCategory, useMoveCategory } from '../hooks/useCategories'
+import { useCategoryTree, useDeleteCategory } from '../hooks/useCategories'
 import Tooltip from '@components/ui/Tooltip'
 
 const CategoryList = () => {
   const [showForm, setShowForm] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [expandedCategories, setExpandedCategories] = useState(new Set())
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
-  const [isCreating, setIsCreating] = useState(false)
 
   // API hooks
   const { data, isLoading, error } = useCategoryTree()
 
   const deleteCategoryMutation = useDeleteCategory()
-  const moveCategoryMutation = useMoveCategory()
+
+  const getCategoryId = useCallback((category) => {
+    if (!category) return ''
+    if (typeof category === 'string') return category
+    return category.id || category._id || ''
+  }, [])
+
+  const getParentIdValue = useCallback((category) => {
+    if (!category) return ''
+    const parent = category.parent || category.parentId
+    if (!parent) return ''
+    if (typeof parent === 'string') return parent
+    return parent._id || parent.id || ''
+  }, [])
+
+  const getProductCount = useCallback((category) => {
+    if (!category) return 0
+
+    const directCount =
+      category.productCount ??
+      category.productsCount ??
+      category.totalProducts ??
+      category.productTotal ??
+      category.productStats?.totalProducts ??
+      category.statistics?.totalProducts
+
+    if (typeof directCount === 'number') {
+      return directCount
+    }
+
+    if (typeof directCount === 'string') {
+      const parsed = Number(directCount)
+      if (!Number.isNaN(parsed)) {
+        return parsed
+      }
+    }
+
+    if (Array.isArray(category.products)) {
+      return category.products.length
+    }
+
+    return 0
+  }, [])
 
   // Xử lý mở rộng/thu gọn danh mục
-  const toggleExpanded = (categoryId) => {
-    const newExpanded = new Set(expandedCategories)
-    if (newExpanded.has(categoryId)) {
-      newExpanded.delete(categoryId)
-    } else {
-      newExpanded.add(categoryId)
-    }
-    setExpandedCategories(newExpanded)
-  }
+  const toggleExpanded = useCallback((categoryId) => {
+    if (!categoryId) return
+
+    setExpandedCategories((prev) => {
+      const newExpanded = new Set(prev)
+      if (newExpanded.has(categoryId)) {
+        newExpanded.delete(categoryId)
+      } else {
+        newExpanded.add(categoryId)
+      }
+      return newExpanded
+    })
+  }, [])
 
   // Xử lý xóa danh mục
   const handleDelete = async (categoryOrId) => {
-    const categoryId = typeof categoryOrId === 'string' ? categoryOrId : (categoryOrId?._id || categoryOrId?.id)
+    const categoryId = typeof categoryOrId === 'string' ? categoryOrId : getCategoryId(categoryOrId)
     if (!categoryId) return
     if (window.confirm('Bạn có chắc chắn muốn xóa danh mục này? Tất cả danh mục con và sản phẩm sẽ bị ảnh hưởng.')) {
       await deleteCategoryMutation.mutateAsync(categoryId)
@@ -42,23 +84,24 @@ const CategoryList = () => {
   }
 
   // Xử lý di chuyển danh mục
-  const handleMove = async (categoryId, newParentId) => {
-    await moveCategoryMutation.mutateAsync({ id: categoryId, newParentId })
-  }
-
   // Render danh mục con
   const renderSubCategories = (categories, level = 0) => {
-    return categories.map((category) => (
-      <React.Fragment key={category.id || category._id}>
+    return categories.map((category) => {
+      const categoryId = getCategoryId(category)
+      const hasChildren = Array.isArray(category.children) && category.children.length > 0
+      const isExpanded = expandedCategories.has(categoryId)
+
+      return (
+        <React.Fragment key={categoryId}>
         <tr className="hover:bg-gray-50">
           <td className="px-6 py-4 whitespace-nowrap">
             <div className="flex items-center" style={{ paddingLeft: `${level * 20}px` }}>
-              {category.children && category.children.length > 0 ? (
+              {hasChildren ? (
                 <button
-                  onClick={() => toggleExpanded(category.id || category._id)}
+                  onClick={() => toggleExpanded(categoryId)}
                   className="mr-2 text-gray-400 hover:text-gray-600"
                 >
-                  {expandedCategories.has(category.id || category._id) ? (
+                  {isExpanded ? (
                     <FiChevronDown className="h-4 w-4" />
                   ) : (
                     <FiChevronRight className="h-4 w-4" />
@@ -68,7 +111,7 @@ const CategoryList = () => {
                 <div className="w-6 mr-2" />
               )}
 
-              <FiFolder className={`h-4 w-4 mr-2 ${expandedCategories.has(category.id || category._id) ? 'text-blue-600' : 'text-blue-500'}`} />
+              <FiFolder className={`h-4 w-4 mr-2 ${isExpanded ? 'text-blue-600' : 'text-blue-500'}`} />
 
               <div>
                 <div className="text-sm font-medium text-gray-900">{category.name}</div>
@@ -80,15 +123,15 @@ const CategoryList = () => {
           </td>
 
           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            {category.parent?.name || 'Danh mục gốc'}
+            {category.parent?.name || category.parentId?.name || 'Danh mục gốc'}
           </td>
 
           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            {category.productCount || 0}
+            {getProductCount(category)}
           </td>
 
           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            {category.children?.length || 0}
+            {hasChildren ? category.children.length : 0}
           </td>
 
           <td className="px-6 py-4 whitespace-nowrap">
@@ -111,8 +154,10 @@ const CategoryList = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    setSelectedCategory(category)
-                    setIsCreating(false)
+                    setSelectedCategory({
+                      ...category,
+                      parentId: getParentIdValue(category)
+                    })
                     setShowForm(true)
                   }}
                 >
@@ -124,8 +169,13 @@ const CategoryList = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    setSelectedCategory({ ...category, parentId: category.parent?._id || category.parent?.id })
-                    setIsCreating(true)
+                    setSelectedCategory({
+                      parentId: getCategoryId(category),
+                      parent: {
+                        name: category.name,
+                        id: getCategoryId(category),
+                      }
+                    })
                     setShowForm(true)
                   }}
                 >
@@ -136,7 +186,7 @@ const CategoryList = () => {
                 <Button
                   size="sm"
                   variant="error"
-                  onClick={() => handleDelete(category)}
+                  onClick={() => handleDelete(categoryId)}
                   disabled={deleteCategoryMutation.isLoading}
                 >
                   <FiTrash2 className="h-4 w-4" />
@@ -147,13 +197,14 @@ const CategoryList = () => {
         </tr>
 
         {/* Render children if expanded */}
-        {expandedCategories.has(category.id || category._id) && category.children && (
+        {isExpanded && hasChildren && (
           <>
             {renderSubCategories(category.children, level + 1)}
           </>
         )}
-      </React.Fragment>
-    ))
+        </React.Fragment>
+      )
+    })
   }
 
   // Định nghĩa cột cho bảng
@@ -190,7 +241,7 @@ const CategoryList = () => {
       accessor: 'parent',
       render: (category) => (
         <span className="text-sm text-gray-900">
-          {category.parent?.name || 'Danh mục gốc'}
+          {category.parent?.name || category.parentId?.name || 'Danh mục gốc'}
         </span>
       )
     },
@@ -199,7 +250,7 @@ const CategoryList = () => {
       accessor: 'productCount',
       render: (category) => (
         <span className="text-sm text-gray-900">
-          {category.productCount || 0}
+          {getProductCount(category)}
         </span>
       )
     },
@@ -242,8 +293,10 @@ const CategoryList = () => {
             size="sm"
             variant="outline"
             onClick={() => {
-              setSelectedCategory(category)
-              setIsCreating(false)
+              setSelectedCategory({
+                ...category,
+                parentId: getParentIdValue(category)
+              })
               setShowForm(true)
             }}
           >
@@ -254,8 +307,13 @@ const CategoryList = () => {
             size="sm"
             variant="outline"
             onClick={() => {
-              setSelectedCategory({ parentId: category._id || category.id })
-              setIsCreating(true)
+              setSelectedCategory({
+                parentId: getCategoryId(category),
+                parent: {
+                  name: category.name,
+                  id: getCategoryId(category),
+                }
+              })
               setShowForm(true)
             }}
           >
@@ -265,7 +323,7 @@ const CategoryList = () => {
           <Button
             size="sm"
             variant="error"
-            onClick={() => handleDelete(category._id || category.id)}
+            onClick={() => handleDelete(getCategoryId(category))}
             disabled={deleteCategoryMutation.isLoading}
           >
             <FiTrash2 className="h-4 w-4 mr-1" />
@@ -274,7 +332,7 @@ const CategoryList = () => {
         </div>
       )
     }
-  ], [deleteCategoryMutation.isLoading])
+  ], [deleteCategoryMutation.isLoading, getCategoryId, getParentIdValue, getProductCount])
 
   // Phần trả về giao diện:
   if (error) {
@@ -300,7 +358,6 @@ const CategoryList = () => {
             <Button
               onClick={() => {
                 setSelectedCategory(null)
-                setIsCreating(true)
                 setShowForm(true)
               }}
             >
@@ -366,7 +423,7 @@ const CategoryList = () => {
           setShowForm(false)
           setSelectedCategory(null)
         }}
-        title={selectedCategory?.id ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
+        title={getCategoryId(selectedCategory) ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
         size="md"
       >
         <CategoryForm
@@ -374,7 +431,6 @@ const CategoryList = () => {
           onClose={() => {
             setShowForm(false)
             setSelectedCategory(null)
-            setIsCreating(false)
           }}
         />
       </Modal>

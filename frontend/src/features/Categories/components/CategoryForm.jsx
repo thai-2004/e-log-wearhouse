@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { FiUpload, FiX, FiImage } from 'react-icons/fi'
 import Button from '@components/ui/Button'
@@ -18,8 +18,6 @@ const CategoryForm = ({ category, onClose }) => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
-    watch,
     reset
   } = useForm({
     defaultValues: {
@@ -34,13 +32,43 @@ const CategoryForm = ({ category, onClose }) => {
     }
   })
 
+  const resolveId = useCallback((value) => {
+    if (!value) return ''
+    if (typeof value === 'string') return value
+    return value.id || value._id || ''
+  }, [])
+
+  const categoryOptions = useMemo(() => {
+    const rawCategories = categoriesData?.data?.categories || categoriesData?.categories || []
+    const uniqueMap = new Map()
+
+    rawCategories.forEach((cat) => {
+      const id = resolveId(cat)
+      if (!id) return
+      uniqueMap.set(id, cat)
+    })
+
+    const currentParentId = resolveId(category?.parent || category?.parentId)
+    if (currentParentId && !uniqueMap.has(currentParentId)) {
+      uniqueMap.set(currentParentId, {
+        id: currentParentId,
+        name: category?.parent?.name || 'Danh mục đã chọn',
+      })
+    }
+
+    // Loại bỏ chính danh mục hiện tại khỏi danh sách chọn parent
+    const currentCategoryId = resolveId(category)
+    return Array.from(uniqueMap.values()).filter((cat) => resolveId(cat) !== currentCategoryId)
+  }, [categoriesData, category, resolveId])
+
   // Load category data khi edit
   useEffect(() => {
     if (category) {
+      const parentIdValue = resolveId(category.parentId || category.parent)
       reset({
         name: category.name || '',
         description: category.description || '',
-        parentId: category.parentId || '',
+        parentId: parentIdValue || '',
         isActive: category.isActive !== false,
         sortOrder: category.sortOrder || 0,
         metaTitle: category.metaTitle || '',
@@ -48,13 +76,23 @@ const CategoryForm = ({ category, onClose }) => {
         keywords: category.keywords || ''
       })
       setImage(category.image || null)
+    } else {
+      reset({
+        name: '',
+        description: '',
+        parentId: '',
+        isActive: true,
+        sortOrder: 0,
+        metaTitle: '',
+        metaDescription: '',
+        keywords: ''
+      })
+      setImage(null)
     }
-  }, [category, reset])
+  }, [category, reset, resolveId])
 
   // Xử lý submit form
   const onSubmit = async (data) => {
-    console.log('Form data:', data)
-    
     // Chỉ gửi các trường mà backend accept (theo validation rules)
     const categoryData = {
       name: data.name,
@@ -70,12 +108,11 @@ const CategoryForm = ({ category, onClose }) => {
       categoryData.parentId = data.parentId
     }
 
-    console.log('Sending to API:', categoryData)
-
     try {
-      if (category?.id) {
+      const categoryId = resolveId(category)
+      if (categoryId) {
         await updateCategoryMutation.mutateAsync({
-          id: category.id,
+          id: categoryId,
           data: categoryData
         })
       } else {
@@ -92,12 +129,13 @@ const CategoryForm = ({ category, onClose }) => {
   const handleImageUpload = async (file) => {
     setUploadingImage(true)
     try {
-      if (category?.id) {
+      const categoryId = resolveId(category)
+      if (categoryId) {
         const formData = new FormData()
         formData.append('image', file)
         
         const result = await uploadImageMutation.mutateAsync({
-          id: category.id,
+          id: categoryId,
           formData
         })
         setImage(result.image)
@@ -148,11 +186,14 @@ const CategoryForm = ({ category, onClose }) => {
             {...register('parentId')}
           >
             <option value="">Danh mục gốc</option>
-            {categoriesData?.categories?.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
+            {categoryOptions.map((cat) => {
+              const optionId = resolveId(cat)
+              return (
+                <option key={optionId} value={optionId}>
+                  {cat.name}
+                </option>
+              )
+            })}
           </select>
         </div>
       </div>
@@ -294,7 +335,7 @@ const CategoryForm = ({ category, onClose }) => {
           loading={isLoading}
           disabled={isLoading}
         >
-          {category?.id ? 'Cập nhật' : 'Tạo mới'}
+          {resolveId(category) ? 'Cập nhật' : 'Tạo mới'}
         </Button>
       </div>
     </form>
