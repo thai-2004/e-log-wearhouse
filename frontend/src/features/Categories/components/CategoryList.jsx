@@ -5,6 +5,7 @@ import Table from '@components/ui/Table'
 import Modal from '@components/ui/Modal'
 import CategoryForm from './CategoryForm'
 import { useCategoryTree, useDeleteCategory, useMoveCategory } from '../hooks/useCategories'
+import Tooltip from '@components/ui/Tooltip'
 
 const CategoryList = () => {
   const [showForm, setShowForm] = useState(false)
@@ -16,7 +17,7 @@ const CategoryList = () => {
 
   // API hooks
   const { data, isLoading, error } = useCategoryTree()
-  
+
   const deleteCategoryMutation = useDeleteCategory()
   const moveCategoryMutation = useMoveCategory()
 
@@ -66,9 +67,9 @@ const CategoryList = () => {
               ) : (
                 <div className="w-6 mr-2" />
               )}
-              
+
               <FiFolder className={`h-4 w-4 mr-2 ${expandedCategories.has(category.id || category._id) ? 'text-blue-600' : 'text-blue-500'}`} />
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-900">{category.name}</div>
                 {category.description && (
@@ -77,69 +78,74 @@ const CategoryList = () => {
               </div>
             </div>
           </td>
-          
+
           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
             {category.parent?.name || 'Danh mục gốc'}
           </td>
-          
+
           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
             {category.productCount || 0}
           </td>
-          
+
           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
             {category.children?.length || 0}
           </td>
-          
+
           <td className="px-6 py-4 whitespace-nowrap">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              category.isActive 
-                ? 'bg-green-100 text-green-800'
-                : 'bg-gray-100 text-gray-800'
-            }`}>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${category.isActive
+              ? 'bg-green-100 text-green-800'
+              : 'bg-gray-100 text-gray-800'
+              }`}>
               {category.isActive ? 'Hoạt động' : 'Tạm dừng'}
             </span>
           </td>
-          
+
           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
             {new Date(category.createdAt).toLocaleDateString('vi-VN')}
           </td>
-          
+
           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
             <div className="flex space-x-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setSelectedCategory(category)
-                  setIsCreating(false)
-                  setShowForm(true)
-                }}
-              >
-                <FiEdit className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setSelectedCategory({ ...category, parentId: category.parent?._id || category.parent?.id })
-                  setIsCreating(true)
-                  setShowForm(true)
-                }}
-              >
-                <FiPlus className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="error"
-                onClick={() => handleDelete(category)}
-                disabled={deleteCategoryMutation.isLoading}
-              >
-                <FiTrash2 className="h-4 w-4" />
-              </Button>
+              <Tooltip text="Chỉnh sửa danh mục" position="top">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedCategory(category)
+                    setIsCreating(false)
+                    setShowForm(true)
+                  }}
+                >
+                  <FiEdit className="h-4 w-4" />
+                </Button>
+              </Tooltip >
+              <Tooltip text="Thêm danh mục con" position="top">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedCategory({ ...category, parentId: category.parent?._id || category.parent?.id })
+                    setIsCreating(true)
+                    setShowForm(true)
+                  }}
+                >
+                  <FiPlus className="h-4 w-4" />
+                </Button>
+              </Tooltip>
+              <Tooltip text="Xóa danh mục" position="top">
+                <Button
+                  size="sm"
+                  variant="error"
+                  onClick={() => handleDelete(category)}
+                  disabled={deleteCategoryMutation.isLoading}
+                >
+                  <FiTrash2 className="h-4 w-4" />
+                </Button>
+              </Tooltip>
             </div>
           </td>
         </tr>
-        
+
         {/* Render children if expanded */}
         {expandedCategories.has(category.id || category._id) && category.children && (
           <>
@@ -210,11 +216,10 @@ const CategoryList = () => {
       header: 'Trạng thái',
       accessor: 'isActive',
       render: (category) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          category.isActive 
-            ? 'bg-green-100 text-green-800'
-            : 'bg-gray-100 text-gray-800'
-        }`}>
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${category.isActive
+          ? 'bg-green-100 text-green-800'
+          : 'bg-gray-100 text-gray-800'
+          }`}>
           {category.isActive ? 'Hoạt động' : 'Tạm dừng'}
         </span>
       )
@@ -292,16 +297,16 @@ const CategoryList = () => {
             <p className="text-gray-600">Quản lý cấu trúc danh mục sản phẩm</p>
           </div>
           <div className="flex space-x-3">
-              <Button
-                onClick={() => {
-                  setSelectedCategory(null)
-                  setIsCreating(true)
-                  setShowForm(true)
-                }}
-              >
-                <FiPlus className="h-4 w-4 mr-2" />
-                Thêm danh mục
-              </Button>
+            <Button
+              onClick={() => {
+                setSelectedCategory(null)
+                setIsCreating(true)
+                setShowForm(true)
+              }}
+            >
+              <FiPlus className="h-4 w-4 mr-2" />
+              Thêm danh mục
+            </Button>
           </div>
         </div>
       </div>

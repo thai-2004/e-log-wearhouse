@@ -1,15 +1,15 @@
 import React, { useState, useMemo } from 'react'
-import { 
-  FiPlus, 
-  FiSearch, 
-  FiFilter, 
-  FiDownload, 
-  FiUpload, 
-  FiEye, 
-  FiEdit, 
-  FiTrash2, 
-  FiCheckCircle, 
-  FiXCircle, 
+import {
+  FiPlus,
+  FiSearch,
+  FiFilter,
+  FiDownload,
+  FiUpload,
+  FiEye,
+  FiEdit,
+  FiTrash2,
+  FiCheckCircle,
+  FiXCircle,
   FiCopy,
   FiTruck,
   FiPackage,
@@ -30,6 +30,7 @@ import Modal from '@components/ui/Modal'
 import OutboundCard from './OutboundCard'
 import OutboundForm from './OutboundForm'
 import toast from 'react-hot-toast'
+import Tooltip from '@components/ui/Tooltip'
 
 const OutboundList = () => {
   // State management
@@ -608,20 +609,25 @@ const OutboundList = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleViewOutbound(outbound)}
-                        >
-                          <FiEye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditOutbound(outbound)}
-                        >
-                          <FiEdit className="h-4 w-4" />
-                        </Button>
+                        <Tooltip  >
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewOutbound(outbound)}
+                          >
+                            <FiEye className="h-4 w-4" />
+                          </Button>
+                        </Tooltip>
+
+                        <Tooltip text="Chỉnh sửa" position="top">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditOutbound(outbound)}
+                          >
+                            <FiEdit className="h-4 w-4" />
+                          </Button>
+                        </Tooltip>
                         {outbound.status === 'pending' && (
                           <Button
                             size="sm"

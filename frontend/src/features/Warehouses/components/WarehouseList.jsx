@@ -6,6 +6,7 @@ import Modal from '@components/ui/Modal'
 import WarehouseForm from './WarehouseForm'
 import WarehouseCard from './WarehouseCard'
 import { useWarehouses, useDeleteWarehouse, useUpdateWarehouseStatus, useExportWarehouses, useImportWarehouses, useWarehousesOverview } from '../hooks/useWarehouses'
+import Tooltip from '@components/ui/Tooltip'
 
 const WarehouseList = () => {
   const [showForm, setShowForm] = useState(false)
@@ -29,7 +30,7 @@ const WarehouseList = () => {
     limit: pageSize,
     ...filters
   })
-  
+
   const { data: overviewData } = useWarehousesOverview()
   const deleteWarehouseMutation = useDeleteWarehouse()
   const updateStatusMutation = useUpdateWarehouseStatus()
@@ -93,9 +94,9 @@ const WarehouseList = () => {
       accessor: 'type',
       render: (_, warehouse) => (
         <span className="text-sm text-gray-900">
-          {warehouse?.type === 'main' ? 'Kho chính' : 
-           warehouse?.type === 'branch' ? 'Kho chi nhánh' : 
-           warehouse?.type === 'cold' ? 'Kho lạnh' : 'Kho thường'}
+          {warehouse?.type === 'main' ? 'Kho chính' :
+            warehouse?.type === 'branch' ? 'Kho chi nhánh' :
+              warehouse?.type === 'cold' ? 'Kho lạnh' : 'Kho thường'}
         </span>
       )
     },
@@ -130,15 +131,14 @@ const WarehouseList = () => {
       header: 'Trạng thái',
       accessor: 'status',
       render: (_, warehouse) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          warehouse?.status === 'active' 
-            ? 'bg-green-100 text-green-800' 
-            : warehouse?.status === 'inactive'
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${warehouse?.status === 'active'
+          ? 'bg-green-100 text-green-800'
+          : warehouse?.status === 'inactive'
             ? 'bg-red-100 text-red-800'
             : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {warehouse?.status === 'active' ? 'Hoạt động' : 
-           warehouse?.status === 'inactive' ? 'Không hoạt động' : 'Bảo trì'}
+          }`}>
+          {warehouse?.status === 'active' ? 'Hoạt động' :
+            warehouse?.status === 'inactive' ? 'Không hoạt động' : 'Bảo trì'}
         </span>
       )
     },
@@ -156,46 +156,61 @@ const WarehouseList = () => {
       accessor: 'name',
       render: (_, warehouse) => (
         <div className="flex space-x-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setSelectedWarehouse(warehouse)
-              setShowCard(true)
-            }}
-          >
-            <FiEye className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setSelectedWarehouse(warehouse)
-              setShowForm(true)
-            }}
-          >
-            <FiEdit className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleUpdateStatus(warehouse?._id, warehouse?.status === 'active' ? 'inactive' : 'active')}
-            loading={updateStatusMutation.isLoading}
-          >
-            {warehouse?.status === 'active' ? <FiXCircle className="h-4 w-4" /> : <FiCheckCircle className="h-4 w-4" />}
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleDeleteWarehouse(warehouse?._id)}
-            loading={deleteWarehouseMutation.isLoading}
-            className="text-red-600 hover:text-red-700"
-          >
-            <FiTrash2 className="h-4 w-4" />
-          </Button>
+          <Tooltip text="Xem chi tiết" position="top">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setSelectedWarehouse(warehouse)
+                setShowCard(true)
+              }}
+            >
+              <FiEye className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+
+          <Tooltip text="Chỉnh sửa kho" position="top">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setSelectedWarehouse(warehouse)
+                setShowForm(true)
+              }}
+            >
+              <FiEdit className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+          <Tooltip text="Cập nhật trạng thái" position="top">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleUpdateStatus(warehouse?._id, warehouse?.status === 'active' ? 'inactive' : 'active')}
+              loading={updateStatusMutation.isLoading}
+            >
+              {warehouse?.status === 'active' ? <FiXCircle className="h-4 w-4" /> : <FiCheckCircle className="h-4 w-4" />}
+            </Button>
+          </Tooltip>
+          <Tooltip text="Nhập kho" position="top">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleImportWarehouse(warehouse?._id)}
+            >
+              <FiUpload className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+          <Tooltip text="Xóa kho" position="top">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleDeleteWarehouse(warehouse?._id)}
+              loading={deleteWarehouseMutation.isLoading}
+              className="text-red-600 hover:text-red-700"
+            >
+              <FiTrash2 className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </div>
       )
     }
@@ -224,26 +239,24 @@ const WarehouseList = () => {
             <div className="flex rounded-md shadow-sm">
               <button
                 onClick={() => setViewMode('table')}
-                className={`px-3 py-2 text-sm font-medium rounded-l-md border ${
-                  viewMode === 'table'
-                    ? 'bg-primary-500 text-white border-primary-500'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                }`}
+                className={`px-3 py-2 text-sm font-medium rounded-l-md border ${viewMode === 'table'
+                  ? 'bg-primary-500 text-white border-primary-500'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
               >
                 Bảng
               </button>
               <button
                 onClick={() => setViewMode('card')}
-                className={`px-3 py-2 text-sm font-medium rounded-r-md border-t border-r border-b ${
-                  viewMode === 'card'
-                    ? 'bg-primary-500 text-white border-primary-500'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                }`}
+                className={`px-3 py-2 text-sm font-medium rounded-r-md border-t border-r border-b ${viewMode === 'card'
+                  ? 'bg-primary-500 text-white border-primary-500'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
               >
                 Thẻ
               </button>
             </div>
-            
+
             <Button
               variant="outline"
               onClick={() => setShowImport(true)}
@@ -292,7 +305,7 @@ const WarehouseList = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center">
                 <FiCheckCircle className="h-8 w-8 text-green-600" />
@@ -304,7 +317,7 @@ const WarehouseList = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-center">
                 <FiTruck className="h-8 w-8 text-yellow-600" />
@@ -316,7 +329,7 @@ const WarehouseList = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
               <div className="flex items-center">
                 <FiPackage className="h-8 w-8 text-purple-600" />
@@ -454,7 +467,7 @@ const WarehouseList = () => {
               Chọn file
             </label>
           </div>
-          
+
           <div className="text-sm text-gray-600">
             <p className="font-medium mb-2">Lưu ý:</p>
             <ul className="list-disc list-inside space-y-1">

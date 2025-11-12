@@ -73,7 +73,7 @@ function App() {
           }
         />
 
-        <Route path="/dashboard" element={<Layout />}>
+        <Route path="/dashboard" element={isAuthenticated ? <Layout /> : <Navigate to="/login" replace />}>
           <Route
             index
             element={
