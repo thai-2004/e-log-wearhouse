@@ -11,14 +11,11 @@ import {
   FiBarChart,
   FiDollarSign,
   FiActivity,
-  FiEye,
-  FiEyeOff,
   FiRefreshCw
 } from 'react-icons/fi'
 import { useDashboardOverview, useDashboardStats, useDashboardAlerts, useRecentActivities } from '../hooks/useDashboard'
 import { useAuthStore } from '@store/authStore'
 import { Link } from 'react-router-dom'
-import { RevenueChart, InventoryChart, ActivityChart, OrderStatusChart } from '@components/charts/DashboardCharts'
 import NotificationSystem from '@components/NotificationSystem'
 import { DashboardExport } from '@components/ExportComponents'
 
@@ -29,7 +26,6 @@ const ManagerDashboard = () => {
   const { data: activitiesData, isLoading: activitiesLoading, refetch: refetchActivities } = useRecentActivities()
   const { user } = useAuthStore()
   
-  const [showCharts, setShowCharts] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Refresh function
@@ -47,39 +43,6 @@ const ManagerDashboard = () => {
     }
   }
 
-  // Mock chart data for manager
-  const revenueData = [
-    { month: 'Jan', revenue: 8000000 },
-    { month: 'Feb', revenue: 12000000 },
-    { month: 'Mar', revenue: 15000000 },
-    { month: 'Apr', revenue: 18000000 },
-    { month: 'May', revenue: 20000000 },
-    { month: 'Jun', revenue: 22000000 }
-  ]
-
-  const inventoryData = [
-    { category: 'Electronics', inStock: 80, lowStock: 10, outOfStock: 2 },
-    { category: 'Clothing', inStock: 150, lowStock: 5, outOfStock: 1 },
-    { category: 'Books', inStock: 120, lowStock: 8, outOfStock: 1 },
-    { category: 'Home', inStock: 60, lowStock: 15, outOfStock: 3 }
-  ]
-
-  const activityData = [
-    { day: 'Mon', inbound: 35, outbound: 30 },
-    { day: 'Tue', inbound: 42, outbound: 38 },
-    { day: 'Wed', inbound: 38, outbound: 35 },
-    { day: 'Thu', inbound: 45, outbound: 42 },
-    { day: 'Fri', inbound: 40, outbound: 38 },
-    { day: 'Sat', inbound: 25, outbound: 22 },
-    { day: 'Sun', inbound: 18, outbound: 15 }
-  ]
-
-  const orderStatusData = [
-    { name: 'Completed', value: 60 },
-    { name: 'Processing', value: 20 },
-    { name: 'Pending', value: 15 },
-    { name: 'Cancelled', value: 5 }
-  ]
 
   // Loading state
   if (overviewLoading || statsLoading) {

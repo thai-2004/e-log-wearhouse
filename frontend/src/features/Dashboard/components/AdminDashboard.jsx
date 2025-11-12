@@ -13,14 +13,11 @@ import {
   FiBarChart,
   FiDollarSign,
   FiActivity,
-  FiRefreshCw,
-  FiEye,
-  FiEyeOff
+  FiRefreshCw
 } from 'react-icons/fi'
 import { useDashboardOverview, useDashboardStats, useDashboardAlerts, useRecentActivities } from '../hooks/useDashboard'
 import { useAuthStore } from '@store/authStore'
 import { Link } from 'react-router-dom'
-import { RevenueChart, InventoryChart, ActivityChart, OrderStatusChart, MiniChart } from '@components/charts/DashboardCharts'
 import NotificationSystem from '@components/NotificationSystem'
 import { DashboardExport } from '@components/ExportComponents'
 
@@ -31,7 +28,6 @@ const AdminDashboard = () => {
   const { data: activitiesData, isLoading: activitiesLoading, refetch: refetchActivities } = useRecentActivities()
   const { user } = useAuthStore()
   
-  const [showCharts, setShowCharts] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Refresh function
@@ -49,39 +45,6 @@ const AdminDashboard = () => {
     }
   }
 
-  // Mock chart data
-  const revenueData = [
-    { month: 'Jan', revenue: 12000000 },
-    { month: 'Feb', revenue: 15000000 },
-    { month: 'Mar', revenue: 18000000 },
-    { month: 'Apr', revenue: 22000000 },
-    { month: 'May', revenue: 25000000 },
-    { month: 'Jun', revenue: 28000000 }
-  ]
-
-  const inventoryData = [
-    { category: 'Electronics', inStock: 120, lowStock: 15, outOfStock: 3 },
-    { category: 'Clothing', inStock: 200, lowStock: 8, outOfStock: 1 },
-    { category: 'Books', inStock: 150, lowStock: 12, outOfStock: 2 },
-    { category: 'Home', inStock: 80, lowStock: 20, outOfStock: 5 }
-  ]
-
-  const activityData = [
-    { day: 'Mon', inbound: 45, outbound: 38 },
-    { day: 'Tue', inbound: 52, outbound: 42 },
-    { day: 'Wed', inbound: 48, outbound: 45 },
-    { day: 'Thu', inbound: 61, outbound: 55 },
-    { day: 'Fri', inbound: 55, outbound: 48 },
-    { day: 'Sat', inbound: 35, outbound: 30 },
-    { day: 'Sun', inbound: 25, outbound: 20 }
-  ]
-
-  const orderStatusData = [
-    { name: 'Completed', value: 45 },
-    { name: 'Processing', value: 25 },
-    { name: 'Pending', value: 15 },
-    { name: 'Cancelled', value: 5 }
-  ]
 
   // Loading state
   if (overviewLoading || statsLoading) {
@@ -274,39 +237,6 @@ const AdminDashboard = () => {
           })}
         </div>
 
-        {/* Charts Toggle */}
-        <div className="flex items-center justify-between px-6">
-          <h2 className="text-xl font-semibold text-gray-900">Biểu đồ & Phân tích</h2>
-          <button
-            onClick={() => setShowCharts(!showCharts)}
-            className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-          >
-            {showCharts ? <FiEyeOff className="h-4 w-4" /> : <FiEye className="h-4 w-4" />}
-            <span>{showCharts ? 'Ẩn biểu đồ' : 'Hiện biểu đồ'}</span>
-          </button>
-        </div>
-
-        {/* Charts and Activities */}
-        {showCharts && (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 px-6">
-            {/* Revenue Chart */}
-            <RevenueChart data={revenueData} height={300} />
-
-            {/* Inventory Chart */}
-            <InventoryChart data={inventoryData} height={300} />
-          </div>
-        )}
-
-        {/* Additional Charts Row */}
-        {showCharts && (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 px-6">
-            {/* Activity Chart */}
-            <ActivityChart data={activityData} height={300} />
-
-            {/* Order Status Chart */}
-            <OrderStatusChart data={orderStatusData} height={300} />
-          </div>
-        )}
 
         {/* Recent Activities */}
         <div className="bg-white shadow rounded-lg p-6 mx-6">

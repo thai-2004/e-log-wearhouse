@@ -10,14 +10,11 @@ import {
   FiCheckCircle,
   FiClock,
   FiBox,
-  FiEye,
-  FiEyeOff,
   FiRefreshCw
 } from 'react-icons/fi'
 import { useDashboardOverview, useDashboardStats, useDashboardAlerts, useRecentActivities } from '../hooks/useDashboard'
 import { useAuthStore } from '@store/authStore'
 import { Link } from 'react-router-dom'
-import { ActivityChart, OrderStatusChart } from '@components/charts/DashboardCharts'
 import NotificationSystem from '@components/NotificationSystem'
 import { DashboardExport } from '@components/ExportComponents'
 
@@ -28,7 +25,6 @@ const StaffDashboard = () => {
   const { data: activitiesData, isLoading: activitiesLoading, refetch: refetchActivities } = useRecentActivities()
   const { user } = useAuthStore()
   
-  const [showCharts, setShowCharts] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Refresh function
@@ -46,23 +42,6 @@ const StaffDashboard = () => {
     }
   }
 
-  // Mock chart data for staff
-  const activityData = [
-    { day: 'Mon', inbound: 25, outbound: 20 },
-    { day: 'Tue', inbound: 30, outbound: 25 },
-    { day: 'Wed', inbound: 28, outbound: 22 },
-    { day: 'Thu', inbound: 35, outbound: 30 },
-    { day: 'Fri', inbound: 32, outbound: 28 },
-    { day: 'Sat', inbound: 20, outbound: 18 },
-    { day: 'Sun', inbound: 15, outbound: 12 }
-  ]
-
-  const orderStatusData = [
-    { name: 'Completed', value: 70 },
-    { name: 'Processing', value: 15 },
-    { name: 'Pending', value: 10 },
-    { name: 'Cancelled', value: 5 }
-  ]
 
   // Loading state
   if (overviewLoading || statsLoading) {

@@ -4,7 +4,18 @@ import apiClient from '@api/client'
 export const inventoryAPI = {
   // Lấy danh sách tồn kho
   getInventory: async (params = {}) => {
-    const response = await apiClient.get(API_ENDPOINTS.INVENTORY.BASE, { params })
+    // Thêm timestamp để bypass cache
+    const paramsWithTimestamp = {
+      ...params,
+      _t: Date.now()
+    }
+    const response = await apiClient.get(API_ENDPOINTS.INVENTORY.BASE, { 
+      params: paramsWithTimestamp,
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    })
     return response.data
   },
 
@@ -79,28 +90,7 @@ export const inventoryAPI = {
 
   // Tạo bản ghi tồn kho mới
   createInventory: async (data) => {
-    console.log('📤 [inventoryService] createInventory called with data:', data)
-    
-    // Kiểm tra token trước khi gọi API
-    const authStorage = localStorage.getItem('auth-storage')
-    if (authStorage) {
-      try {
-        const parsed = JSON.parse(authStorage)
-        const token = parsed?.state?.token
-        if (token) {
-          console.log('✅ [inventoryService] Token available, will be sent via apiClient interceptor')
-        } else {
-          console.error('❌ [inventoryService] No token in auth-storage!')
-        }
-      } catch (e) {
-        console.error('❌ [inventoryService] Error checking token:', e)
-      }
-    } else {
-      console.error('❌ [inventoryService] No auth-storage found!')
-    }
-    
     const response = await apiClient.post(API_ENDPOINTS.INVENTORY.BASE, data)
-    console.log('✅ [inventoryService] createInventory response:', response.data)
     return response.data
   },
 

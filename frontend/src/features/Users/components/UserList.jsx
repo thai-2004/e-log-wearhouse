@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { FiPlus, FiFilter, FiDownload, FiUpload, FiMail, FiUserCheck, FiUserX, FiEdit, FiTrash2, FiEye } from 'react-icons/fi'
+import { FiPlus, FiFilter, FiDownload, FiUpload, FiUserCheck, FiUserX, FiEdit, FiTrash2, FiEye } from 'react-icons/fi'
 import Button from '@components/ui/Button'
 import Table from '@components/ui/Table'
 import Modal from '@components/ui/Modal'
@@ -21,19 +21,105 @@ const UserList = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
+  const ROLE_LABELS = useMemo(() => ({
+    admin: 'Quản trị viên',
+    manager: 'Quản lý',
+    staff: 'Nhân viên',
+    viewer: 'Người xem'
+  }), [])
+
+  const queryParams = useMemo(() => {
+    const params = {
+      page: currentPage,
+      limit: pageSize
+    }
+
+    if (filters.search) {
+      params.search = filters.search
+    }
+
+    if (filters.role) {
+      params.role = filters.role
+    }
+
+    if (filters.status) {
+      params.isActive = filters.status === 'active'
+    }
+
+    return params
+  }, [currentPage, pageSize, filters])
+
   // API hooks
-  const { data: usersData, isLoading, error } = useUsers({
-    page: currentPage,
-    limit: pageSize,
-    ...filters
-  })
-  
+  const { data: usersData, isLoading, error } = useUsers(queryParams)
   const { data: userStats } = useUserStats()
   const deleteUserMutation = useDeleteUser()
   const updateStatusMutation = useUpdateUserStatus()
   const exportUsersMutation = useExportUsers()
   const importUsersMutation = useImportUsers()
   const inviteUserMutation = useInviteUser()
+
+  const rawUsers = usersData?.data?.users ?? []
+  const pagination = usersData?.data?.pagination
+
+  const normalizedUsers = useMemo(() => {
+    return rawUsers.map((user) => {
+      const isActive = user.isActive !== undefined ? user.isActive : true
+      const status = isActive ? 'active' : 'inactive'
+      const roleKey = user.role || ''
+
+      return {
+        ...user,
+        id: user.id || user._id,
+        name: user.fullName || user.name || user.username,
+        email: user.email,
+        avatar: user.avatarUrl,
+        roleKey,
+        roleLabel: ROLE_LABELS[roleKey] || roleKey,
+        roles: roleKey
+          ? [{
+              id: roleKey,
+              name: ROLE_LABELS[roleKey] || roleKey
+            }]
+          : [],
+        status,
+        statusLabel: isActive ? 'Hoạt động' : 'Không hoạt động',
+        isActive,
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt
+      }
+    })
+  }, [rawUsers, ROLE_LABELS])
+
+  const totalPages = pagination?.pages || 1
+
+  const paginationInfo = useMemo(() => {
+    if (!pagination || !pagination.total) {
+      return {
+        start: 0,
+        end: 0
+      }
+    }
+
+    const start = (currentPage - 1) * pageSize + 1
+    const end = Math.min(currentPage * pageSize, pagination.total)
+
+    return { start, end }
+  }, [pagination, currentPage, pageSize])
+
+  const userSummary = useMemo(() => {
+    const summary = userStats?.data?.summary || {}
+    return {
+      totalUsers: summary.totalUsers || 0,
+      activeUsers: summary.activeUsers || 0,
+      inactiveUsers: summary.inactiveUsers || 0,
+      adminUsers: summary.adminUsers || 0
+    }
+  }, [userStats])
+
+  const exportParams = useMemo(() => {
+    const { page, limit, ...rest } = queryParams
+    return rest
+  }, [queryParams])
 
   // Xử lý lọc
   const handleFiltersChange = (newFilters) => {
@@ -49,13 +135,13 @@ const UserList = () => {
   }
 
   // Xử lý cập nhật trạng thái
-  const handleUpdateStatus = async (userId, status) => {
-    await updateStatusMutation.mutateAsync({ id: userId, status })
+  const handleUpdateStatus = async (userId, nextIsActive) => {
+    await updateStatusMutation.mutateAsync({ id: userId, isActive: nextIsActive })
   }
 
   // Xử lý xuất file
   const handleExport = () => {
-    exportUsersMutation.mutate(filters)
+    exportUsersMutation.mutate(exportParams)
   }
 
   // Xử lý import file
@@ -73,40 +159,43 @@ const UserList = () => {
   const columns = useMemo(() => [
     {
       header: 'Người dùng',
-      accessor: 'user',
-      render: (user) => (
-        <div className="flex items-center">
-          <div className="flex-shrink-0 h-10 w-10">
-            <img
-              className="h-10 w-10 rounded-full object-cover"
-              src={user.avatar || '/images/default-avatar.png'}
-              alt={user.name}
-            />
-          </div>
-          <div className="ml-3">
-            <div className="text-sm font-medium text-gray-900">
-              {user.name}
+      accessor: 'name',
+      render: (_, row) => {
+        const name = row.name || row.username || 'Người dùng'
+        const email = row.email || ''
+        const avatar = row.avatar || row.avatarUrl || '/images/default-avatar.png'
+
+        return (
+          <div className="flex items-center">
+            <div className="flex-shrink-0 h-10 w-10">
+              <img
+                className="h-10 w-10 rounded-full object-cover"
+                src={avatar}
+                alt={name}
+              />
             </div>
-            <div className="text-sm text-gray-500">
-              {user.email}
+            <div className="ml-3">
+              <div className="text-sm font-medium text-gray-900">
+                {name}
+              </div>
+              <div className="text-sm text-gray-500">
+                {email || '—'}
+              </div>
             </div>
           </div>
-        </div>
-      )
+        )
+      }
     },
     {
       header: 'Vai trò',
-      accessor: 'roles',
-      render: (user) => (
+      accessor: 'roleLabel',
+      render: (_, row) => (
         <div className="flex flex-wrap gap-1">
-          {user.roles?.map((role, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-            >
-              {role.name}
+          {row.roleLabel ? (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {row.roleLabel}
             </span>
-          )) || (
+          ) : (
             <span className="text-sm text-gray-500">Chưa có vai trò</span>
           )}
         </div>
@@ -114,48 +203,47 @@ const UserList = () => {
     },
     {
       header: 'Trạng thái',
-      accessor: 'status',
-      render: (user) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          user.status === 'active' 
-            ? 'bg-green-100 text-green-800' 
-            : user.status === 'inactive'
-            ? 'bg-red-100 text-red-800'
-            : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {user.status === 'active' ? 'Hoạt động' : 
-           user.status === 'inactive' ? 'Không hoạt động' : 'Chờ xác nhận'}
+      accessor: 'statusLabel',
+      render: (_, row) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            row.isActive
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
+          }`}
+        >
+          {row.statusLabel || (row.isActive ? 'Hoạt động' : 'Không hoạt động')}
         </span>
       )
     },
     {
       header: 'Đăng nhập cuối',
       accessor: 'lastLogin',
-      render: (user) => (
+      render: (_, row) => (
         <span className="text-sm text-gray-900">
-          {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('vi-VN') : 'Chưa đăng nhập'}
+          {row.lastLogin ? new Date(row.lastLogin).toLocaleDateString('vi-VN') : 'Chưa đăng nhập'}
         </span>
       )
     },
     {
       header: 'Ngày tạo',
       accessor: 'createdAt',
-      render: (user) => (
+      render: (_, row) => (
         <span className="text-sm text-gray-900">
-          {new Date(user.createdAt).toLocaleDateString('vi-VN')}
+          {row.createdAt ? new Date(row.createdAt).toLocaleDateString('vi-VN') : '—'}
         </span>
       )
     },
     {
       header: 'Thao tác',
       accessor: 'actions',
-      render: (user) => (
+      render: (_, row) => (
         <div className="flex space-x-2">
           <Button
             size="sm"
             variant="outline"
             onClick={() => {
-              setSelectedUser(user)
+              setSelectedUser(row)
               setShowForm(true)
             }}
           >
@@ -166,7 +254,7 @@ const UserList = () => {
             size="sm"
             variant="outline"
             onClick={() => {
-              setSelectedUser(user)
+              setSelectedUser(row)
               setShowRoles(true)
             }}
           >
@@ -176,16 +264,16 @@ const UserList = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => handleUpdateStatus(user.id, user.status === 'active' ? 'inactive' : 'active')}
+            onClick={() => handleUpdateStatus(row.id, !row.isActive)}
             loading={updateStatusMutation.isLoading}
           >
-            {user.status === 'active' ? <FiUserX className="h-4 w-4" /> : <FiUserCheck className="h-4 w-4" />}
+            {row.isActive ? <FiUserX className="h-4 w-4" /> : <FiUserCheck className="h-4 w-4" />}
           </Button>
           
           <Button
             size="sm"
             variant="outline"
-            onClick={() => handleDeleteUser(user.id)}
+            onClick={() => handleDeleteUser(row.id)}
             loading={deleteUserMutation.isLoading}
             className="text-red-600 hover:text-red-700"
           >
@@ -194,7 +282,7 @@ const UserList = () => {
         </div>
       )
     }
-  ], [deleteUserMutation.isLoading, updateStatusMutation.isLoading])
+  ], [deleteUserMutation.isLoading, updateStatusMutation.isLoading, handleUpdateStatus])
 
   if (error) {
     const isForbidden = error?.response?.status === 403
@@ -282,7 +370,7 @@ const UserList = () => {
                 <div className="ml-3">
                   <p className="text-sm font-medium text-blue-800">Tổng người dùng</p>
                   <p className="text-2xl font-bold text-blue-900">
-                    {userStats.totalUsers}
+                    {userSummary.totalUsers}
                   </p>
                 </div>
               </div>
@@ -294,7 +382,7 @@ const UserList = () => {
                 <div className="ml-3">
                   <p className="text-sm font-medium text-green-800">Hoạt động</p>
                   <p className="text-2xl font-bold text-green-900">
-                    {userStats.activeUsers}
+                    {userSummary.activeUsers}
                   </p>
                 </div>
               </div>
@@ -306,7 +394,7 @@ const UserList = () => {
                 <div className="ml-3">
                   <p className="text-sm font-medium text-red-800">Không hoạt động</p>
                   <p className="text-2xl font-bold text-red-900">
-                    {userStats.inactiveUsers}
+                    {userSummary.inactiveUsers}
                   </p>
                 </div>
               </div>
@@ -314,11 +402,11 @@ const UserList = () => {
             
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-center">
-                <FiMail className="h-8 w-8 text-yellow-600" />
+                <FiEye className="h-8 w-8 text-yellow-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-yellow-800">Chờ xác nhận</p>
+                  <p className="text-sm font-medium text-yellow-800">Quản trị viên</p>
                   <p className="text-2xl font-bold text-yellow-900">
-                    {userStats.pendingUsers}
+                    {userSummary.adminUsers}
                   </p>
                 </div>
               </div>
@@ -330,19 +418,17 @@ const UserList = () => {
       {/* Users Table */}
       <Table
         columns={columns}
-        data={usersData?.users || []}
+        data={normalizedUsers}
         loading={isLoading}
         emptyMessage="Không có dữ liệu người dùng"
       />
 
       {/* Pagination */}
-      {usersData?.pagination && (
+      {pagination && (
         <div className="bg-white shadow rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Hiển thị {((currentPage - 1) * pageSize) + 1} đến{' '}
-              {Math.min(currentPage * pageSize, usersData.pagination.total)} trong tổng số{' '}
-              {usersData.pagination.total} bản ghi
+              Hiển thị {paginationInfo.start} đến {paginationInfo.end} trong tổng số {pagination.total} bản ghi
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -354,13 +440,13 @@ const UserList = () => {
                 Trước
               </Button>
               <span className="text-sm text-gray-700">
-                Trang {currentPage} / {usersData.pagination.totalPages}
+                Trang {currentPage} / {totalPages}
               </span>
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setCurrentPage(prev => prev + 1)}
-                disabled={currentPage === usersData.pagination.totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
               >
                 Sau
               </Button>

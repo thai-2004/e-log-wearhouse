@@ -14,7 +14,7 @@ const stockMovementSchema = new mongoose.Schema({
   },
   locationId: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    required: false
   },
   type: {
     type: String,

@@ -98,42 +98,6 @@ export const useStaffStats = () => {
   )
 }
 
-// Chart hooks
-export const useRevenueChart = (timeRange = '30d') => {
-  return useQuery(
-    ['dashboard', 'charts', 'revenue', timeRange],
-    () => dashboardAPI.getRevenueChart(timeRange),
-    {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-      refetchOnWindowFocus: false,
-    }
-  )
-}
-
-export const useInventoryChart = (timeRange = '30d') => {
-  return useQuery(
-    ['dashboard', 'charts', 'inventory', timeRange],
-    () => dashboardAPI.getInventoryChart(timeRange),
-    {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-      refetchOnWindowFocus: false,
-    }
-  )
-}
-
-export const useActivityChart = (timeRange = '7d') => {
-  return useQuery(
-    ['dashboard', 'charts', 'activity', timeRange],
-    () => dashboardAPI.getActivityChart(timeRange),
-    {
-      staleTime: 2 * 60 * 1000, // 2 minutes
-      cacheTime: 5 * 60 * 1000, // 5 minutes
-      refetchOnWindowFocus: false,
-    }
-  )
-}
 
 // Staff-specific hooks
 export const useTodayTasks = () => {

@@ -8,9 +8,11 @@ export const useInventory = (params = {}) => {
     ['inventory', params],
     () => inventoryAPI.getInventory(params),
     {
-      staleTime: 2 * 60 * 1000, // 2 phút
-      cacheTime: 5 * 60 * 1000, // 5 phút
+      staleTime: 0, // Luôn coi là stale để force refresh
+      cacheTime: 1 * 60 * 1000, // 1 phút
       retry: 2,
+      refetchOnMount: true, // Force refetch khi mount
+      refetchOnWindowFocus: true, // Force refetch khi focus window
     }
   )
 }
@@ -143,7 +145,15 @@ export const useCreateInventory = () => {
 
   return useMutation(inventoryAPI.createInventory, {
     onSuccess: (data) => {
+      // Invalidate và refetch tất cả queries liên quan đến inventory
       queryClient.invalidateQueries(['inventory'])
+      queryClient.invalidateQueries(['inventory', 'low-stock'])
+      queryClient.invalidateQueries(['inventory', 'zero-stock'])
+      queryClient.invalidateQueries(['inventory', 'overstock'])
+      
+      // Force refetch ngay lập tức
+      queryClient.refetchQueries(['inventory'])
+      
       toast.success('Tạo bản ghi tồn kho thành công!')
     },
     onError: (error) => {

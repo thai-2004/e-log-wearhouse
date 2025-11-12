@@ -24,15 +24,21 @@ const InventoryList = () => {
   const [pageSize, setPageSize] = useState(20)
 
   // API hooks
-  const { data: inventoryData, isLoading, error } = useInventory({
+  const { data: inventoryData, isLoading, error, refetch } = useInventory({
     page: currentPage,
     limit: pageSize,
     ...filters
   })
+
   
   const { data: lowStockData } = useLowStockItems()
   const { data: zeroStockData } = useZeroStockItems()
   const { data: overstockData } = useOverstockItems()
+  
+  // Extract inventories arrays from API responses
+  const lowStockItems = lowStockData?.data?.inventories || []
+  const zeroStockItems = zeroStockData?.data?.inventories || []
+  const overstockItems = overstockData?.data?.inventories || []
   const exportInventoryMutation = useExportInventory()
 
   // Xử lý lọc
@@ -51,21 +57,21 @@ const InventoryList = () => {
     {
       header: 'Sản phẩm',
       accessor: 'product',
-      render: (inventory) => (
+      render: (product, inventory) => (
         <div className="flex items-center">
           <div className="flex-shrink-0 h-10 w-10">
             <img
               className="h-10 w-10 rounded-lg object-cover"
-              src={inventory.product?.image || '/images/no-image.png'}
-              alt={inventory.product?.name}
+              src={inventory?.product?.image || '/images/no-image.png'}
+              alt={inventory?.product?.name}
             />
           </div>
           <div className="ml-3">
             <div className="text-sm font-medium text-gray-900">
-              {inventory.product?.name}
+              {inventory?.product?.name || 'N/A'}
             </div>
             <div className="text-sm text-gray-500">
-              SKU: {inventory.product?.sku}
+              SKU: {inventory?.product?.sku || 'N/A'}
             </div>
           </div>
         </div>
@@ -74,31 +80,31 @@ const InventoryList = () => {
     {
       header: 'Kho',
       accessor: 'warehouse',
-      render: (inventory) => (
+      render: (warehouse, inventory) => (
         <span className="text-sm text-gray-900">
-          {inventory.warehouse?.name || 'Chưa phân kho'}
+          {inventory?.warehouse?.name || 'Chưa phân kho'}
         </span>
       )
     },
     {
       header: 'Vị trí',
       accessor: 'location',
-      render: (inventory) => (
+      render: (location, inventory) => (
         <span className="text-sm text-gray-900">
-          {inventory.location?.name || 'Chưa phân vị trí'}
+          {inventory?.location?.name || 'Chưa phân vị trí'}
         </span>
       )
     },
     {
       header: 'Tồn kho',
       accessor: 'quantity',
-      render: (inventory) => (
+      render: (quantity, inventory) => (
         <div className="flex flex-col">
           <span className="text-sm font-medium text-gray-900">
-            {inventory.quantity || 0}
+            {inventory?.quantity || 0}
           </span>
           <span className="text-xs text-gray-500">
-            Có thể dùng: {inventory.availableQuantity || 0}
+            Có thể dùng: {inventory?.availableQuantity || 0}
           </span>
         </div>
       )
@@ -106,50 +112,50 @@ const InventoryList = () => {
     {
       header: 'Đã giữ',
       accessor: 'reservedQuantity',
-      render: (inventory) => (
+      render: (reservedQuantity, inventory) => (
         <span className="text-sm text-gray-900">
-          {inventory.reservedQuantity || 0}
+          {inventory?.reservedQuantity || 0}
         </span>
       )
     },
     {
       header: 'Tồn kho tối thiểu',
       accessor: 'minStock',
-      render: (inventory) => (
+      render: (minStock, inventory) => (
         <span className="text-sm text-gray-900">
-          {inventory.product?.minStock || 0}
+          {inventory?.product?.minStock || 0}
         </span>
       )
     },
     {
       header: 'Tồn kho tối đa',
       accessor: 'maxStock',
-      render: (inventory) => (
+      render: (maxStock, inventory) => (
         <span className="text-sm text-gray-900">
-          {inventory.product?.maxStock || 'Không giới hạn'}
+          {inventory?.product?.maxStock || 'Không giới hạn'}
         </span>
       )
     },
     {
       header: 'Giá trị tồn kho',
       accessor: 'value',
-      render: (inventory) => (
+      render: (value, inventory) => (
         <span className="text-sm font-medium text-gray-900">
           {new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
-          }).format(inventory.value || 0)}
+          }).format(inventory?.value || 0)}
         </span>
       )
     },
     {
       header: 'Trạng thái',
       accessor: 'status',
-      render: (inventory) => {
-        const quantity = inventory.quantity || 0
-        const available = inventory.availableQuantity || 0
-        const reserved = inventory.reservedQuantity || 0
-        const minStock = inventory.product?.reorderPoint || inventory.product?.minStock || 0
+      render: (status, inventory) => {
+        const quantity = inventory?.quantity || 0
+        const available = inventory?.availableQuantity || 0
+        const reserved = inventory?.reservedQuantity || 0
+        const minStock = inventory?.product?.reorderPoint || inventory?.product?.minStock || 0
         
         if (quantity === 0) {
           return (
@@ -185,16 +191,26 @@ const InventoryList = () => {
     {
       header: 'Cập nhật cuối',
       accessor: 'updatedAt',
-      render: (inventory) => (
-        <span className="text-sm text-gray-500">
-          {new Date(inventory.updatedAt).toLocaleDateString('vi-VN')}
-        </span>
-      )
+      render: (updatedAt, inventory) => {
+        const date = inventory?.updatedAt || inventory?.lastUpdated
+        if (!date) return <span className="text-sm text-gray-500">-</span>
+        try {
+          const dateObj = new Date(date)
+          if (isNaN(dateObj.getTime())) return <span className="text-sm text-gray-500">-</span>
+          return (
+            <span className="text-sm text-gray-500">
+              {dateObj.toLocaleDateString('vi-VN')}
+            </span>
+          )
+        } catch (e) {
+          return <span className="text-sm text-gray-500">-</span>
+        }
+      }
     },
     {
       header: 'Thao tác',
       accessor: 'actions',
-      render: (inventory) => (
+      render: (actions, inventory) => (
         <div className="flex space-x-2">
           <Button
             size="sm"
@@ -277,7 +293,7 @@ const InventoryList = () => {
               <div className="ml-3">
                 <p className="text-sm font-medium text-red-800">Hết hàng</p>
                 <p className="text-2xl font-bold text-red-900">
-                  {zeroStockData?.length || 0}
+                  {zeroStockItems.length}
                 </p>
               </div>
             </div>
@@ -289,7 +305,7 @@ const InventoryList = () => {
               <div className="ml-3">
                 <p className="text-sm font-medium text-yellow-800">Sắp hết hàng</p>
                 <p className="text-2xl font-bold text-yellow-900">
-                  {lowStockData?.length || 0}
+                  {lowStockItems.length}
                 </p>
               </div>
             </div>
@@ -301,7 +317,7 @@ const InventoryList = () => {
               <div className="ml-3">
                 <p className="text-sm font-medium text-blue-800">Tồn kho cao</p>
                 <p className="text-2xl font-bold text-blue-900">
-                  {overstockData?.length || 0}
+                  {overstockItems.length}
                 </p>
               </div>
             </div>

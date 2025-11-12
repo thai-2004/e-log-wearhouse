@@ -5,6 +5,49 @@ const StockMovement = require('../models/StockMovement');
 const Warehouse = require('../models/Warehouse');
 const { validationResult } = require('express-validator');
 
+// Helper function để thêm location và tính giá trị tồn kho vào inventory
+const enrichInventory = (inventory) => {
+  const result = { ...inventory };
+
+  // Transform productId và warehouseId thành product và warehouse để frontend dễ sử dụng
+  if (inventory.productId) {
+    result.product = inventory.productId;
+    // Giữ lại productId để tương thích ngược
+    result.productId = typeof inventory.productId === 'object' ? inventory.productId._id : inventory.productId;
+  }
+
+  if (inventory.warehouseId) {
+    result.warehouse = inventory.warehouseId;
+    // Giữ lại warehouseId để tương thích ngược
+    result.warehouseId = typeof inventory.warehouseId === 'object' ? inventory.warehouseId._id : inventory.warehouseId;
+  }
+
+  // Tìm location từ warehouse nếu có locationId
+  if (inventory.locationId && result.warehouse && result.warehouse.zones) {
+    let foundLocation = null;
+    for (const zone of result.warehouse.zones || []) {
+      if (zone.locations && zone.locations.length > 0) {
+        foundLocation = zone.locations.find(
+          loc => loc._id && loc._id.toString() === inventory.locationId.toString()
+        );
+        if (foundLocation) break;
+      }
+    }
+    result.location = foundLocation || null;
+  } else {
+    result.location = null;
+  }
+
+  // Tính toán giá trị tồn kho
+  if (result.product && result.product.sellingPrice) {
+    result.value = (inventory.quantity || 0) * result.product.sellingPrice;
+  } else {
+    result.value = 0;
+  }
+
+  return result;
+};
+
 // Lấy tồn kho theo warehouse
 const getInventoryByWarehouse = async(req, res) => {
   try {
@@ -26,17 +69,35 @@ const getInventoryByWarehouse = async(req, res) => {
     }
 
     const inventories = await Inventory.find(query)
-      .populate('productId', 'sku name unit sellingPrice')
+      .populate({
+        path: 'productId',
+        select: 'sku name unit sellingPrice image minStock maxStock reorderPoint'
+      })
+      .populate({
+        path: 'warehouseId',
+        select: 'name code zones'
+      })
       .sort({ lastUpdated: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
+
+    // Tìm location từ warehouse và tính giá trị cho mỗi inventory
+    const inventoriesWithLocation = inventories.map(enrichInventory);
 
     const total = await Inventory.countDocuments(query);
+
+    // Set cache headers để tránh cache
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
 
     res.json({
       success: true,
       data: {
-        inventories,
+        inventories: inventoriesWithLocation,
         pagination: {
           page,
           limit,
@@ -49,7 +110,8 @@ const getInventoryByWarehouse = async(req, res) => {
     console.error('Get inventory by warehouse error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      error: error.message
     });
   }
 };
@@ -60,23 +122,40 @@ const getInventoryByProduct = async(req, res) => {
     const { productId } = req.params;
 
     const inventories = await Inventory.find({ productId })
-      .populate('warehouseId', 'name code')
-      .populate('productId', 'sku name unit');
+      .populate({
+        path: 'warehouseId',
+        select: 'name code zones'
+      })
+      .populate({
+        path: 'productId',
+        select: 'sku name unit sellingPrice image minStock maxStock reorderPoint'
+      })
+      .lean();
+
+    // Tìm location từ warehouse và tính giá trị cho mỗi inventory
+    const inventoriesWithLocation = inventories.map(enrichInventory);
 
     // Tính tổng tồn kho
-    const totalQuantity = inventories.reduce((sum, inv) => sum + inv.quantity, 0);
-    const totalReserved = inventories.reduce((sum, inv) => sum + inv.reservedQuantity, 0);
-    const totalAvailable = inventories.reduce((sum, inv) => sum + inv.availableQuantity, 0);
+    const totalQuantity = inventoriesWithLocation.reduce((sum, inv) => sum + (inv.quantity || 0), 0);
+    const totalReserved = inventoriesWithLocation.reduce((sum, inv) => sum + (inv.reservedQuantity || 0), 0);
+    const totalAvailable = inventoriesWithLocation.reduce((sum, inv) => sum + (inv.availableQuantity || 0), 0);
+
+    // Set cache headers để tránh cache
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
 
     res.json({
       success: true,
       data: {
-        inventories,
+        inventories: inventoriesWithLocation,
         summary: {
           totalQuantity,
           totalReserved,
           totalAvailable,
-          warehouseCount: inventories.length
+          warehouseCount: inventoriesWithLocation.length
         }
       }
     });
@@ -84,7 +163,8 @@ const getInventoryByProduct = async(req, res) => {
     console.error('Get inventory by product error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      error: error.message
     });
   }
 };
@@ -95,18 +175,37 @@ const getInventoryByLocation = async(req, res) => {
     const { warehouseId, locationId } = req.params;
 
     const inventories = await Inventory.find({ warehouseId, locationId })
-      .populate('productId', 'sku name unit sellingPrice')
-      .sort({ lastUpdated: -1 });
+      .populate({
+        path: 'productId',
+        select: 'sku name unit sellingPrice image minStock maxStock reorderPoint'
+      })
+      .populate({
+        path: 'warehouseId',
+        select: 'name code zones'
+      })
+      .sort({ lastUpdated: -1 })
+      .lean();
+
+    // Tìm location từ warehouse và tính giá trị cho mỗi inventory
+    const inventoriesWithLocation = inventories.map(enrichInventory);
+
+    // Set cache headers để tránh cache
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
 
     res.json({
       success: true,
-      data: { inventories }
+      data: { inventories: inventoriesWithLocation }
     });
   } catch (error) {
     console.error('Get inventory by location error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      error: error.message
     });
   }
 };
@@ -530,15 +629,8 @@ const getStockMovements = async(req, res) => {
 // Tạo inventory mới
 const createInventory = async(req, res) => {
   try {
-    // Log thông tin token và user
-    console.log('📥 [InventoryController] createInventory called');
-    console.log('✅ [InventoryController] Token received:', req.headers.authorization ? 'Yes (Bearer token)' : 'No');
-    console.log('✅ [InventoryController] User authenticated:', req.user ? `${req.user.username} (${req.user.role})` : 'No user');
-    console.log('✅ [InventoryController] Request body:', req.body);
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('❌ [InventoryController] Validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation errors',
@@ -550,7 +642,19 @@ const createInventory = async(req, res) => {
 
     // Map locationCode -> locationId nếu client gửi locationCode hoặc gửi locationId nhưng là mã (không phải ObjectId)
     const { warehouseId, locationId, locationCode } = inventoryData;
-    if ((!locationId && locationCode) || (locationId && typeof locationId === 'string' && !locationId.match(/^[0-9a-fA-F]{24}$/))) {
+
+    // Xử lý locationId: nếu là empty string hoặc chỉ có whitespace, set thành undefined
+    let processedLocationId = locationId;
+    if (typeof locationId === 'string' && locationId.trim() === '') {
+      processedLocationId = undefined;
+      inventoryData.locationId = undefined;
+    }
+
+    // Kiểm tra nếu cần map từ code sang locationId
+    const needsCodeMapping = (!processedLocationId && locationCode) ||
+                             (processedLocationId && typeof processedLocationId === 'string' && !processedLocationId.match(/^[0-9a-fA-F]{24}$/));
+
+    if (needsCodeMapping) {
       const warehouseDoc = await Warehouse.findById(warehouseId).lean();
       if (!warehouseDoc) {
         return res.status(400).json({
@@ -559,23 +663,48 @@ const createInventory = async(req, res) => {
           code: 'WAREHOUSE_NOT_FOUND'
         });
       }
-      let resolvedLocationId = null;
-      for (const zone of warehouseDoc.zones || []) {
-        const codeToMatch = locationCode || locationId; // ưu tiên locationCode, fallback dùng locationId như mã
-        const found = (zone.locations || []).find(loc => loc.code === codeToMatch);
-        if (found) {
-          resolvedLocationId = found._id;
-          break;
+
+      const codeToMatch = (locationCode || processedLocationId || '').trim();
+      if (!codeToMatch) {
+        // Nếu không có code để tìm, set locationId thành undefined và tiếp tục (location là optional)
+        inventoryData.locationId = undefined;
+      } else {
+        let resolvedLocationId = null;
+        const allLocationCodes = [];
+
+        // Tìm location theo code (case-insensitive)
+        for (const zone of warehouseDoc.zones || []) {
+          if (!zone.locations || zone.locations.length === 0) continue;
+
+          for (const loc of zone.locations) {
+            allLocationCodes.push(loc.code);
+            // So sánh case-insensitive và trim
+            if (loc.code && loc.code.trim().toLowerCase() === codeToMatch.toLowerCase()) {
+              resolvedLocationId = loc._id;
+              break;
+            }
+          }
+          if (resolvedLocationId) break;
         }
+
+        if (!resolvedLocationId) {
+          return res.status(400).json({
+            success: false,
+            message: `Không tìm thấy location với code "${codeToMatch}" trong warehouse. ${allLocationCodes.length > 0 ? `Các codes có sẵn: ${allLocationCodes.slice(0, 5).join(', ')}${allLocationCodes.length > 5 ? '...' : ''}` : 'Warehouse này chưa có location nào.'}`,
+            code: 'LOCATION_CODE_NOT_FOUND',
+            searchedCode: codeToMatch,
+            availableCodes: allLocationCodes.slice(0, 10)
+          });
+        }
+
+        inventoryData.locationId = resolvedLocationId;
       }
-      if (!resolvedLocationId) {
-        return res.status(400).json({
-          success: false,
-          message: 'Không tìm thấy location theo code trong warehouse',
-          code: 'LOCATION_CODE_NOT_FOUND'
-        });
-      }
-      inventoryData.locationId = resolvedLocationId;
+    } else if (processedLocationId && typeof processedLocationId === 'string' && processedLocationId.match(/^[0-9a-fA-F]{24}$/)) {
+      // locationId là ObjectId hợp lệ, giữ nguyên
+      inventoryData.locationId = processedLocationId;
+    } else {
+      // Không có locationId, set thành undefined
+      inventoryData.locationId = undefined;
     }
 
     // Nếu có locationId, đảm bảo location thuộc về warehouse chỉ định
@@ -594,29 +723,66 @@ const createInventory = async(req, res) => {
       }
     }
 
-    // Kiểm tra inventory đã tồn tại (theo unique constraint: productId + warehouseId + locationId)
-    const existingInventory = await Inventory.findOne({
+    // Kiểm tra inventory đã tồn tại
+    // Nếu locationId là null/undefined: chỉ kiểm tra productId + warehouseId
+    // Nếu có locationId: kiểm tra productId + warehouseId + locationId
+    const duplicateQuery = {
       productId: inventoryData.productId,
-      warehouseId: inventoryData.warehouseId,
-      locationId: inventoryData.locationId
-    });
+      warehouseId: inventoryData.warehouseId
+    };
+
+    // Chỉ thêm locationId vào query nếu nó có giá trị
+    if (finalLocationId) {
+      duplicateQuery.locationId = finalLocationId;
+    } else {
+      // Nếu không có locationId, kiểm tra các records có locationId là null hoặc undefined
+      duplicateQuery.$or = [
+        { locationId: null },
+        { locationId: { $exists: false } }
+      ];
+    }
+
+    const existingInventory = await Inventory.findOne(duplicateQuery);
 
     if (existingInventory) {
+      const locationMsg = finalLocationId
+        ? 'at this location'
+        : 'without a specific location';
       return res.status(400).json({
         success: false,
-        message: 'Inventory already exists for this product at this location in this warehouse'
+        message: `Inventory already exists for this product ${locationMsg} in this warehouse`
       });
     }
 
     const inventory = new Inventory(inventoryData);
     await inventory.save();
 
-    console.log('✅ [InventoryController] Inventory created successfully:', inventory._id);
+    // Populate product và warehouse để trả về đầy đủ thông tin
+    const populatedInventory = await Inventory.findById(inventory._id)
+      .populate({
+        path: 'productId',
+        select: 'name sku unit sellingPrice image minStock maxStock reorderPoint'
+      })
+      .populate({
+        path: 'warehouseId',
+        select: 'name code zones'
+      })
+      .lean();
+
+    // Enrich inventory với location và value
+    const enrichedInventory = enrichInventory(populatedInventory);
+
+    // Set cache headers để tránh cache
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
 
     res.status(201).json({
       success: true,
       message: 'Inventory created successfully',
-      data: { inventory }
+      data: { inventory: enrichedInventory }
     });
   } catch (error) {
     console.error('Create inventory error:', error);
@@ -666,26 +832,88 @@ const createInventory = async(req, res) => {
 // Lấy danh sách inventory
 const getInventory = async(req, res) => {
   try {
-    const { page = 1, limit = 10, warehouseId, productId } = req.query;
+    const { page = 1, limit = 10, warehouseId, productId, lowStock, zeroStock, overstock } = req.query;
     const skip = (page - 1) * limit;
 
     const query = {};
     if (warehouseId) query.warehouseId = warehouseId;
     if (productId) query.productId = productId;
+    if (zeroStock === 'true') query.quantity = 0;
 
+    // Populate với đầy đủ thông tin product và warehouse (bao gồm zones và locations)
     const inventories = await Inventory.find(query)
-      .populate('productId', 'name sku')
-      .populate('warehouseId', 'name')
+      .populate({
+        path: 'productId',
+        select: 'name sku unit sellingPrice image minStock maxStock reorderPoint'
+      })
+      .populate({
+        path: 'warehouseId',
+        select: 'name code zones'
+      })
       .skip(skip)
       .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
-    const total = await Inventory.countDocuments(query);
+    // Tìm location từ warehouse và tính giá trị cho mỗi inventory
+    const inventoriesWithLocation = inventories.map(enrichInventory);
+
+    // Lọc theo lowStock hoặc overstock nếu có
+    let filteredInventories = inventoriesWithLocation;
+    if (lowStock === 'true') {
+      filteredInventories = inventoriesWithLocation.filter(inv => {
+        const product = inv.product || inv.productId;
+        const minStock = product?.reorderPoint || product?.minStock || 0;
+        return inv.quantity > 0 && inv.quantity <= minStock;
+      });
+    }
+    if (overstock === 'true') {
+      filteredInventories = inventoriesWithLocation.filter(inv => {
+        const product = inv.product || inv.productId;
+        const maxStock = product?.maxStock;
+        return maxStock && maxStock > 0 && inv.quantity > maxStock;
+      });
+    }
+
+    // Đếm total sau khi filter
+    let total;
+    if (lowStock === 'true' || overstock === 'true') {
+      // Nếu có filter, cần đếm lại
+      const allInventories = await Inventory.find(query)
+        .populate({
+          path: 'productId',
+          select: 'minStock maxStock reorderPoint'
+        })
+        .lean();
+
+      if (lowStock === 'true') {
+        total = allInventories.filter(inv => {
+          const minStock = inv.productId?.reorderPoint || inv.productId?.minStock || 0;
+          return inv.quantity > 0 && inv.quantity <= minStock;
+        }).length;
+      } else if (overstock === 'true') {
+        total = allInventories.filter(inv => {
+          const maxStock = inv.productId?.maxStock;
+          return maxStock && maxStock > 0 && inv.quantity > maxStock;
+        }).length;
+      } else {
+        total = allInventories.length;
+      }
+    } else {
+      total = await Inventory.countDocuments(query);
+    }
+
+    // Set cache headers để tránh cache
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
 
     res.json({
       success: true,
       data: {
-        inventories,
+        inventories: filteredInventories,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -698,7 +926,8 @@ const getInventory = async(req, res) => {
     console.error('Get inventory error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      error: error.message
     });
   }
 };
@@ -709,8 +938,15 @@ const getInventoryById = async(req, res) => {
     const { id } = req.params;
 
     const inventory = await Inventory.findById(id)
-      .populate('productId', 'name sku')
-      .populate('warehouseId', 'name');
+      .populate({
+        path: 'productId',
+        select: 'name sku unit sellingPrice image minStock maxStock reorderPoint'
+      })
+      .populate({
+        path: 'warehouseId',
+        select: 'name code zones'
+      })
+      .lean();
 
     if (!inventory) {
       return res.status(404).json({
@@ -719,9 +955,19 @@ const getInventoryById = async(req, res) => {
       });
     }
 
+    // Enrich inventory với location và value
+    const enrichedInventory = enrichInventory(inventory);
+
+    // Set cache headers để tránh cache
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
     res.json({
       success: true,
-      data: { inventory }
+      data: { inventory: enrichedInventory }
     });
   } catch (error) {
     console.error('Get inventory by ID error:', error);
@@ -767,23 +1013,32 @@ const getLowStockItems = async(req, res) => {
     const allInventories = await Inventory.find({})
       .populate({
         path: 'productId',
-        select: 'name sku reorderPoint',
+        select: 'name sku reorderPoint minStock maxStock image',
         model: 'Product'
       })
       .populate({
         path: 'warehouseId',
-        select: 'name code',
+        select: 'name code zones',
         model: 'Warehouse'
-      });
+      })
+      .lean();
 
     // Filter những items có quantity <= reorderPoint
     const lowStockInventories = allInventories.filter(inventory => {
       const product = inventory.productId;
       // Kiểm tra nếu product được populate và có reorderPoint
-      if (!product || typeof product === 'string' || !product.reorderPoint) {
+      if (!product || typeof product === 'string') {
         return false;
       }
-      return inventory.quantity <= product.reorderPoint;
+      const minStock = product.reorderPoint || product.minStock || 0;
+      return inventory.quantity > 0 && inventory.quantity <= minStock;
+    }).map(enrichInventory);
+
+    // Set cache headers để tránh cache
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
     });
 
     res.json({
@@ -811,20 +1066,30 @@ const getZeroStockItems = async(req, res) => {
     })
       .populate({
         path: 'productId',
-        select: 'name sku reorderPoint',
+        select: 'name sku reorderPoint minStock maxStock image',
         model: 'Product'
       })
       .populate({
         path: 'warehouseId',
-        select: 'name code',
+        select: 'name code zones',
         model: 'Warehouse'
-      });
+      })
+      .lean();
+
+    const inventoriesWithLocation = inventories.map(enrichInventory);
+
+    // Set cache headers để tránh cache
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
 
     res.json({
       success: true,
       data: {
-        inventories,
-        total: inventories.length
+        inventories: inventoriesWithLocation,
+        total: inventoriesWithLocation.length
       }
     });
   } catch (error) {
@@ -844,14 +1109,15 @@ const getOverstockItems = async(req, res) => {
     const allInventories = await Inventory.find({})
       .populate({
         path: 'productId',
-        select: 'name sku maxStock',
+        select: 'name sku maxStock minStock reorderPoint image',
         model: 'Product'
       })
       .populate({
         path: 'warehouseId',
-        select: 'name code',
+        select: 'name code zones',
         model: 'Warehouse'
-      });
+      })
+      .lean();
 
     // Filter những items có quantity > maxStock (và maxStock > 0)
     const overstockInventories = allInventories.filter(inventory => {
@@ -861,6 +1127,13 @@ const getOverstockItems = async(req, res) => {
         return false;
       }
       return inventory.quantity > product.maxStock;
+    }).map(enrichInventory);
+
+    // Set cache headers để tránh cache
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
     });
 
     res.json({

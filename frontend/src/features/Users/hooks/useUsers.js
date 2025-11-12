@@ -1,6 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { usersAPI } from '../api/usersService'
 import toast from 'react-hot-toast'
+import { ROLES } from '@config'
+import { usersAPI } from '../api/usersService'
+
+const ROLE_OPTIONS = [
+  {
+    id: ROLES.ADMIN,
+    name: 'Quản trị viên',
+    description: 'Toàn quyền quản lý hệ thống'
+  },
+  {
+    id: ROLES.MANAGER,
+    name: 'Quản lý',
+    description: 'Quản lý người dùng và nghiệp vụ chính'
+  },
+  {
+    id: ROLES.STAFF,
+    name: 'Nhân viên',
+    description: 'Thực hiện các tác vụ kho được phân công'
+  },
+  {
+    id: ROLES.VIEWER,
+    name: 'Người xem',
+    description: 'Chỉ xem dữ liệu, không được chỉnh sửa'
+  }
+]
 
 // Hook để lấy danh sách người dùng
 export const useUsers = (params = {}) => {
@@ -82,7 +106,7 @@ export const useUpdateUserStatus = () => {
   const queryClient = useQueryClient()
 
   return useMutation(
-    ({ id, status }) => usersAPI.updateUserStatus(id, status),
+    ({ id, isActive }) => usersAPI.updateUserStatus(id, isActive),
     {
       onSuccess: (data, variables) => {
         queryClient.invalidateQueries(['users'])
@@ -165,10 +189,10 @@ export const useUploadAvatar = () => {
 export const useRoles = () => {
   return useQuery(
     ['roles'],
-    usersAPI.getRoles,
+    () => ROLE_OPTIONS,
     {
-      staleTime: 5 * 60 * 1000, // 5 phút
-      retry: 2,
+      staleTime: Infinity,
+      cacheTime: Infinity
     }
   )
 }

@@ -59,8 +59,8 @@ export const usersAPI = {
   },
 
   // Cập nhật trạng thái người dùng
-  updateUserStatus: async (id, status) => {
-    const response = await api.patch(`${API_ENDPOINTS.USERS.BASE}/${id}/status`, { status })
+  updateUserStatus: async (id, isActive) => {
+    const response = await api.put(`${API_ENDPOINTS.USERS.BASE}/${id}`, { isActive })
     return response.data
   },
 

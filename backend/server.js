@@ -56,7 +56,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control', 'Pragma']
 }));
 
 // Rate limiting
@@ -83,8 +83,8 @@ const authLimiter = rateLimit({
   },
   skipSuccessfulRequests: true,
   // Skip rate limiting for development environment
-  skip: (req) => {
-    return config.app.environment === 'development'
+  skip: (_req) => {
+    return config.app.environment === 'development';
   }
 });
 

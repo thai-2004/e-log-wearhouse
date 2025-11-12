@@ -72,13 +72,14 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
     ]
 
     const managementItems = [
-      {
-        id: 'orders',
-        label: 'Đơn hàng',
-        icon: FiShoppingCart,
-        path: '/dashboard/orders',
-        roles: ['admin', 'manager', 'staff']
-      },
+      // Temporarily hidden
+      // {
+      //   id: 'orders',
+      //   label: 'Đơn hàng',
+      //   icon: FiShoppingCart,
+      //   path: '/dashboard/orders',
+      //   roles: ['admin', 'manager', 'staff']
+      // },
       {
         id: 'suppliers',
         label: 'Nhà cung cấp',
@@ -101,13 +102,6 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
         label: 'Báo cáo',
         icon: FiBarChart,
         path: '/dashboard/reports',
-        roles: ['admin', 'manager']
-      },
-      {
-        id: 'analytics',
-        label: 'Phân tích',
-        icon: FiTrendingUp,
-        path: '/dashboard/analytics',
         roles: ['admin', 'manager']
       }
     ]

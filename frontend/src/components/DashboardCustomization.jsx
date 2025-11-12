@@ -5,11 +5,9 @@ const DashboardCustomization = ({ onSave, onReset, initialSettings = {} }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [settings, setSettings] = useState({
     layout: initialSettings.layout || 'grid',
-    showCharts: initialSettings.showCharts !== false,
     showStats: initialSettings.showStats !== false,
     showActivities: initialSettings.showActivities !== false,
     showAlerts: initialSettings.showAlerts !== false,
-    chartHeight: initialSettings.chartHeight || 300,
     refreshInterval: initialSettings.refreshInterval || 30000,
     ...initialSettings
   })
@@ -29,11 +27,9 @@ const DashboardCustomization = ({ onSave, onReset, initialSettings = {} }) => {
   const handleReset = () => {
     const defaultSettings = {
       layout: 'grid',
-      showCharts: true,
       showStats: true,
       showActivities: true,
       showAlerts: true,
-      chartHeight: 300,
       refreshInterval: 30000
     }
     setSettings(defaultSettings)
@@ -114,7 +110,6 @@ const DashboardCustomization = ({ onSave, onReset, initialSettings = {} }) => {
                   </label>
                   <div className="space-y-3">
                     {[
-                      { key: 'showCharts', label: 'Charts & Analytics', icon: FiEye },
                       { key: 'showStats', label: 'Statistics Cards', icon: FiEye },
                       { key: 'showActivities', label: 'Recent Activities', icon: FiEye },
                       { key: 'showAlerts', label: 'System Alerts', icon: FiEye }
@@ -130,27 +125,6 @@ const DashboardCustomization = ({ onSave, onReset, initialSettings = {} }) => {
                         <span className="text-sm text-gray-700">{label}</span>
                       </label>
                     ))}
-                  </div>
-                </div>
-
-                {/* Chart Settings */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">
-                    Chart Height
-                  </label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="range"
-                      min="200"
-                      max="500"
-                      step="50"
-                      value={settings.chartHeight}
-                      onChange={(e) => handleSettingChange('chartHeight', parseInt(e.target.value))}
-                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                    <span className="text-sm text-gray-600 w-12">
-                      {settings.chartHeight}px
-                    </span>
                   </div>
                 </div>
 

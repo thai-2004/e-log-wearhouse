@@ -54,29 +54,6 @@ export const dashboardAPI = {
     return response.data
   },
 
-  // Lấy biểu đồ doanh thu
-  getRevenueChart: async (timeRange = '30d') => {
-    const response = await apiClient.get('/dashboard/charts/revenue', {
-      params: { timeRange }
-    })
-    return response.data
-  },
-
-  // Lấy biểu đồ tồn kho
-  getInventoryChart: async (timeRange = '30d') => {
-    const response = await apiClient.get('/dashboard/charts/inventory', {
-      params: { timeRange }
-    })
-    return response.data
-  },
-
-  // Lấy biểu đồ hoạt động
-  getActivityChart: async (timeRange = '7d') => {
-    const response = await apiClient.get('/dashboard/charts/activity', {
-      params: { timeRange }
-    })
-    return response.data
-  },
 
   // Lấy nhiệm vụ hôm nay (cho Staff)
   getTodayTasks: async () => {

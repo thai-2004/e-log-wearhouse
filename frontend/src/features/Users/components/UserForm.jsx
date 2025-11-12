@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiUpload, FiX } from 'react-icons/fi'
+import { FiUser, FiEye, FiEyeOff, FiUpload, FiX } from 'react-icons/fi'
 import Button from '@components/ui/Button'
 import Input from '@components/ui/Input'
-import { useCreateUser, useUpdateUser, useUploadAvatar, useRoles } from '../hooks/useUsers'
+import { ROLES } from '@config'
+import { useCreateUser, useUpdateUser, useUploadAvatar } from '../hooks/useUsers'
+
+const ROLE_OPTIONS = [
+  { value: ROLES.ADMIN, label: 'Quản trị viên' },
+  { value: ROLES.MANAGER, label: 'Quản lý' },
+  { value: ROLES.STAFF, label: 'Nhân viên' },
+  { value: ROLES.VIEWER, label: 'Người xem' }
+]
+
+const STATUS_OPTIONS = [
+  { value: 'true', label: 'Hoạt động' },
+  { value: 'false', label: 'Không hoạt động' }
+]
 
 const UserForm = ({ user, onClose }) => {
   const [showPassword, setShowPassword] = useState(false)
@@ -13,25 +26,23 @@ const UserForm = ({ user, onClose }) => {
   const createUserMutation = useCreateUser()
   const updateUserMutation = useUpdateUser()
   const uploadAvatarMutation = useUploadAvatar()
-  const { data: rolesData } = useRoles()
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
     watch,
     reset
   } = useForm({
     defaultValues: {
-      name: '',
+      username: '',
+      fullName: '',
       email: '',
       password: '',
       confirmPassword: '',
       phone: '',
-      address: '',
-      role: '',
-      status: 'active',
+      role: ROLES.STAFF,
+      isActive: 'true',
       notes: ''
     }
   })
@@ -40,17 +51,30 @@ const UserForm = ({ user, onClose }) => {
   useEffect(() => {
     if (user) {
       reset({
-        name: user.name || '',
-        email: user.email || '',
+        username: user?.username || '',
+        fullName: user?.fullName || user?.name || '',
+        email: user?.email || '',
         password: '',
         confirmPassword: '',
-        phone: user.phone || '',
-        address: user.address || '',
-        role: user.roles?.[0]?.id || '',
-        status: user.status || 'active',
-        notes: user.notes || ''
+        phone: user?.phone || '',
+        role: user?.role || ROLES.STAFF,
+        isActive: user?.isActive !== undefined ? String(user.isActive) : 'true',
+        notes: user?.notes || ''
       })
-      setAvatarPreview(user.avatar)
+      setAvatarPreview(user?.avatar || user?.avatarUrl || null)
+    } else {
+      reset({
+        username: '',
+        fullName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        phone: '',
+        role: ROLES.STAFF,
+        isActive: 'true',
+        notes: ''
+      })
+      setAvatarPreview(null)
     }
   }, [user, reset])
 
@@ -78,22 +102,30 @@ const UserForm = ({ user, onClose }) => {
     try {
       let userId = null
 
+      const payload = {
+        username: data.username,
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone || undefined,
+        role: data.role,
+        isActive: data.isActive === 'true'
+      }
+
+      if (data.password) {
+        payload.password = data.password
+      }
+
       if (user?.id) {
         // Cập nhật người dùng
-        const updateData = { ...data }
-        if (!updateData.password) {
-          delete updateData.password
-          delete updateData.confirmPassword
-        }
         await updateUserMutation.mutateAsync({
           id: user.id,
-          data: updateData
+          data: payload
         })
         userId = user.id
       } else {
         // Tạo người dùng mới
-        const newUser = await createUserMutation.mutateAsync(data)
-        userId = newUser.id
+        const newUser = await createUserMutation.mutateAsync(payload)
+        userId = newUser?.data?.user?._id || newUser?.data?.user?.id
       }
 
       // Upload avatar nếu có
@@ -174,10 +206,29 @@ const UserForm = ({ user, onClose }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Input
+            label="Tên đăng nhập *"
+            placeholder="Nhập tên đăng nhập"
+            error={errors.username?.message}
+            {...register('username', {
+              required: 'Tên đăng nhập là bắt buộc',
+              minLength: {
+                value: 2,
+                message: 'Tên đăng nhập phải có ít nhất 2 ký tự'
+              },
+              pattern: {
+                value: /^[a-zA-Z0-9_]+$/,
+                message: 'Chỉ cho phép chữ, số và dấu gạch dưới'
+              }
+            })}
+          />
+        </div>
+
+        <div>
+          <Input
             label="Họ và tên *"
             placeholder="Nhập họ và tên"
-            error={errors.name?.message}
-            {...register('name', {
+            error={errors.fullName?.message}
+            {...register('fullName', {
               required: 'Họ và tên là bắt buộc',
               minLength: {
                 value: 2,
@@ -186,7 +237,10 @@ const UserForm = ({ user, onClose }) => {
             })}
           />
         </div>
+      </div>
 
+      {/* Contact Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Input
             label="Email *"
@@ -198,6 +252,20 @@ const UserForm = ({ user, onClose }) => {
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                 message: 'Email không hợp lệ'
+              }
+            })}
+          />
+        </div>
+
+        <div>
+          <Input
+            label="Số điện thoại"
+            placeholder="Nhập số điện thoại"
+            error={errors.phone?.message}
+            {...register('phone', {
+              pattern: {
+                value: /^[0-9+\-\s()]+$/,
+                message: 'Số điện thoại không hợp lệ'
               }
             })}
           />
@@ -291,10 +359,9 @@ const UserForm = ({ user, onClose }) => {
               required: 'Vai trò là bắt buộc'
             })}
           >
-            <option value="">Chọn vai trò</option>
-            {rolesData?.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
+            {ROLE_OPTIONS.map((role) => (
+              <option key={role.value} value={role.value}>
+                {role.label}
               </option>
             ))}
           </select>
@@ -309,16 +376,18 @@ const UserForm = ({ user, onClose }) => {
           </label>
           <select
             className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-            {...register('status', {
+            {...register('isActive', {
               required: 'Trạng thái là bắt buộc'
             })}
           >
-            <option value="active">Hoạt động</option>
-            <option value="inactive">Không hoạt động</option>
-            <option value="pending">Chờ xác nhận</option>
+            {STATUS_OPTIONS.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
           </select>
-          {errors.status && (
-            <p className="text-sm text-red-600 mt-1">{errors.status.message}</p>
+          {errors.isActive && (
+            <p className="text-sm text-red-600 mt-1">{errors.isActive.message}</p>
           )}
         </div>
       </div>
