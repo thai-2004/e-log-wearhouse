@@ -22,7 +22,7 @@ const UserForm = ({ user, onClose }) => {
   const [showPassword, setShowPassword] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [avatarFile, setAvatarFile] = useState(null)
-  
+
   const createUserMutation = useCreateUser()
   const updateUserMutation = useUpdateUser()
   const uploadAvatarMutation = useUploadAvatar()
@@ -135,16 +135,16 @@ const UserForm = ({ user, onClose }) => {
           file: avatarFile
         })
       }
-      
+
       onClose()
     } catch (error) {
       console.error('Error saving user:', error)
     }
   }
 
-  const isLoading = createUserMutation.isLoading || 
-                   updateUserMutation.isLoading || 
-                   uploadAvatarMutation.isLoading
+  const isLoading = createUserMutation.isLoading ||
+    updateUserMutation.isLoading ||
+    uploadAvatarMutation.isLoading
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -165,7 +165,7 @@ const UserForm = ({ user, onClose }) => {
             )}
           </div>
         </div>
-        
+
         <div className="flex-1">
           <div className="flex items-center space-x-3">
             <input
@@ -182,7 +182,7 @@ const UserForm = ({ user, onClose }) => {
               <FiUpload className="h-4 w-4 mr-2" />
               Chọn ảnh
             </label>
-            
+
             {avatarPreview && (
               <Button
                 type="button"
@@ -237,7 +237,7 @@ const UserForm = ({ user, onClose }) => {
             })}
           />
         </div>
-        </div>
+      </div>
 
       {/* Contact Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -292,7 +292,7 @@ const UserForm = ({ user, onClose }) => {
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                className="absolute top-8 right-0 pr-3 flex items-center"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (

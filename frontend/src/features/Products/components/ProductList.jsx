@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { FiSearch, FiFilter, FiPlus, FiDownload, FiUpload } from 'react-icons/fi'
+import { FiSearch, FiFilter, FiPlus, FiDownload, FiUpload, FiTrash2, FiEdit } from 'react-icons/fi'
 import Button from '@components/ui/Button'
 import Input from '@components/ui/Input'
 import Table from '@components/ui/Table'
@@ -8,6 +8,7 @@ import ProductForm from './ProductForm'
 import ProductCard from './ProductCard'
 import ProductFilters from './ProductFilters'
 import { useProducts, useDeleteProduct, useExportProducts } from '../hooks/useProducts'
+import Tooltip from '@components/ui/Tooltip'
 
 const ProductList = () => {
   const [showForm, setShowForm] = useState(false)
@@ -30,7 +31,7 @@ const ProductList = () => {
     search: searchQuery,
     ...filters
   })
-  
+
   const deleteProductMutation = useDeleteProduct()
   const exportProductsMutation = useExportProducts()
 
@@ -112,13 +113,12 @@ const ProductList = () => {
       accessor: 'stock',
       render: (_value, row) => (
         <div className="flex items-center">
-          <span className={`text-sm font-medium ${
-            (row?.stock || 0) <= (row?.minStock || 0)
-              ? 'text-red-600' 
-              : (row?.stock || 0) <= (row?.minStock || 0) * 2 
-                ? 'text-yellow-600' 
-                : 'text-green-600'
-          }`}>
+          <span className={`text-sm font-medium ${(row?.stock || 0) <= (row?.minStock || 0)
+            ? 'text-red-600'
+            : (row?.stock || 0) <= (row?.minStock || 0) * 2
+              ? 'text-yellow-600'
+              : 'text-green-600'
+            }`}>
             {row?.stock ?? 0}
           </span>
           <span className="text-sm text-gray-500 ml-1">
@@ -131,11 +131,10 @@ const ProductList = () => {
       header: 'Trạng thái',
       accessor: 'isActive',
       render: (_value, row) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          row?.isActive === false 
-            ? 'bg-gray-100 text-gray-800'
-            : 'bg-green-100 text-green-800'
-        }`}>
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${row?.isActive === false
+          ? 'bg-gray-100 text-gray-800'
+          : 'bg-green-100 text-green-800'
+          }`}>
           {row?.isActive === false ? 'Ngừng bán' : 'Hoạt động'}
         </span>
       )
@@ -145,24 +144,28 @@ const ProductList = () => {
       accessor: 'actions',
       render: (_value, row) => (
         <div className="flex space-x-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setSelectedProduct(row)
-              setShowForm(true)
-            }}
-          >
-            Sửa
-          </Button>
-          <Button
-            size="sm"
-            variant="error"
-            onClick={() => row?._id && handleDelete(row._id)}
-            disabled={deleteProductMutation.isLoading || !row?._id}
-          >
-            Xóa
-          </Button>
+          <Tooltip text="Chỉnh sửa sản phẩm" position="top">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setSelectedProduct(row)
+                setShowForm(true)
+              }}
+            >
+              <FiEdit className="h-4 w-4" />
+            </Button>
+          </Tooltip >
+          <Tooltip text="Xóa sản phẩm" position="top">
+            <Button
+              size="sm"
+              variant="error"
+              onClick={() => row?._id && handleDelete(row._id)}
+              disabled={deleteProductMutation.isLoading || !row?._id}
+            >
+              <FiTrash2 className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </div>
       )
     }
