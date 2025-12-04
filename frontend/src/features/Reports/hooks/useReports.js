@@ -115,22 +115,60 @@ export const useExportReport = () => {
     ({ id, format, params }) => reportsAPI.exportReport(id, format, params),
     {
       onSuccess: (data, variables) => {
-        // Tạo blob và download file
-        const blob = new Blob([data], { 
-          type: variables.format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        })
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `report_${new Date().toISOString().split('T')[0]}.${variables.format}`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(url)
-        toast.success('Xuất báo cáo thành công!')
+        try {
+          // Xác định MIME type dựa trên format
+          let mimeType = 'application/octet-stream'
+          let fileExtension = variables.format || 'pdf'
+          
+          switch (variables.format) {
+            case 'pdf':
+              mimeType = 'application/pdf'
+              fileExtension = 'pdf'
+              break
+            case 'excel':
+            case 'xlsx':
+              mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+              fileExtension = 'xlsx'
+              break
+            case 'csv':
+              mimeType = 'text/csv'
+              fileExtension = 'csv'
+              break
+            case 'json':
+              mimeType = 'application/json'
+              fileExtension = 'json'
+              break
+            default:
+              mimeType = 'application/pdf'
+              fileExtension = 'pdf'
+          }
+
+          // Tạo blob và download file
+          const blob = new Blob([data], { type: mimeType })
+          const url = window.URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `report_${new Date().toISOString().split('T')[0]}.${fileExtension}`
+          link.style.display = 'none'
+          document.body.appendChild(link)
+          link.click()
+          
+          // Cleanup
+          setTimeout(() => {
+            document.body.removeChild(link)
+            window.URL.revokeObjectURL(url)
+          }, 100)
+          
+          toast.success('Xuất báo cáo thành công!')
+        } catch (error) {
+          console.error('Download file error:', error)
+          toast.error('Có lỗi xảy ra khi tải file')
+        }
       },
       onError: (error) => {
-        toast.error(error.response?.data?.message || 'Xuất báo cáo thất bại')
+        console.error('Export report error:', error)
+        const errorMessage = error.response?.data?.message || error.message || 'Xuất báo cáo thất bại'
+        toast.error(errorMessage)
       },
     }
   )

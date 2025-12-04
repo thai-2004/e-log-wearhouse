@@ -86,12 +86,44 @@ router.get(
   reportController.getReportById
 );
 
+// Lấy dữ liệu báo cáo
+router.get(
+  '/:id/data',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.getReportData
+);
+
+// Chạy báo cáo
+router.post(
+  '/:id/run',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.runReport
+);
+
 // Export "định nghĩa báo cáo" theo ID (mock)
 router.get(
   '/:id/export',
   authenticateToken,
   authorize('admin', 'manager'),
   reportController.exportReportDefinition
+);
+
+// Thêm vào yêu thích
+router.post(
+  '/:id/favorite',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.addToFavorites
+);
+
+// Xóa khỏi yêu thích
+router.delete(
+  '/:id/favorite',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.removeFromFavorites
 );
 
 router.put(

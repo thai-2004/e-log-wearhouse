@@ -31,6 +31,7 @@ import Input from '@components/ui/Input'
 import Select from '@components/ui/Select'
 import Modal from '@components/ui/Modal'
 import ReportForm from './ReportForm'
+import ReportViewer from './ReportViewer'
 import { useReports, useReportTemplates, useReportTypes, useDeleteReport, useExportReport, useAddToFavorites, useRemoveFromFavorites } from '../hooks/useReports'
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
@@ -51,7 +52,10 @@ const ReportList = () => {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showViewerModal, setShowViewerModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [reportToDelete, setReportToDelete] = useState(null)
+  const [selectedReportId, setSelectedReportId] = useState(null)
 
   // API hooks
   const { data: reportsData, isLoading, error, refetch } = useReports({
@@ -209,18 +213,35 @@ const ReportList = () => {
       switch (action) {
         case 'export':
           // Export multiple reports
+          for (const reportId of selectedReports) {
+            await handleExportReport(reportId)
+          }
           break
         case 'delete':
           // Delete multiple reports
+          for (const reportId of selectedReports) {
+            await deleteReportMutation.mutateAsync(reportId)
+          }
           break
         case 'archive':
-          // Archive multiple reports
+          // Archive multiple reports - TODO: implement archive API
           break
       }
       setSelectedReports([])
+      refetch()
     } catch (error) {
       console.error('Bulk action error:', error)
     }
+  }
+
+  const handleViewReport = (reportId) => {
+    setSelectedReportId(reportId)
+    setShowViewerModal(true)
+  }
+
+  const handleEditReport = (reportId) => {
+    setSelectedReportId(reportId)
+    setShowEditModal(true)
   }
 
   const getReportIcon = (type) => {
@@ -585,14 +606,14 @@ const ReportList = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {}}
+                        onClick={() => handleViewReport(report.id)}
                       >
                         <FiEye className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {}}
+                        onClick={() => handleEditReport(report.id)}
                       >
                         <FiEdit className="h-4 w-4" />
                       </Button>
@@ -652,14 +673,14 @@ const ReportList = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {}}
+                      onClick={() => handleViewReport(report.id)}
                     >
                       <FiEye className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {}}
+                      onClick={() => handleEditReport(report.id)}
                     >
                       <FiEdit className="h-4 w-4" />
                     </Button>
@@ -808,6 +829,57 @@ const ReportList = () => {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Viewer Modal */}
+      <Modal
+        isOpen={showViewerModal}
+        onClose={() => {
+          setShowViewerModal(false)
+          setSelectedReportId(null)
+        }}
+        title="Xem báo cáo"
+        size="xl"
+      >
+        {selectedReportId && (
+          <ReportViewer
+            reportId={selectedReportId}
+            onClose={() => {
+              setShowViewerModal(false)
+              setSelectedReportId(null)
+            }}
+            onEdit={() => {
+              setShowViewerModal(false)
+              setShowEditModal(true)
+            }}
+          />
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setSelectedReportId(null)
+        }}
+        title="Chỉnh sửa báo cáo"
+        size="xl"
+      >
+        {selectedReportId && (
+          <ReportForm
+            reportId={selectedReportId}
+            onClose={() => {
+              setShowEditModal(false)
+              setSelectedReportId(null)
+            }}
+            onSave={() => {
+              setShowEditModal(false)
+              setSelectedReportId(null)
+              refetch()
+            }}
+          />
+        )}
       </Modal>
     </div>
   )

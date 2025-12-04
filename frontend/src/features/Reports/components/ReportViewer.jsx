@@ -47,6 +47,7 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
   const [showFilters, setShowFilters] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
   const [chartSettings, setChartSettings] = useState({
     showLegend: true,
     showGrid: true,
@@ -57,17 +58,25 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
 
   // API hooks
   const { data: report, isLoading: isLoadingReport } = useReport(reportId)
-  const { data: reportData, isLoading: isLoadingData, refetch } = useReportData(reportId, filters)
+  const { data: reportData, isLoading: isLoadingData, refetch } = useReportData(reportId, {
+    ...filters,
+    page: currentPage
+  })
   const exportReportMutation = useExportReport()
   const addToFavoritesMutation = useAddToFavorites()
   const removeFromFavoritesMutation = useRemoveFromFavorites()
 
-  // Load report data when component mounts
+  // Load report data when component mounts or filters/page change
   useEffect(() => {
     if (reportId) {
       refetch()
     }
-  }, [reportId, refetch])
+  }, [reportId, filters, currentPage, refetch])
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filters])
 
   // Handlers
   const handleFilterChange = (key, value) => {
@@ -99,6 +108,18 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
 
   const handleRefresh = () => {
     refetch()
+  }
+
+  // Helper function to safely format dates
+  const formatDateSafe = (dateValue, formatStr = 'dd/MM/yyyy HH:mm') => {
+    if (!dateValue) return 'N/A'
+    try {
+      const date = new Date(dateValue)
+      if (isNaN(date.getTime())) return 'N/A'
+      return format(date, formatStr, { locale: vi })
+    } catch (e) {
+      return 'N/A'
+    }
   }
 
   const getReportIcon = (type) => {
@@ -307,18 +328,18 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {}}
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={reportData.page === 1}
                 >
                   Trước
                 </Button>
                 <span className="text-sm text-gray-500">
-                  Trang {reportData.page} / {reportData.totalPages}
+                  Trang {reportData.page || currentPage} / {reportData.totalPages || 1}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {}}
+                  onClick={() => setCurrentPage(prev => Math.min(reportData.totalPages || 1, prev + 1))}
                   disabled={reportData.page === reportData.totalPages}
                 >
                   Sau
@@ -396,7 +417,7 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
                 {getStatusText(report.status)}
               </span>
               <span className="text-sm text-gray-500">
-                Cập nhật: {format(new Date(report.updatedAt), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                Cập nhật: {formatDateSafe(report.updatedAt)}
               </span>
               {report.isFavorite && (
                 <FiStar className="h-4 w-4 text-yellow-400 fill-current" />

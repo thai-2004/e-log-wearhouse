@@ -31,6 +31,10 @@ import Select from '@components/ui/Select'
 import Textarea from '@components/ui/Textarea'
 import Modal from '@components/ui/Modal'
 import { useReport, useCreateReport, useUpdateReport, useRunReport, useReportData } from '../hooks/useReports'
+import { useWarehouses } from '@features/Warehouses/hooks/useWarehouses'
+import { useProducts } from '@features/Products/hooks/useProducts'
+import { useCustomers } from '@features/Customers/hooks/useCustomers'
+import { useSuppliers } from '@features/Suppliers/hooks/useSuppliers'
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
 
@@ -98,12 +102,84 @@ const ReportForm = ({ reportId, onClose, onSave }) => {
   const [isRunning, setIsRunning] = useState(false)
   const [previewData, setPreviewData] = useState(null)
 
+  // Sanitize filters to ensure only serializable values (for React Query cache key)
+  const sanitizedFilters = React.useMemo(() => {
+    if (!formData.filters) return {}
+    
+    return {
+      dateRange: formData.filters.dateRange ? {
+        enabled: Boolean(formData.filters.dateRange.enabled),
+        startDate: String(formData.filters.dateRange.startDate || ''),
+        endDate: String(formData.filters.dateRange.endDate || ''),
+        preset: String(formData.filters.dateRange.preset || '')
+      } : {},
+      warehouses: Array.isArray(formData.filters.warehouses) 
+        ? formData.filters.warehouses.map(v => String(v)).filter(Boolean)
+        : [],
+      products: Array.isArray(formData.filters.products)
+        ? formData.filters.products.map(v => String(v)).filter(Boolean)
+        : [],
+      customers: Array.isArray(formData.filters.customers)
+        ? formData.filters.customers.map(v => String(v)).filter(Boolean)
+        : [],
+      suppliers: Array.isArray(formData.filters.suppliers)
+        ? formData.filters.suppliers.map(v => String(v)).filter(Boolean)
+        : [],
+      categories: Array.isArray(formData.filters.categories)
+        ? formData.filters.categories.map(v => String(v)).filter(Boolean)
+        : []
+    }
+  }, [formData.filters])
+
   // API hooks
   const { data: report, isLoading: isLoadingReport } = useReport(reportId)
-  const { data: reportData, isLoading: isLoadingData } = useReportData(reportId, formData.filters)
+  const { data: reportData, isLoading: isLoadingData } = useReportData(reportId, sanitizedFilters)
   const createReportMutation = useCreateReport()
   const updateReportMutation = useUpdateReport()
   const runReportMutation = useRunReport()
+
+  // Fetch data for filters
+  const { data: warehousesData } = useWarehouses({ limit: 1000 })
+  const { data: productsData } = useProducts({ limit: 1000 })
+  const { data: customersData } = useCustomers({ limit: 1000 })
+  const { data: suppliersData } = useSuppliers({ limit: 1000 })
+
+  // Transform data to options format - handle different data structures safely
+  const getArrayFromData = (data) => {
+    if (!data) return []
+    // If data is already an array
+    if (Array.isArray(data)) return data
+    // If data has a data property that is an array
+    if (Array.isArray(data.data)) return data.data
+    // If data has a data property that is an object with array property
+    if (data.data && Array.isArray(data.data.customers)) return data.data.customers
+    if (data.data && Array.isArray(data.data.products)) return data.data.products
+    if (data.data && Array.isArray(data.data.warehouses)) return data.data.warehouses
+    if (data.data && Array.isArray(data.data.suppliers)) return data.data.suppliers
+    // If data has a data property that is an object with data array
+    if (data.data?.data && Array.isArray(data.data.data)) return data.data.data
+    return []
+  }
+
+  const warehouseOptions = getArrayFromData(warehousesData).map(wh => ({
+    value: wh.id || wh._id,
+    label: wh.name
+  }))
+
+  const productOptions = getArrayFromData(productsData).map(prod => ({
+    value: prod.id || prod._id,
+    label: prod.name
+  }))
+
+  const customerOptions = getArrayFromData(customersData).map(cust => ({
+    value: cust.id || cust._id,
+    label: cust.name || cust.companyName || `${cust.firstName || ''} ${cust.lastName || ''}`.trim()
+  }))
+
+  const supplierOptions = getArrayFromData(suppliersData).map(sup => ({
+    value: sup.id || sup._id,
+    label: sup.name || sup.companyName
+  }))
 
   const isEdit = !!reportId
 
@@ -144,12 +220,218 @@ const ReportForm = ({ reportId, onClose, onSave }) => {
     }
   }, [reportData, showPreview])
 
+  // Tự động điền dữ liệu dựa trên loại báo cáo
+  const getDefaultConfigByType = (type) => {
+    const configs = {
+      inventory: {
+        columns: [
+          { field: 'productName', label: 'Tên sản phẩm', visible: true, width: 150 },
+          { field: 'warehouseName', label: 'Kho', visible: true, width: 120 },
+          { field: 'quantity', label: 'Số lượng', visible: true, width: 100 },
+          { field: 'unitPrice', label: 'Đơn giá', visible: true, width: 120 },
+          { field: 'totalValue', label: 'Tổng giá trị', visible: true, width: 150 },
+          { field: 'category', label: 'Danh mục', visible: true, width: 120 }
+        ],
+        chart: {
+          enabled: true,
+          type: 'bar',
+          xAxis: 'warehouseName',
+          yAxis: 'totalValue',
+          title: 'Biểu đồ tồn kho theo kho',
+          description: 'Hiển thị tổng giá trị tồn kho theo từng kho'
+        },
+        filters: {
+          dateRange: {
+            enabled: true,
+            preset: 'last30days'
+          }
+        }
+      },
+      revenue: {
+        columns: [
+          { field: 'date', label: 'Ngày', visible: true, width: 120 },
+          { field: 'orderCount', label: 'Số đơn hàng', visible: true, width: 120 },
+          { field: 'totalRevenue', label: 'Doanh thu', visible: true, width: 150 },
+          { field: 'averageOrderValue', label: 'Giá trị TB đơn hàng', visible: true, width: 150 },
+          { field: 'customerCount', label: 'Số khách hàng', visible: true, width: 120 }
+        ],
+        chart: {
+          enabled: true,
+          type: 'line',
+          xAxis: 'date',
+          yAxis: 'totalRevenue',
+          title: 'Biểu đồ doanh thu theo thời gian',
+          description: 'Hiển thị xu hướng doanh thu theo ngày'
+        },
+        filters: {
+          dateRange: {
+            enabled: true,
+            preset: 'last30days'
+          }
+        }
+      },
+      customer: {
+        columns: [
+          { field: 'customerName', label: 'Tên khách hàng', visible: true, width: 150 },
+          { field: 'orderCount', label: 'Số đơn hàng', visible: true, width: 120 },
+          { field: 'totalSpent', label: 'Tổng chi tiêu', visible: true, width: 150 },
+          { field: 'averageOrderValue', label: 'Giá trị TB đơn hàng', visible: true, width: 150 },
+          { field: 'lastOrderDate', label: 'Đơn hàng cuối', visible: true, width: 120 }
+        ],
+        chart: {
+          enabled: true,
+          type: 'bar',
+          xAxis: 'customerName',
+          yAxis: 'totalSpent',
+          title: 'Top khách hàng theo tổng chi tiêu',
+          description: 'Hiển thị khách hàng có tổng chi tiêu cao nhất'
+        },
+        filters: {
+          dateRange: {
+            enabled: true,
+            preset: 'last30days'
+          }
+        }
+      },
+      supplier: {
+        columns: [
+          { field: 'supplierName', label: 'Tên nhà cung cấp', visible: true, width: 150 },
+          { field: 'orderCount', label: 'Số đơn nhập', visible: true, width: 120 },
+          { field: 'totalValue', label: 'Tổng giá trị', visible: true, width: 150 },
+          { field: 'averageOrderValue', label: 'Giá trị TB đơn', visible: true, width: 150 },
+          { field: 'lastOrderDate', label: 'Đơn nhập cuối', visible: true, width: 120 }
+        ],
+        chart: {
+          enabled: true,
+          type: 'bar',
+          xAxis: 'supplierName',
+          yAxis: 'totalValue',
+          title: 'Báo cáo nhà cung cấp',
+          description: 'Hiển thị thống kê theo nhà cung cấp'
+        },
+        filters: {
+          dateRange: {
+            enabled: true,
+            preset: 'last30days'
+          }
+        }
+      },
+      product: {
+        columns: [
+          { field: 'productName', label: 'Tên sản phẩm', visible: true, width: 150 },
+          { field: 'category', label: 'Danh mục', visible: true, width: 120 },
+          { field: 'quantitySold', label: 'Số lượng bán', visible: true, width: 120 },
+          { field: 'revenue', label: 'Doanh thu', visible: true, width: 150 },
+          { field: 'stock', label: 'Tồn kho', visible: true, width: 100 }
+        ],
+        chart: {
+          enabled: true,
+          type: 'bar',
+          xAxis: 'productName',
+          yAxis: 'revenue',
+          title: 'Top sản phẩm bán chạy',
+          description: 'Hiển thị sản phẩm có doanh thu cao nhất'
+        },
+        filters: {
+          dateRange: {
+            enabled: true,
+            preset: 'last30days'
+          }
+        }
+      },
+      inbound: {
+        columns: [
+          { field: 'date', label: 'Ngày nhập', visible: true, width: 120 },
+          { field: 'warehouseName', label: 'Kho', visible: true, width: 120 },
+          { field: 'supplierName', label: 'Nhà cung cấp', visible: true, width: 150 },
+          { field: 'productCount', label: 'Số sản phẩm', visible: true, width: 120 },
+          { field: 'totalValue', label: 'Tổng giá trị', visible: true, width: 150 }
+        ],
+        chart: {
+          enabled: true,
+          type: 'line',
+          xAxis: 'date',
+          yAxis: 'totalValue',
+          title: 'Biểu đồ nhập kho theo thời gian',
+          description: 'Hiển thị xu hướng nhập kho'
+        },
+        filters: {
+          dateRange: {
+            enabled: true,
+            preset: 'last30days'
+          }
+        }
+      },
+      outbound: {
+        columns: [
+          { field: 'date', label: 'Ngày xuất', visible: true, width: 120 },
+          { field: 'warehouseName', label: 'Kho', visible: true, width: 120 },
+          { field: 'customerName', label: 'Khách hàng', visible: true, width: 150 },
+          { field: 'productCount', label: 'Số sản phẩm', visible: true, width: 120 },
+          { field: 'totalValue', label: 'Tổng giá trị', visible: true, width: 150 }
+        ],
+        chart: {
+          enabled: true,
+          type: 'line',
+          xAxis: 'date',
+          yAxis: 'totalValue',
+          title: 'Biểu đồ xuất kho theo thời gian',
+          description: 'Hiển thị xu hướng xuất kho'
+        },
+        filters: {
+          dateRange: {
+            enabled: true,
+            preset: 'last30days'
+          }
+        }
+      }
+    }
+    return configs[type] || {}
+  }
+
   // Form handlers
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      }
+      
+      // Tự động điền dữ liệu khi chọn loại báo cáo (chỉ khi tạo mới, không phải edit)
+      if (field === 'type' && value && !isEdit) {
+        const defaultConfig = getDefaultConfigByType(value)
+        if (defaultConfig.columns) {
+          newData.columns = defaultConfig.columns
+        }
+        if (defaultConfig.chart) {
+          newData.chart = {
+            ...prev.chart,
+            ...defaultConfig.chart
+          }
+        }
+        if (defaultConfig.filters) {
+          newData.filters = {
+            ...prev.filters,
+            ...defaultConfig.filters
+          }
+        }
+        // Tự động điền mô tả nếu chưa có
+        if (!prev.description && value) {
+          const typeLabels = {
+            inventory: 'Báo cáo tồn kho',
+            revenue: 'Báo cáo doanh thu',
+            customer: 'Báo cáo khách hàng',
+            supplier: 'Báo cáo nhà cung cấp',
+            product: 'Báo cáo sản phẩm',
+            inbound: 'Báo cáo nhập kho',
+            outbound: 'Báo cáo xuất kho'
+          }
+          newData.description = `${typeLabels[value] || 'Báo cáo'} - Tự động tạo`
+        }
+      }
+      
+      return newData
+    })
   }
 
   const handleNestedInputChange = (parent, field, value) => {
@@ -168,6 +450,38 @@ const ReportForm = ({ reportId, onClose, onSave }) => {
       [parent]: {
         ...prev[parent],
         [field]: value
+      }
+    }))
+  }
+
+  // Handle checkbox change for filters
+  const handleCheckboxChange = (parent, field, itemId, checked) => {
+    setFormData(prev => {
+      const currentArray = prev[parent][field] || []
+      const newArray = checked
+        ? [...currentArray, itemId]
+        : currentArray.filter(id => id !== itemId)
+      
+      return {
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [field]: newArray
+        }
+      }
+    })
+  }
+
+  // Handle select all for filters
+  const handleSelectAll = (parent, field, options) => {
+    const currentArray = formData[parent][field] || []
+    const allSelected = currentArray.length === options.length
+    
+    setFormData(prev => ({
+      ...prev,
+      [parent]: {
+        ...prev[parent],
+        [field]: allSelected ? [] : options.map(opt => opt.value)
       }
     }))
   }
@@ -197,21 +511,89 @@ const ReportForm = ({ reportId, onClose, onSave }) => {
 
   const handleSave = async () => {
     try {
+      // Validate required fields
+      if (!formData.name || !formData.name.trim()) {
+        alert('Vui lòng nhập tên báo cáo')
+        return
+      }
+      
+      if (!formData.type) {
+        alert('Vui lòng chọn loại báo cáo')
+        return
+      }
+
+      // Sanitize columns to ensure only serializable data
+      const sanitizedColumns = (formData.columns || []).map(col => ({
+        field: String(col.field || ''),
+        label: String(col.label || ''),
+        visible: Boolean(col.visible),
+        width: Number(col.width) || 100
+      }))
+
+      // Prepare data for API - only send necessary fields and ensure all are serializable
+      const reportData = {
+        name: String(formData.name || '').trim(),
+        description: String(formData.description || ''),
+        type: String(formData.type || ''),
+        category: String(formData.category || ''),
+        status: String(formData.status || 'draft'),
+        isPublic: Boolean(formData.isPublic),
+        isFavorite: Boolean(formData.isFavorite),
+        schedule: {
+          enabled: Boolean(formData.schedule?.enabled),
+          frequency: String(formData.schedule?.frequency || 'daily'),
+          time: String(formData.schedule?.time || '09:00'),
+          days: Array.isArray(formData.schedule?.days) ? formData.schedule.days.map(String) : [],
+          timezone: String(formData.schedule?.timezone || 'Asia/Ho_Chi_Minh')
+        },
+        filters: sanitizedFilters,
+        columns: sanitizedColumns,
+        sorting: {
+          field: String(formData.sorting?.field || 'createdAt'),
+          order: String(formData.sorting?.order || 'desc')
+        },
+        grouping: {
+          enabled: Boolean(formData.grouping?.enabled),
+          fields: Array.isArray(formData.grouping?.fields) ? formData.grouping.fields.map(String) : []
+        },
+        chart: {
+          enabled: Boolean(formData.chart?.enabled),
+          type: String(formData.chart?.type || 'bar'),
+          xAxis: String(formData.chart?.xAxis || ''),
+          yAxis: String(formData.chart?.yAxis || ''),
+          title: String(formData.chart?.title || ''),
+          description: String(formData.chart?.description || '')
+        },
+        export: {
+          formats: Array.isArray(formData.export?.formats) ? formData.export.formats.map(String) : ['pdf'],
+          includeCharts: Boolean(formData.export?.includeCharts !== false),
+          includeData: Boolean(formData.export?.includeData !== false),
+          includeSummary: Boolean(formData.export?.includeSummary !== false)
+        },
+        notifications: {
+          enabled: Boolean(formData.notifications?.enabled),
+          email: String(formData.notifications?.email || ''),
+          webhook: String(formData.notifications?.webhook || '')
+        }
+      }
+
       if (isEdit) {
-        await updateReportMutation.mutateAsync({ id: reportId, data: formData })
+        await updateReportMutation.mutateAsync({ id: reportId, data: reportData })
       } else {
-        await createReportMutation.mutateAsync(formData)
+        await createReportMutation.mutateAsync(reportData)
       }
       onSave?.()
     } catch (error) {
       console.error('Save report error:', error)
+      const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra khi lưu báo cáo'
+      alert(errorMessage)
     }
   }
 
   const handleRun = async () => {
     try {
       setIsRunning(true)
-      await runReportMutation.mutateAsync({ id: reportId, params: formData.filters })
+      await runReportMutation.mutateAsync({ id: reportId, params: sanitizedFilters })
       setShowPreview(true)
     } catch (error) {
       console.error('Run report error:', error)
@@ -527,53 +909,184 @@ const ReportForm = ({ reportId, onClose, onSave }) => {
 
             {/* Other Filters */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Kho */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kho
-                </label>
-                <Select
-                  value={formData.filters.warehouses}
-                  onChange={(value) => handleArrayChange('filters', 'warehouses', value)}
-                  options={[]}
-                  placeholder="Chọn kho..."
-                  multiple
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Kho
+                  </label>
+                  {warehouseOptions.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectAll('filters', 'warehouses', warehouseOptions)}
+                      className="text-xs text-primary-600 hover:text-primary-700"
+                    >
+                      {formData.filters.warehouses?.length === warehouseOptions.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                    </button>
+                  )}
+                </div>
+                <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto bg-gray-50">
+                  {warehouseOptions.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-2">Không có dữ liệu</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {warehouseOptions.map((option) => (
+                        <label
+                          key={option.value}
+                          className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-1 rounded"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.filters.warehouses?.includes(option.value) || false}
+                            onChange={(e) => handleCheckboxChange('filters', 'warehouses', option.value, e.target.checked)}
+                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                          />
+                          <span className="text-sm text-gray-700">{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {formData.filters.warehouses?.length > 0 && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Đã chọn: {formData.filters.warehouses.length} kho
+                  </p>
+                )}
               </div>
+
+              {/* Sản phẩm */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Sản phẩm
-                </label>
-                <Select
-                  value={formData.filters.products}
-                  onChange={(value) => handleArrayChange('filters', 'products', value)}
-                  options={[]}
-                  placeholder="Chọn sản phẩm..."
-                  multiple
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Sản phẩm
+                  </label>
+                  {productOptions.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectAll('filters', 'products', productOptions)}
+                      className="text-xs text-primary-600 hover:text-primary-700"
+                    >
+                      {formData.filters.products?.length === productOptions.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                    </button>
+                  )}
+                </div>
+                <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto bg-gray-50">
+                  {productOptions.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-2">Không có dữ liệu</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {productOptions.map((option) => (
+                        <label
+                          key={option.value}
+                          className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-1 rounded"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.filters.products?.includes(option.value) || false}
+                            onChange={(e) => handleCheckboxChange('filters', 'products', option.value, e.target.checked)}
+                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                          />
+                          <span className="text-sm text-gray-700">{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {formData.filters.products?.length > 0 && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Đã chọn: {formData.filters.products.length} sản phẩm
+                  </p>
+                )}
               </div>
+
+              {/* Khách hàng */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Khách hàng
-                </label>
-                <Select
-                  value={formData.filters.customers}
-                  onChange={(value) => handleArrayChange('filters', 'customers', value)}
-                  options={[]}
-                  placeholder="Chọn khách hàng..."
-                  multiple
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Khách hàng
+                  </label>
+                  {customerOptions.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectAll('filters', 'customers', customerOptions)}
+                      className="text-xs text-primary-600 hover:text-primary-700"
+                    >
+                      {formData.filters.customers?.length === customerOptions.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                    </button>
+                  )}
+                </div>
+                <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto bg-gray-50">
+                  {customerOptions.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-2">Không có dữ liệu</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {customerOptions.map((option) => (
+                        <label
+                          key={option.value}
+                          className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-1 rounded"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.filters.customers?.includes(option.value) || false}
+                            onChange={(e) => handleCheckboxChange('filters', 'customers', option.value, e.target.checked)}
+                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                          />
+                          <span className="text-sm text-gray-700">{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {formData.filters.customers?.length > 0 && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Đã chọn: {formData.filters.customers.length} khách hàng
+                  </p>
+                )}
               </div>
+
+              {/* Nhà cung cấp */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nhà cung cấp
-                </label>
-                <Select
-                  value={formData.filters.suppliers}
-                  onChange={(value) => handleArrayChange('filters', 'suppliers', value)}
-                  options={[]}
-                  placeholder="Chọn nhà cung cấp..."
-                  multiple
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Nhà cung cấp
+                  </label>
+                  {supplierOptions.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectAll('filters', 'suppliers', supplierOptions)}
+                      className="text-xs text-primary-600 hover:text-primary-700"
+                    >
+                      {formData.filters.suppliers?.length === supplierOptions.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                    </button>
+                  )}
+                </div>
+                <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto bg-gray-50">
+                  {supplierOptions.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-2">Không có dữ liệu</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {supplierOptions.map((option) => (
+                        <label
+                          key={option.value}
+                          className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-1 rounded"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.filters.suppliers?.includes(option.value) || false}
+                            onChange={(e) => handleCheckboxChange('filters', 'suppliers', option.value, e.target.checked)}
+                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                          />
+                          <span className="text-sm text-gray-700">{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {formData.filters.suppliers?.length > 0 && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Đã chọn: {formData.filters.suppliers.length} nhà cung cấp
+                  </p>
+                )}
               </div>
             </div>
           </div>

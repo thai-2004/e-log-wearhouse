@@ -6,6 +6,8 @@ const Outbound = require('../models/Outbound');
 const Warehouse = require('../models/Warehouse');
 const StockMovement = require('../models/StockMovement');
 const Category = require('../models/Category');
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
 
 // NOTE:
 // Module Reports trên frontend mong đợi một tập các API RESTful cho việc quản lý
@@ -1018,6 +1020,153 @@ const getSummaryReport = async(req, res) => {
   }
 };
 
+// Lấy dữ liệu báo cáo (mock - trả về dữ liệu mẫu dựa trên type)
+const getReportData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { page = 1, limit = 10, ...filters } = req.query;
+
+    const report = reportDefinitions.find((r) => r.id === id);
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    // Mock data dựa trên type của report
+    const mockData = [];
+    const totalRecords = 50; // Mock total
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 10;
+
+    // Tạo dữ liệu mẫu
+    for (let i = 0; i < Math.min(limitNumber, totalRecords - (pageNumber - 1) * limitNumber); i++) {
+      const index = (pageNumber - 1) * limitNumber + i;
+      mockData.push({
+        id: `item-${index}`,
+        name: `Item ${index + 1}`,
+        value: Math.floor(Math.random() * 1000),
+        date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        status: ['active', 'inactive', 'pending'][Math.floor(Math.random() * 3)]
+      });
+    }
+
+    res.json({
+      success: true,
+      data: mockData,
+      page: pageNumber,
+      limit: limitNumber,
+      totalRecords,
+      totalPages: Math.ceil(totalRecords / limitNumber),
+      summary: {
+        total: totalRecords,
+        average: 500
+      }
+    });
+  } catch (error) {
+    console.error('Get report data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Chạy báo cáo (mock - cập nhật runCount)
+const runReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const index = reportDefinitions.findIndex((r) => r.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    const report = reportDefinitions[index];
+    report.runCount = (report.runCount || 0) + 1;
+    report.lastRunAt = new Date();
+    reportDefinitions[index] = report;
+
+    res.json({
+      success: true,
+      data: report,
+      message: 'Report executed successfully'
+    });
+  } catch (error) {
+    console.error('Run report error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Thêm vào yêu thích
+const addToFavorites = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const index = reportDefinitions.findIndex((r) => r.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    const report = reportDefinitions[index];
+    report.isFavorite = true;
+    reportDefinitions[index] = report;
+
+    res.json({
+      success: true,
+      data: report,
+      message: 'Added to favorites'
+    });
+  } catch (error) {
+    console.error('Add to favorites error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Xóa khỏi yêu thích
+const removeFromFavorites = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const index = reportDefinitions.findIndex((r) => r.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    const report = reportDefinitions[index];
+    report.isFavorite = false;
+    reportDefinitions[index] = report;
+
+    res.json({
+      success: true,
+      data: report,
+      message: 'Removed from favorites'
+    });
+  } catch (error) {
+    console.error('Remove from favorites error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 // Export "định nghĩa báo cáo" (mock) dưới dạng file để tránh 404 cho frontend
 const exportReportDefinition = async (req, res) => {
   try {
@@ -1032,6 +1181,9 @@ const exportReportDefinition = async (req, res) => {
       });
     }
 
+    // Có thể lấy dữ liệu báo cáo thực tế từ getReportData nếu cần
+    // const reportData = await getReportData(req, res);
+
     const exportData = {
       ...report,
       exportedAt: new Date().toISOString()
@@ -1040,32 +1192,159 @@ const exportReportDefinition = async (req, res) => {
     // Trả về JSON nếu cần
     if (format === 'json') {
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="report_${id}.json"`
+      );
       return res.send(JSON.stringify(exportData, null, 2));
     }
 
-    // Mặc định export dạng "file văn bản" (CSV đơn giản)
-    const csvLines = [
-      'field,value',
-      `id,${report.id}`,
-      `name,"${report.name}"`,
-      `description,"${(report.description || '').replace(/"/g, '""')}"`,
-      `type,${report.type}`,
-      `status,${report.status}`,
-      `runCount,${report.runCount}`,
-      `creator,${report.creator?.name || ''}`,
-      `createdAt,${report.createdAt?.toISOString?.() || report.createdAt}`,
-      `updatedAt,${report.updatedAt?.toISOString?.() || report.updatedAt}`
+    // Export Excel (CSV format)
+    if (format === 'excel' || format === 'csv') {
+      const csvLines = [
+        'field,value',
+        `id,${report.id}`,
+        `name,"${report.name}"`,
+        `description,"${(report.description || '').replace(/"/g, '""')}"`,
+        `type,${report.type}`,
+        `status,${report.status}`,
+        `runCount,${report.runCount}`,
+        `creator,${report.creator?.name || ''}`,
+        `createdAt,${report.createdAt?.toISOString?.() || report.createdAt}`,
+        `updatedAt,${report.updatedAt?.toISOString?.() || report.updatedAt}`
+      ];
+
+      const buffer = Buffer.from(csvLines.join('\n'), 'utf-8');
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="report_${id}.csv"`
+      );
+
+      return res.send(buffer);
+    }
+
+    // Export PDF - Tạo PDF thực sự bằng pdfkit với hỗ trợ Unicode
+    const doc = new PDFDocument({
+      margin: 50,
+      size: 'A4',
+      autoFirstPage: true
+    });
+    const buffers = [];
+
+    // Thử register font từ hệ thống Windows (nếu có)
+    // Trên Windows, có thể sử dụng font từ C:\Windows\Fonts
+    let vietnameseFont = null;
+    const fontPaths = [
+      'C:/Windows/Fonts/arial.ttf',
+      'C:/Windows/Fonts/arialuni.ttf',
+      'C:/Windows/Fonts/times.ttf',
+      'C:/Windows/Fonts/tahoma.ttf'
     ];
 
-    const buffer = Buffer.from(csvLines.join('\n'), 'utf-8');
+    for (const fontPath of fontPaths) {
+      try {
+        if (fs.existsSync(fontPath)) {
+          vietnameseFont = fontPath;
+          doc.registerFont('Vietnamese', fontPath);
+          break;
+        }
+      } catch (e) {
+        // Continue to next font
+      }
+    }
 
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="${id}.${format === 'csv' ? 'csv' : 'txt'}"`
-    );
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => {
+      const pdfBuffer = Buffer.concat(buffers);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="report_${id}.pdf"`
+      );
+      res.send(pdfBuffer);
+    });
 
-    return res.send(buffer);
+    // Sử dụng font đã register hoặc không set font (để dùng default hỗ trợ Unicode tốt hơn)
+    const fontToUse = vietnameseFont ? 'Vietnamese' : null;
+
+    // Header với đường kẻ
+    doc.rect(50, 50, doc.page.width - 100, 60).stroke();
+    if (fontToUse) {
+      doc.fontSize(24).font(fontToUse).text('BÁO CÁO', { align: 'center', y: 70 });
+    } else {
+      doc.fontSize(24).text('BÁO CÁO', { align: 'center', y: 70 });
+    }
+    doc.moveDown();
+    doc.fontSize(18).text(report.name || '', { align: 'center' });
+    doc.moveDown(3);
+
+    // Thông tin báo cáo trong box
+    const startY = doc.y;
+    doc.rect(50, startY, doc.page.width - 100, 200).stroke();
+    if (fontToUse) {
+      doc.fontSize(12).font(fontToUse).text('THÔNG TIN BÁO CÁO', 60, startY + 10);
+    } else {
+      doc.fontSize(12).text('THÔNG TIN BÁO CÁO', 60, startY + 10);
+    }
+
+    let currentY = startY + 35;
+    doc.fontSize(11);
+
+    // Giữ nguyên Unicode - font đã được register sẽ hỗ trợ
+    const description = report.description || 'Không có mô tả';
+    doc.text(`Mô tả: ${description}`, 60, currentY, { width: doc.page.width - 120 });
+    currentY += 20;
+
+    doc.text(`Loại báo cáo: ${report.type || 'N/A'}`, 60, currentY);
+    currentY += 20;
+    doc.text(`Trạng thái: ${report.status || 'N/A'}`, 60, currentY);
+    currentY += 20;
+    doc.text(`Số lần chạy: ${report.runCount || 0}`, 60, currentY);
+    currentY += 20;
+    doc.text(`Người tạo: ${report.creator?.name || 'N/A'}`, 60, currentY);
+    currentY += 20;
+
+    if (report.createdAt) {
+      try {
+        const createdDate = new Date(report.createdAt);
+        if (!isNaN(createdDate.getTime())) {
+          const dateStr = `${createdDate.getDate()}/${createdDate.getMonth() + 1}/${createdDate.getFullYear()}`;
+          const timeStr = `${createdDate.getHours()}:${String(createdDate.getMinutes()).padStart(2, '0')}:${String(createdDate.getSeconds()).padStart(2, '0')}`;
+          doc.text(`Ngày tạo: ${dateStr} ${timeStr}`, 60, currentY);
+          currentY += 20;
+        }
+      } catch (e) {
+        // Ignore date parsing errors
+      }
+    }
+
+    if (report.updatedAt) {
+      try {
+        const updatedDate = new Date(report.updatedAt);
+        if (!isNaN(updatedDate.getTime())) {
+          const dateStr = `${updatedDate.getDate()}/${updatedDate.getMonth() + 1}/${updatedDate.getFullYear()}`;
+          const timeStr = `${updatedDate.getHours()}:${String(updatedDate.getMinutes()).padStart(2, '0')}:${String(updatedDate.getSeconds()).padStart(2, '0')}`;
+          doc.text(`Ngày cập nhật: ${dateStr} ${timeStr}`, 60, currentY);
+          currentY += 20;
+        }
+      } catch (e) {
+        // Ignore date parsing errors
+      }
+    }
+
+    // Ngày xuất ở góc phải
+    const now = new Date();
+    const exportDateStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+    const exportTimeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    doc.fontSize(10).text(`Ngày xuất: ${exportDateStr} ${exportTimeStr}`, doc.page.width - 200, doc.page.height - 80, { align: 'right' });
+
+    // Footer
+    doc.fontSize(9)
+      .text('E-Log Warehouse Management System', 50, doc.page.height - 50, { align: 'center' });
+
+    doc.end();
   } catch (error) {
     console.error('Export report definition error:', error);
     res.status(500).json({
@@ -1084,6 +1363,10 @@ module.exports = {
   createReport,
   updateReport,
   deleteReportDefinition,
+  getReportData,
+  runReport,
+  addToFavorites,
+  removeFromFavorites,
   // Báo cáo thống kê hiện có
   getSalesReport,
   getInventoryReport,
