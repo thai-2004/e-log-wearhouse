@@ -1241,6 +1241,125 @@ const adjustInventory = async(req, res) => {
   }
 };
 
+// Export inventory to Excel
+const exportInventory = async(req, res) => {
+  try {
+    const { warehouseId, productId, lowStock, zeroStock, overstock } = req.query;
+
+    const query = {};
+    if (warehouseId) query.warehouseId = warehouseId;
+    if (productId) query.productId = productId;
+    if (zeroStock === 'true') query.quantity = 0;
+
+    // Populate với đầy đủ thông tin product và warehouse
+    const inventories = await Inventory.find(query)
+      .populate({
+        path: 'productId',
+        select: 'name sku unit sellingPrice image minStock maxStock reorderPoint'
+      })
+      .populate({
+        path: 'warehouseId',
+        select: 'name code zones'
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Tìm location từ warehouse và tính giá trị cho mỗi inventory
+    const inventoriesWithLocation = inventories.map(enrichInventory);
+
+    // Lọc theo lowStock hoặc overstock nếu có
+    let filteredInventories = inventoriesWithLocation;
+    if (lowStock === 'true') {
+      filteredInventories = inventoriesWithLocation.filter(inv => {
+        const product = inv.product || inv.productId;
+        const minStock = product?.reorderPoint || product?.minStock || 0;
+        return inv.quantity > 0 && inv.quantity <= minStock;
+      });
+    }
+    if (overstock === 'true') {
+      filteredInventories = inventoriesWithLocation.filter(inv => {
+        const product = inv.product || inv.productId;
+        const maxStock = product?.maxStock;
+        return maxStock && maxStock > 0 && inv.quantity > maxStock;
+      });
+    }
+
+    // Tạo Excel file
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Inventory');
+
+    // Định nghĩa columns
+    worksheet.columns = [
+      { header: 'STT', key: 'index', width: 8 },
+      { header: 'SKU', key: 'sku', width: 15 },
+      { header: 'Tên sản phẩm', key: 'productName', width: 30 },
+      { header: 'Kho', key: 'warehouse', width: 20 },
+      { header: 'Vị trí', key: 'location', width: 20 },
+      { header: 'Số lượng', key: 'quantity', width: 12 },
+      { header: 'Đã đặt', key: 'reserved', width: 12 },
+      { header: 'Có sẵn', key: 'available', width: 12 },
+      { header: 'Giá trị', key: 'value', width: 15 },
+      { header: 'Tồn tối thiểu', key: 'minStock', width: 15 },
+      { header: 'Tồn tối đa', key: 'maxStock', width: 15 },
+      { header: 'Cập nhật lần cuối', key: 'lastUpdated', width: 20 }
+    ];
+
+    // Style header
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    // Thêm dữ liệu
+    filteredInventories.forEach((inventory, index) => {
+      const product = inventory.product || inventory.productId || {};
+      const warehouse = inventory.warehouse || inventory.warehouseId || {};
+      const location = inventory.location || {};
+      
+      worksheet.addRow({
+        index: index + 1,
+        sku: product.sku || '',
+        productName: product.name || '',
+        warehouse: warehouse.name || '',
+        location: location.code || location.name || '',
+        quantity: inventory.quantity || 0,
+        reserved: inventory.reservedQuantity || 0,
+        available: (inventory.quantity || 0) - (inventory.reservedQuantity || 0),
+        value: inventory.value || 0,
+        minStock: product.reorderPoint || product.minStock || 0,
+        maxStock: product.maxStock || '',
+        lastUpdated: inventory.lastUpdated ? new Date(inventory.lastUpdated).toLocaleString('vi-VN') : ''
+      });
+    });
+
+    // Format số
+    worksheet.getColumn('quantity').numFmt = '#,##0';
+    worksheet.getColumn('reserved').numFmt = '#,##0';
+    worksheet.getColumn('available').numFmt = '#,##0';
+    worksheet.getColumn('value').numFmt = '#,##0';
+    worksheet.getColumn('minStock').numFmt = '#,##0';
+    worksheet.getColumn('maxStock').numFmt = '#,##0';
+
+    // Set response headers
+    const filename = `inventory_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Export inventory error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while exporting inventory'
+    });
+  }
+};
+
 module.exports = {
   createInventory,
   getInventory,
@@ -1258,5 +1377,6 @@ module.exports = {
   transferInventory,
   getInventoryReport,
   getStockMovements,
-  adjustInventory
+  adjustInventory,
+  exportInventory
 };

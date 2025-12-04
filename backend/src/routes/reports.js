@@ -50,7 +50,65 @@ const inventoryReportValidation = [
     .withMessage('Định dạng phải là một trong: json, csv, pdf')
 ];
 
-// Routes
+// Routes cho "định nghĩa báo cáo" phục vụ UI ReportsPage
+router.get(
+  '/',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.getReportsList
+);
+
+router.post(
+  '/',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.createReport
+);
+
+router.get(
+  '/templates',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.getReportTemplates
+);
+
+router.get(
+  '/types',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.getReportTypes
+);
+
+router.get(
+  '/:id',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.getReportById
+);
+
+// Export "định nghĩa báo cáo" theo ID (mock)
+router.get(
+  '/:id/export',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.exportReportDefinition
+);
+
+router.put(
+  '/:id',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.updateReport
+);
+
+router.delete(
+  '/:id',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  reportController.deleteReportDefinition
+);
+
+// Routes cho các báo cáo thống kê chi tiết
 router.get('/sales', authenticateToken, authorize('admin', 'manager'), reportValidation, reportController.getSalesReport);
 router.get('/inventory', authenticateToken, authorize('admin', 'manager'), inventoryReportValidation, reportController.getInventoryReport);
 router.get('/inbound', authenticateToken, authorize('admin', 'manager'), reportValidation, reportController.getInboundReport);

@@ -47,6 +47,22 @@ const supplierSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  category: {
+    type: String,
+    trim: true
+  },
+  website: {
+    type: String,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  isTopSupplier: {
+    type: Boolean,
+    default: false
+  },
   isActive: {
     type: Boolean,
     default: true

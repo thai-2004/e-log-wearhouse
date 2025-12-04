@@ -170,6 +170,10 @@ export const API_ENDPOINTS = {
     DELIVER: '/outbound/:id/deliver',
   },
   REPORTS: {
+    // RESTful base cho module quản lý báo cáo (Report templates, CRUD, chạy báo cáo, ...)
+    BASE: '/reports',
+
+    // Các endpoint báo cáo tổng hợp/thống kê hiện có ở backend
     INVENTORY: '/reports/inventory',
     SALES: '/reports/sales',
     PURCHASES: '/reports/purchases',

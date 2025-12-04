@@ -40,6 +40,10 @@ const updateWarehouseValidation = [
 // Routes
 router.post('/', authenticateToken, authorize('admin', 'manager'), createWarehouseValidation, warehouseController.createWarehouse);
 router.get('/', authenticateToken, warehouseController.getWarehouses);
+
+// Export route - MUST be before /:id route to avoid route conflict
+router.post('/export', authenticateToken, warehouseController.exportWarehouses);
+
 // Specific routes MUST come before param routes to avoid conflicts
 router.get('/overview', authenticateToken, warehouseController.getWarehousesOverview);
 router.patch('/:id/status', authenticateToken, authorize('admin', 'manager'), param('id').isMongoId().withMessage('Valid warehouse ID is required'), warehouseController.updateWarehouseStatus);

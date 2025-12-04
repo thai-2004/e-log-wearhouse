@@ -30,10 +30,14 @@ const createSupplier = async(req, res) => {
     const supplier = new Supplier(supplierData);
     await supplier.save();
 
+    // Chuyển đổi supplier object để thêm field status cho frontend
+    const supplierResponse = supplier.toObject();
+    supplierResponse.status = supplier.isActive ? 'active' : 'inactive';
+
     res.status(201).json({
       success: true,
       message: 'Supplier created successfully',
-      data: { supplier }
+      data: { supplier: supplierResponse }
     });
   } catch (error) {
     console.error('Create supplier error:', error);
@@ -71,14 +75,21 @@ const getSuppliers = async(req, res) => {
     const suppliers = await Supplier.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
+
+    // Thêm field status cho frontend
+    const suppliersWithStatus = suppliers.map(supplier => ({
+      ...supplier,
+      status: supplier.isActive ? 'active' : 'inactive'
+    }));
 
     const total = await Supplier.countDocuments(query);
 
     res.json({
       success: true,
       data: {
-        suppliers,
+        suppliers: suppliersWithStatus,
         pagination: {
           page,
           limit,
@@ -101,7 +112,7 @@ const getSupplierById = async(req, res) => {
   try {
     const { id: supplierId } = req.params;
 
-    const supplier = await Supplier.findById(supplierId);
+    const supplier = await Supplier.findById(supplierId).lean();
 
     if (!supplier) {
       return res.status(404).json({
@@ -110,9 +121,15 @@ const getSupplierById = async(req, res) => {
       });
     }
 
+    // Thêm field status cho frontend
+    const supplierWithStatus = {
+      ...supplier,
+      status: supplier.isActive ? 'active' : 'inactive'
+    };
+
     res.json({
       success: true,
-      data: { supplier }
+      data: { supplier: supplierWithStatus }
     });
   } catch (error) {
     console.error('Get supplier by ID error:', error);
@@ -157,7 +174,7 @@ const updateSupplier = async(req, res) => {
       supplierId,
       updateData,
       { new: true, runValidators: true }
-    );
+    ).lean();
 
     if (!supplier) {
       return res.status(404).json({
@@ -166,10 +183,16 @@ const updateSupplier = async(req, res) => {
       });
     }
 
+    // Thêm field status cho frontend
+    const supplierWithStatus = {
+      ...supplier,
+      status: supplier.isActive ? 'active' : 'inactive'
+    };
+
     res.json({
       success: true,
       message: 'Supplier updated successfully',
-      data: { supplier }
+      data: { supplier: supplierWithStatus }
     });
   } catch (error) {
     console.error('Update supplier error:', error);
@@ -333,10 +356,14 @@ const updateSupplierStatus = async (req, res) => {
       });
     }
 
+    // Chuyển đổi supplier object để thêm field status cho frontend
+    const supplierResponse = supplier.toObject();
+    supplierResponse.status = supplier.isActive ? 'active' : 'inactive';
+
     res.json({
       success: true,
       message: 'Supplier status updated successfully',
-      data: { supplier }
+      data: { supplier: supplierResponse }
     });
   } catch (error) {
     console.error('Update supplier status error:', error);

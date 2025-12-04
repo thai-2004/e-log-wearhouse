@@ -285,7 +285,9 @@ const ReportForm = ({ reportId, onClose, onSave }) => {
     { id: 'notifications', label: 'Thông báo', icon: FiAlertCircle }
   ]
 
-  if (isLoadingReport) {
+  // Chỉ hiển thị loading khi đang ở chế độ chỉnh sửa
+  // Tạo báo cáo mới không cần chờ dữ liệu từ API
+  if (isEdit && isLoadingReport) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>

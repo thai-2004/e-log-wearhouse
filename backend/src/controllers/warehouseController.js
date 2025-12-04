@@ -766,6 +766,148 @@ const getWarehousesOverview = async (req, res) => {
   }
 };
 
+// Export warehouses to Excel
+const exportWarehouses = async(req, res) => {
+  try {
+    const { search, isActive, type, region } = req.body || req.query || {};
+
+    const query = {};
+
+    // Tìm kiếm
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { code: { $regex: search, $options: 'i' } },
+        { address: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Lọc theo trạng thái
+    if (isActive !== undefined) {
+      query.isActive = isActive === 'true' || isActive === true;
+    }
+
+    // Lọc theo type
+    if (type) {
+      query.type = type;
+    }
+
+    // Lọc theo region
+    if (region) {
+      query.region = region;
+    }
+
+    // Lấy tất cả warehouses phù hợp (không phân trang)
+    const warehousesRaw = await Warehouse.find(query)
+      .populate('managerId', 'username fullName email phone')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Lấy tổng số sản phẩm cho mỗi warehouse
+    const warehouseIds = warehousesRaw.map(w => w._id);
+    const productCounts = await Inventory.aggregate([
+      { $match: { warehouseId: { $in: warehouseIds } } },
+      { $group: { _id: { warehouseId: '$warehouseId', productId: '$productId' } } },
+      { $group: { _id: '$_id.warehouseId', totalProducts: { $sum: 1 } } }
+    ]);
+    const warehouseIdToProductCount = productCounts.reduce((acc, cur) => {
+      acc[cur._id.toString()] = cur.totalProducts;
+      return acc;
+    }, {});
+
+    // Tính tổng giá trị inventory cho mỗi warehouse
+    const inventories = await Inventory.find({ warehouseId: { $in: warehouseIds } })
+      .populate('productId', 'sellingPrice')
+      .lean();
+    
+    const warehouseValues = {};
+    inventories.forEach(inv => {
+      const warehouseId = inv.warehouseId.toString();
+      const value = (inv.quantity || 0) * (inv.productId?.sellingPrice || 0);
+      warehouseValues[warehouseId] = (warehouseValues[warehouseId] || 0) + value;
+    });
+
+    // Chuẩn hóa dữ liệu
+    const warehouses = warehousesRaw.map(w => ({
+      ...w,
+      status: w.isActive ? 'active' : 'inactive',
+      type: w.type || 'standard',
+      totalProducts: warehouseIdToProductCount[w._id.toString()] || 0,
+      totalValue: warehouseValues[w._id.toString()] || 0,
+      managerName: w.managerId ? `${w.managerId.fullName || w.managerId.username}` : 'Chưa có'
+    }));
+
+    // Tạo Excel file
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Warehouses');
+
+    // Định nghĩa columns
+    worksheet.columns = [
+      { header: 'STT', key: 'index', width: 8 },
+      { header: 'Mã kho', key: 'code', width: 15 },
+      { header: 'Tên kho', key: 'name', width: 30 },
+      { header: 'Địa chỉ', key: 'address', width: 40 },
+      { header: 'Quản lý', key: 'manager', width: 25 },
+      { header: 'Loại', key: 'type', width: 15 },
+      { header: 'Trạng thái', key: 'status', width: 15 },
+      { header: 'Công suất', key: 'capacity', width: 15 },
+      { header: 'Số sản phẩm', key: 'totalProducts', width: 15 },
+      { header: 'Giá trị tồn kho', key: 'totalValue', width: 20 },
+      { header: 'Số khu vực', key: 'zones', width: 15 },
+      { header: 'Ngày tạo', key: 'createdAt', width: 20 }
+    ];
+
+    // Style header
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    // Thêm dữ liệu
+    warehouses.forEach((warehouse, index) => {
+      const zonesCount = warehouse.zones ? warehouse.zones.length : 0;
+      worksheet.addRow({
+        index: index + 1,
+        code: warehouse.code || '',
+        name: warehouse.name || '',
+        address: warehouse.address || '',
+        manager: warehouse.managerName || '',
+        type: warehouse.type || 'standard',
+        status: warehouse.status === 'active' ? 'Hoạt động' : 'Ngừng hoạt động',
+        capacity: warehouse.capacity || 0,
+        totalProducts: warehouse.totalProducts || 0,
+        totalValue: warehouse.totalValue || 0,
+        zones: zonesCount,
+        createdAt: warehouse.createdAt ? new Date(warehouse.createdAt).toLocaleString('vi-VN') : ''
+      });
+    });
+
+    // Format số
+    worksheet.getColumn('capacity').numFmt = '#,##0';
+    worksheet.getColumn('totalProducts').numFmt = '#,##0';
+    worksheet.getColumn('totalValue').numFmt = '#,##0';
+    worksheet.getColumn('zones').numFmt = '#,##0';
+
+    // Set response headers
+    const filename = `warehouses_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Export warehouses error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while exporting warehouses'
+    });
+  }
+};
+
 module.exports = {
   createWarehouse,
   getWarehouses,
@@ -780,5 +922,6 @@ module.exports = {
   updateLocation,
   deleteLocation,
   getWarehouseReport,
-  getWarehousesOverview
+  getWarehousesOverview,
+  exportWarehouses
 };

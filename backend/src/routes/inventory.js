@@ -97,6 +97,9 @@ const getInventoryValidation = [
 router.post('/', authenticateToken, authorize('admin', 'manager'), createInventoryValidation, inventoryController.createInventory);
 router.get('/', authenticateToken, getInventoryValidation, inventoryController.getInventory);
 
+// Export route - MUST be before /:id route to avoid route conflict
+router.get('/export', authenticateToken, getInventoryValidation, inventoryController.exportInventory);
+
 // Additional inventory routes - Phải đặt TRƯỚC route /:id để tránh conflict
 router.get('/product/:productId', authenticateToken, param('productId').isMongoId().withMessage('Valid product ID is required'), inventoryController.getInventoryByProduct);
 router.get('/warehouse/:warehouseId', authenticateToken, param('warehouseId').isMongoId().withMessage('Valid warehouse ID is required'), inventoryController.getInventoryByWarehouse);

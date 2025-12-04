@@ -89,9 +89,18 @@ const getUsers = async(req, res) => {
     }
 
     // Lọc theo trạng thái
-    if (isActive !== undefined) {
-      query.isActive = isActive === 'true';
+    // Nếu không có filter isActive, lấy tất cả users (cả active và inactive)
+    // Nếu có filter, chỉ lấy users theo trạng thái được chỉ định
+    if (isActive !== undefined && isActive !== null && isActive !== '') {
+      // Chuyển đổi string 'true'/'false' thành boolean
+      if (typeof isActive === 'string') {
+        query.isActive = isActive === 'true';
+      } else {
+        query.isActive = Boolean(isActive);
+      }
     }
+    // Nếu không có filter isActive, không thêm điều kiện vào query
+    // => lấy tất cả users (cả active và inactive)
 
     const users = await User.find(query)
       .select('-passwordHash -refreshToken')
@@ -527,6 +536,109 @@ const resetPassword = async(req, res) => {
   }
 };
 
+// Export users to Excel
+const exportUsers = async(req, res) => {
+  try {
+    const search = req.query.search || '';
+    const role = req.query.role;
+    const isActive = req.query.isActive;
+
+    const query = {};
+
+    // Tìm kiếm
+    if (search) {
+      query.$or = [
+        { username: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { fullName: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Lọc theo role
+    if (role) {
+      query.role = role;
+    }
+
+    // Lọc theo trạng thái
+    if (isActive !== undefined) {
+      query.isActive = isActive === 'true';
+    }
+
+    // Lấy tất cả users phù hợp (không phân trang)
+    const users = await User.find(query)
+      .select('-passwordHash -refreshToken')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Tạo Excel file
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Users');
+
+    // Định nghĩa columns
+    worksheet.columns = [
+      { header: 'STT', key: 'index', width: 8 },
+      { header: 'Username', key: 'username', width: 20 },
+      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Họ và tên', key: 'fullName', width: 30 },
+      { header: 'Số điện thoại', key: 'phone', width: 15 },
+      { header: 'Vai trò', key: 'role', width: 15 },
+      { header: 'Trạng thái', key: 'status', width: 15 },
+      { header: 'Địa chỉ', key: 'address', width: 40 },
+      { header: 'Đăng nhập lần cuối', key: 'lastLogin', width: 20 },
+      { header: 'Ngày tạo', key: 'createdAt', width: 20 }
+    ];
+
+    // Style header
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    // Map role names
+    const roleNames = {
+      admin: 'Quản trị viên',
+      manager: 'Quản lý',
+      staff: 'Nhân viên',
+      viewer: 'Người xem',
+      employee: 'Nhân viên'
+    };
+
+    // Thêm dữ liệu
+    users.forEach((user, index) => {
+      worksheet.addRow({
+        index: index + 1,
+        username: user.username || '',
+        email: user.email || '',
+        fullName: user.fullName || '',
+        phone: user.phone || '',
+        role: roleNames[user.role] || user.role || '',
+        status: user.isActive ? 'Hoạt động' : 'Ngừng hoạt động',
+        address: user.address || '',
+        lastLogin: user.lastLogin ? new Date(user.lastLogin).toLocaleString('vi-VN') : 'Chưa đăng nhập',
+        createdAt: user.createdAt ? new Date(user.createdAt).toLocaleString('vi-VN') : ''
+      });
+    });
+
+    // Set response headers
+    const filename = `users_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Export users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while exporting users'
+    });
+  }
+};
+
 module.exports = {
   createUser,
   getUsers,
@@ -538,5 +650,6 @@ module.exports = {
   updateUserRole,
   getUserStats,
   getUsersByRole,
-  resetPassword
+  resetPassword,
+  exportUsers
 };

@@ -61,6 +61,19 @@ const createProduct = async(req, res) => {
       });
     }
 
+    // Validate minStock và maxStock
+    if (productData.minStock !== undefined && productData.maxStock !== undefined) {
+      const minStock = Number(productData.minStock);
+      const maxStock = Number(productData.maxStock);
+
+      if (minStock > 0 && maxStock > 0 && minStock > maxStock) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: 'Tồn kho tối thiểu không được lớn hơn tồn kho tối đa'
+        });
+      }
+    }
+
     const product = new Product(productData);
     await product.save();
 
@@ -201,6 +214,30 @@ const updateProduct = async(req, res) => {
           message: 'Category not found'
         });
       }
+    }
+
+    // Validate minStock và maxStock
+    // Lấy product hiện tại để so sánh nếu chỉ update một trong hai giá trị
+    const currentProduct = await Product.findById(productId);
+    if (!currentProduct) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    const minStock = updateData.minStock !== undefined
+      ? Number(updateData.minStock)
+      : currentProduct.minStock;
+    const maxStock = updateData.maxStock !== undefined
+      ? Number(updateData.maxStock)
+      : currentProduct.maxStock;
+
+    if (minStock > 0 && maxStock > 0 && minStock > maxStock) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tồn kho tối thiểu không được lớn hơn tồn kho tối đa'
+      });
     }
 
     const product = await Product.findByIdAndUpdate(
@@ -536,6 +573,126 @@ const getProductsByCategory = async(req, res) => {
   }
 };
 
+// Export products to Excel
+const exportProducts = async(req, res) => {
+  try {
+    const search = req.query.search || '';
+    const categoryId = req.query.categoryId;
+    const isActive = req.query.isActive;
+    const priceRange = req.query.priceRange || {};
+    const stockRange = req.query.stockRange || {};
+
+    const query = {};
+
+    // Tìm kiếm theo text
+    if (search) {
+      query.$text = { $search: search };
+    }
+
+    // Lọc theo category
+    if (categoryId) {
+      query.categoryId = categoryId;
+    }
+
+    // Lọc theo trạng thái
+    if (isActive !== undefined) {
+      query.isActive = isActive === 'true';
+    }
+
+    // Lọc theo giá
+    if (priceRange.min || priceRange.max) {
+      query.price = {};
+      if (priceRange.min) query.price.$gte = parseFloat(priceRange.min);
+      if (priceRange.max) query.price.$lte = parseFloat(priceRange.max);
+    }
+
+    // Lấy tất cả sản phẩm phù hợp (không phân trang)
+    const products = await Product.find(query)
+      .populate('categoryId', 'name')
+      .sort({ createdAt: -1 });
+
+    // Lấy thông tin inventory cho mỗi sản phẩm
+    const productIds = products.map(p => p._id);
+    const inventories = await Inventory.find({ productId: { $in: productIds } });
+    const inventoryMap = {};
+    inventories.forEach(inv => {
+      inventoryMap[inv.productId.toString()] = inv.quantity;
+    });
+
+    // Lọc theo stock nếu có
+    let filteredProducts = products;
+    if (stockRange.min !== undefined || stockRange.max !== undefined) {
+      filteredProducts = products.filter(product => {
+        const stock = inventoryMap[product._id.toString()] || 0;
+        if (stockRange.min !== undefined && stock < parseFloat(stockRange.min)) return false;
+        if (stockRange.max !== undefined && stock > parseFloat(stockRange.max)) return false;
+        return true;
+      });
+    }
+
+    // Tạo Excel file
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Products');
+
+    // Định nghĩa columns
+    worksheet.columns = [
+      { header: 'STT', key: 'index', width: 8 },
+      { header: 'SKU', key: 'sku', width: 15 },
+      { header: 'Tên sản phẩm', key: 'name', width: 30 },
+      { header: 'Danh mục', key: 'category', width: 20 },
+      { header: 'Mã vạch', key: 'barcode', width: 15 },
+      { header: 'Giá', key: 'price', width: 15 },
+      { header: 'Tồn kho', key: 'stock', width: 12 },
+      { header: 'Mô tả', key: 'description', width: 40 },
+      { header: 'Trạng thái', key: 'status', width: 12 }
+    ];
+
+    // Style header
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    // Thêm dữ liệu
+    filteredProducts.forEach((product, index) => {
+      const stock = inventoryMap[product._id.toString()] || 0;
+      worksheet.addRow({
+        index: index + 1,
+        sku: product.sku || '',
+        name: product.name || '',
+        category: product.categoryId?.name || '',
+        barcode: product.barcode || '',
+        price: product.price || 0,
+        stock: stock,
+        description: product.description || '',
+        status: product.isActive ? 'Hoạt động' : 'Ngừng hoạt động'
+      });
+    });
+
+    // Format số tiền
+    worksheet.getColumn('price').numFmt = '#,##0';
+    worksheet.getColumn('stock').numFmt = '#,##0';
+
+    // Set response headers
+    const filename = `products_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Export products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while exporting products'
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   getProducts,
@@ -547,5 +704,6 @@ module.exports = {
   getProductByBarcode,
   getProductsByCategory,
   updateProductPrice,
-  getLowStockProducts
+  getLowStockProducts,
+  exportProducts
 };

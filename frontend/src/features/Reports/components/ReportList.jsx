@@ -30,6 +30,7 @@ import Button from '@components/ui/Button'
 import Input from '@components/ui/Input'
 import Select from '@components/ui/Select'
 import Modal from '@components/ui/Modal'
+import ReportForm from './ReportForm'
 import { useReports, useReportTemplates, useReportTypes, useDeleteReport, useExportReport, useAddToFavorites, useRemoveFromFavorites } from '../hooks/useReports'
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
@@ -74,6 +75,16 @@ const ReportList = () => {
   const removeFromFavoritesMutation = useRemoveFromFavorites()
 
   const reports = reportsData?.data || []
+  const templates = Array.isArray(templatesData?.data)
+    ? templatesData.data
+    : Array.isArray(templatesData)
+      ? templatesData
+      : []
+  const reportTypes = Array.isArray(typesData?.data)
+    ? typesData.data
+    : Array.isArray(typesData)
+      ? typesData
+      : []
   const totalPages = reportsData?.totalPages || 1
   const totalItems = reportsData?.totalItems || 0
 
@@ -88,7 +99,7 @@ const ReportList = () => {
 
   const typeOptions = [
     { value: '', label: 'Tất cả loại báo cáo' },
-    ...(typesData?.map(type => ({
+    ...(reportTypes.map(type => ({
       value: type.id,
       label: type.name
     })) || [])
@@ -257,6 +268,13 @@ const ReportList = () => {
       default:
         return 'Không xác định'
     }
+  }
+
+  const formatLastRunDate = (value) => {
+    if (!value) return 'Chưa chạy'
+    const date = new Date(value)
+    if (isNaN(date.getTime())) return 'Chưa chạy'
+    return format(date, 'dd/MM/yyyy', { locale: vi })
   }
 
   if (isLoading) {
@@ -511,7 +529,7 @@ const ReportList = () => {
                           {report.name}
                         </h3>
                         <p className="text-xs text-gray-500">
-                          {report.type}
+                          {report?.type ? String(report.type) : ''}
                         </p>
                       </div>
                     </div>
@@ -546,14 +564,14 @@ const ReportList = () => {
 
                   {/* Description */}
                   <p className="text-sm text-gray-600 line-clamp-2">
-                    {report.description}
+                    {report?.description ? String(report.description) : ''}
                   </p>
 
                   {/* Stats */}
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center">
                       <FiClock className="h-4 w-4 mr-1" />
-                      {format(new Date(report.lastRunAt), 'dd/MM/yyyy', { locale: vi })}
+                      {formatLastRunDate(report.lastRunAt)}
                     </div>
                     <div className="flex items-center">
                       <FiBarChart className="h-4 w-4 mr-1" />
@@ -622,12 +640,12 @@ const ReportList = () => {
                       </div>
                     </div>
                     <p className="text-sm text-gray-500 truncate">
-                      {report.description}
+                      {report?.description ? String(report.description) : ''}
                     </p>
                     <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
                       <span>Loại: {report.type}</span>
                       <span>Chạy: {report.runCount || 0} lần</span>
-                      <span>Cuối: {format(new Date(report.lastRunAt), 'dd/MM/yyyy', { locale: vi })}</span>
+                      <span>Cuối: {formatLastRunDate(report.lastRunAt)}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -714,39 +732,15 @@ const ReportList = () => {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title="Tạo báo cáo mới"
-        size="lg"
+        size="xl"
       >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Chọn loại báo cáo bạn muốn tạo:
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {typesData?.map((type) => (
-              <div
-                key={type.id}
-                className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 cursor-pointer"
-                onClick={() => {
-                  setShowCreateModal(false)
-                  // Navigate to create form with type
-                }}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    {getReportIcon(type.id)}
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900">
-                      {type.name}
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      {type.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ReportForm
+          onClose={() => setShowCreateModal(false)}
+          onSave={() => {
+            setShowCreateModal(false)
+            refetch()
+          }}
+        />
       </Modal>
 
       <Modal
@@ -760,7 +754,7 @@ const ReportList = () => {
             Chọn template có sẵn để tạo báo cáo:
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {templatesData?.map((template) => (
+            {templates.map((template) => (
               <div
                 key={template.id}
                 className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 cursor-pointer"
@@ -778,7 +772,7 @@ const ReportList = () => {
                       {template.name}
                     </h3>
                     <p className="text-xs text-gray-500">
-                      {template.description}
+                      {template?.description ? String(template.description) : ''}
                     </p>
                   </div>
                 </div>

@@ -125,13 +125,18 @@ const getProductsValidation = [
 // Routes
 router.post('/', authenticateToken, authorize('admin', 'manager'), createProductValidation, productController.createProduct);
 router.get('/', getProductsValidation, productController.getProducts);
-router.get('/:id', param('id').isMongoId().withMessage('Valid product ID is required'), productController.getProductById);
-router.put('/:id', authenticateToken, authorize('admin', 'manager'), updateProductValidation, productController.updateProduct);
-router.delete('/:id', authenticateToken, authorize('admin'), param('id').isMongoId().withMessage('Valid product ID is required'), productController.deleteProduct);
 
-// Additional product routes
+// Export route - MUST be before /:id route to avoid route conflict
+router.get('/export', getProductsValidation, productController.exportProducts);
+
+// Additional product routes - MUST be before /:id route
 router.get('/sku/:sku', param('sku').notEmpty().withMessage('SKU is required'), productController.getProductBySKU);
 router.get('/barcode/:barcode', param('barcode').notEmpty().withMessage('Barcode is required'), productController.getProductByBarcode);
 router.get('/category/:categoryId', param('categoryId').isMongoId().withMessage('Valid category ID is required'), productController.getProductsByCategory);
+
+// Dynamic routes - MUST be last
+router.get('/:id', param('id').isMongoId().withMessage('Valid product ID is required'), productController.getProductById);
+router.put('/:id', authenticateToken, authorize('admin', 'manager'), updateProductValidation, productController.updateProduct);
+router.delete('/:id', authenticateToken, authorize('admin'), param('id').isMongoId().withMessage('Valid product ID is required'), productController.deleteProduct);
 
 module.exports = router;

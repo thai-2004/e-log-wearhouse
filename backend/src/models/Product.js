@@ -82,4 +82,18 @@ productSchema.index({ barcode: 1 }, { unique: true, sparse: true });
 productSchema.index({ categoryId: 1 });
 productSchema.index({ name: 'text', description: 'text' }); // Full-text search
 
+// Validation: minStock phải nhỏ hơn hoặc bằng maxStock
+productSchema.pre('validate', function(next) {
+  // Chỉ validate nếu cả minStock và maxStock đều được set và > 0
+  if (this.minStock !== undefined && this.maxStock !== undefined && 
+      this.minStock > 0 && this.maxStock > 0) {
+    if (this.minStock > this.maxStock) {
+      const error = new Error('Tồn kho tối thiểu không được lớn hơn tồn kho tối đa');
+      error.name = 'ValidationError';
+      return next(error);
+    }
+  }
+  next();
+});
+
 module.exports = mongoose.model('Product', productSchema);

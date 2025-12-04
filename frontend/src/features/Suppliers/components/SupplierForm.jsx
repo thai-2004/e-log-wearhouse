@@ -67,6 +67,23 @@ const SupplierForm = ({ supplier, onClose }) => {
       setLogoPreview(supplier.logo)
       setAddresses(supplier.addresses || [])
       setContacts(supplier.contacts || [])
+    } else {
+      // Reset form về giá trị mặc định khi tạo mới
+      reset({
+        code: '',
+        name: '',
+        email: '',
+        phone: '',
+        category: '',
+        status: 'active',
+        website: '',
+        taxCode: '',
+        description: '',
+        isTopSupplier: false
+      })
+      setLogoPreview(null)
+      setAddresses([])
+      setContacts([])
     }
   }, [supplier, reset])
 
@@ -91,9 +108,10 @@ const SupplierForm = ({ supplier, onClose }) => {
 
   // Xử lý thêm địa chỉ
   const handleAddAddress = async (addressData) => {
-    if (supplier?.id) {
+    const supplierIdValue = supplier?.id || supplier?._id
+    if (supplierIdValue) {
       await addAddressMutation.mutateAsync({
-        supplierId: supplier.id,
+        supplierId: supplierIdValue,
         data: addressData
       })
       setAddresses([...addresses, { ...addressData, id: Date.now() }])
@@ -105,9 +123,10 @@ const SupplierForm = ({ supplier, onClose }) => {
 
   // Xử lý cập nhật địa chỉ
   const handleUpdateAddress = async (addressId, addressData) => {
-    if (supplier?.id) {
+    const supplierIdValue = supplier?.id || supplier?._id
+    if (supplierIdValue) {
       await updateAddressMutation.mutateAsync({
-        supplierId: supplier.id,
+        supplierId: supplierIdValue,
         addressId,
         data: addressData
       })
@@ -124,9 +143,10 @@ const SupplierForm = ({ supplier, onClose }) => {
 
   // Xử lý xóa địa chỉ
   const handleDeleteAddress = async (addressId) => {
-    if (supplier?.id) {
+    const supplierIdValue = supplier?.id || supplier?._id
+    if (supplierIdValue) {
       await deleteAddressMutation.mutateAsync({
-        supplierId: supplier.id,
+        supplierId: supplierIdValue,
         addressId
       })
     }
@@ -135,9 +155,10 @@ const SupplierForm = ({ supplier, onClose }) => {
 
   // Xử lý đặt địa chỉ mặc định
   const handleSetDefaultAddress = async (addressId) => {
-    if (supplier?.id) {
+    const supplierIdValue = supplier?.id || supplier?._id
+    if (supplierIdValue) {
       await setDefaultAddressMutation.mutateAsync({
-        supplierId: supplier.id,
+        supplierId: supplierIdValue,
         addressId
       })
     }
@@ -149,9 +170,10 @@ const SupplierForm = ({ supplier, onClose }) => {
 
   // Xử lý thêm liên hệ
   const handleAddContact = async (contactData) => {
-    if (supplier?.id) {
+    const supplierIdValue = supplier?.id || supplier?._id
+    if (supplierIdValue) {
       await addContactMutation.mutateAsync({
-        supplierId: supplier.id,
+        supplierId: supplierIdValue,
         data: contactData
       })
       setContacts([...contacts, { ...contactData, id: Date.now() }])
@@ -163,9 +185,10 @@ const SupplierForm = ({ supplier, onClose }) => {
 
   // Xử lý cập nhật liên hệ
   const handleUpdateContact = async (contactId, contactData) => {
-    if (supplier?.id) {
+    const supplierIdValue = supplier?.id || supplier?._id
+    if (supplierIdValue) {
       await updateContactMutation.mutateAsync({
-        supplierId: supplier.id,
+        supplierId: supplierIdValue,
         contactId,
         data: contactData
       })
@@ -182,9 +205,10 @@ const SupplierForm = ({ supplier, onClose }) => {
 
   // Xử lý xóa liên hệ
   const handleDeleteContact = async (contactId) => {
-    if (supplier?.id) {
+    const supplierIdValue = supplier?.id || supplier?._id
+    if (supplierIdValue) {
       await deleteContactMutation.mutateAsync({
-        supplierId: supplier.id,
+        supplierId: supplierIdValue,
         contactId
       })
     }
@@ -211,9 +235,12 @@ const SupplierForm = ({ supplier, onClose }) => {
 
       let supplierId = null
 
-      if (supplier?.id) {
-        await updateSupplierMutation.mutateAsync({ id: supplier.id, data: payload })
-        supplierId = supplier.id
+      // Kiểm tra cả id và _id để tương thích với cả hai format
+      const supplierIdValue = supplier?.id || supplier?._id
+
+      if (supplierIdValue) {
+        await updateSupplierMutation.mutateAsync({ id: supplierIdValue, data: payload })
+        supplierId = supplierIdValue
       } else {
         const result = await createSupplierMutation.mutateAsync(payload)
         supplierId = result.id || result._id
@@ -375,6 +402,7 @@ const SupplierForm = ({ supplier, onClose }) => {
           <select
             className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             {...register('category')}
+            value={watch('category') || ''}
           >
             <option value="">Chọn danh mục</option>
             <option value="electronics">Điện tử</option>
@@ -587,7 +615,7 @@ const SupplierForm = ({ supplier, onClose }) => {
           loading={isLoading}
           disabled={isLoading}
         >
-          {supplier?.id ? 'Cập nhật' : 'Tạo mới'}
+          {(supplier?.id || supplier?._id) ? 'Cập nhật' : 'Tạo mới'}
         </Button>
       </div>
 

@@ -128,6 +128,14 @@ router.get(
   userController.getUsersByRole
 );
 
+// GET /users/export - Export users to Excel (MUST be before /:userId route)
+router.get(
+  '/export',
+  authenticateToken,
+  authorize('admin', 'manager'),
+  userController.exportUsers
+);
+
 // GET /users/:userId - Lấy user theo ID
 router.get(
   '/:userId',

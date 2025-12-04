@@ -7,6 +7,300 @@ const Warehouse = require('../models/Warehouse');
 const StockMovement = require('../models/StockMovement');
 const Category = require('../models/Category');
 
+// NOTE:
+// Module Reports trên frontend mong đợi một tập các API RESTful cho việc quản lý
+// "định nghĩa báo cáo" (report definitions/templates) bên cạnh các API báo cáo
+// thống kê thực tế ở dưới. Hiện tại backend chưa có schema cho entity Report,
+// nên ta cung cấp một lớp API tối thiểu dựa trên dữ liệu tĩnh để:
+// - Tránh lỗi 404 cho các endpoint: /api/reports, /api/reports/templates, /api/reports/types
+// - Giúp màn Báo cáo hiển thị được danh sách/report type cơ bản.
+// Nếu sau này cần lưu cấu hình báo cáo thực, có thể thay các mock này bằng
+// model MongoDB tương ứng.
+
+// In-memory danh sách "định nghĩa báo cáo" (mock, không lưu DB)
+const reportDefinitions = [
+  {
+    id: 'inventory-overview',
+    name: 'Báo cáo tồn kho tổng quan',
+    description: 'Theo dõi số lượng và giá trị tồn kho theo kho và danh mục.',
+    type: 'inventory',
+    status: 'active',
+    isFavorite: true,
+    runCount: 0,
+    creator: {
+      id: 'system',
+      name: 'Hệ thống'
+    },
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'revenue-summary',
+    name: 'Báo cáo doanh thu',
+    description: 'Tổng hợp doanh thu theo thời gian và khách hàng.',
+    type: 'revenue',
+    status: 'active',
+    isFavorite: false,
+    runCount: 0,
+    creator: {
+      id: 'system',
+      name: 'Hệ thống'
+    },
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+];
+
+// Helper tạo ID đơn giản cho báo cáo mới
+const generateReportId = () => `custom-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+// Lấy danh sách "định nghĩa báo cáo"
+const getReportsList = async (req, res) => {
+  try {
+    const {
+      search = '',
+      type,
+      status,
+      creator,
+      page = 1,
+      limit = 12
+    } = req.query;
+
+    const normalizedSearch = String(search).toLowerCase();
+
+    const filtered = reportDefinitions.filter((report) => {
+      if (normalizedSearch &&
+        !report.name.toLowerCase().includes(normalizedSearch) &&
+        !report.description.toLowerCase().includes(normalizedSearch)
+      ) {
+        return false;
+      }
+
+      if (type && report.type !== type) return false;
+      if (status && report.status !== status) return false;
+      if (creator && report.creator?.id !== creator) return false;
+
+      return true;
+    });
+
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 12;
+    const start = (pageNumber - 1) * limitNumber;
+    const end = start + limitNumber;
+
+    const paginated = filtered.slice(start, end);
+    const totalItems = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / limitNumber));
+
+    res.json({
+      success: true,
+      data: paginated,
+      page: pageNumber,
+      limit: limitNumber,
+      totalItems,
+      totalPages
+    });
+  } catch (error) {
+    console.error('Get reports list error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Lấy thông tin báo cáo theo ID (mock)
+const getReportById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const report = reportDefinitions.find((r) => r.id === id);
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: report
+    });
+  } catch (error) {
+    console.error('Get report by id error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Tạo báo cáo mới (mock)
+const createReport = async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    if (!body.name || !body.type) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tên báo cáo và loại báo cáo là bắt buộc'
+      });
+    }
+
+    const now = new Date();
+    const newReport = {
+      id: generateReportId(),
+      name: body.name,
+      description: body.description || '',
+      type: body.type,
+      status: body.status || 'draft',
+      isFavorite: !!body.isFavorite,
+      runCount: 0,
+      creator: {
+        id: req.user?.id || 'system',
+        name: req.user?.fullName || req.user?.username || 'Hệ thống'
+      },
+      createdAt: now,
+      updatedAt: now,
+      // Lưu thêm cấu hình chi tiết nếu có
+      config: body
+    };
+
+    reportDefinitions.push(newReport);
+
+    res.status(201).json({
+      success: true,
+      data: newReport
+    });
+  } catch (error) {
+    console.error('Create report error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Cập nhật báo cáo (mock)
+const updateReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const body = req.body || {};
+
+    const index = reportDefinitions.findIndex((r) => r.id === id);
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    const existing = reportDefinitions[index];
+    const updated = {
+      ...existing,
+      ...body,
+      id: existing.id,
+      updatedAt: new Date()
+    };
+
+    reportDefinitions[index] = updated;
+
+    res.json({
+      success: true,
+      data: updated
+    });
+  } catch (error) {
+    console.error('Update report error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Xóa báo cáo (mock)
+const deleteReportDefinition = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const index = reportDefinitions.findIndex((r) => r.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    reportDefinitions.splice(index, 1);
+
+    res.json({
+      success: true,
+      message: 'Report deleted'
+    });
+  } catch (error) {
+    console.error('Delete report error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Danh sách template báo cáo (mock)
+const getReportTemplates = async (_req, res) => {
+  try {
+    const templates = [
+      {
+        id: 'tpl-inventory-basic',
+        name: 'Mẫu báo cáo tồn kho cơ bản',
+        description: 'Liệt kê tồn kho theo kho và danh mục.',
+        type: 'inventory',
+        category: 'inventory'
+      },
+      {
+        id: 'tpl-revenue-basic',
+        name: 'Mẫu báo cáo doanh thu cơ bản',
+        description: 'Tổng hợp doanh thu theo thời gian.',
+        type: 'revenue',
+        category: 'sales'
+      }
+    ];
+
+    res.json({
+      success: true,
+      data: templates
+    });
+  } catch (error) {
+    console.error('Get report templates error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Danh sách loại báo cáo (mock)
+const getReportTypes = async (_req, res) => {
+  try {
+    const types = [
+      { id: 'inventory', name: 'Báo cáo tồn kho' },
+      { id: 'revenue', name: 'Báo cáo doanh thu' },
+      { id: 'customer', name: 'Báo cáo khách hàng' },
+      { id: 'warehouse', name: 'Báo cáo kho' },
+      { id: 'movement', name: 'Báo cáo dịch chuyển tồn kho' },
+      { id: 'summary', name: 'Báo cáo tổng hợp' }
+    ];
+
+    res.json(types);
+  } catch (error) {
+    console.error('Get report types error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 // Báo cáo tồn kho
 const getInventoryReport = async(req, res) => {
   try {
@@ -724,7 +1018,73 @@ const getSummaryReport = async(req, res) => {
   }
 };
 
+// Export "định nghĩa báo cáo" (mock) dưới dạng file để tránh 404 cho frontend
+const exportReportDefinition = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { format = 'pdf' } = req.query;
+
+    const report = reportDefinitions.find((r) => r.id === id);
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    const exportData = {
+      ...report,
+      exportedAt: new Date().toISOString()
+    };
+
+    // Trả về JSON nếu cần
+    if (format === 'json') {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      return res.send(JSON.stringify(exportData, null, 2));
+    }
+
+    // Mặc định export dạng "file văn bản" (CSV đơn giản)
+    const csvLines = [
+      'field,value',
+      `id,${report.id}`,
+      `name,"${report.name}"`,
+      `description,"${(report.description || '').replace(/"/g, '""')}"`,
+      `type,${report.type}`,
+      `status,${report.status}`,
+      `runCount,${report.runCount}`,
+      `creator,${report.creator?.name || ''}`,
+      `createdAt,${report.createdAt?.toISOString?.() || report.createdAt}`,
+      `updatedAt,${report.updatedAt?.toISOString?.() || report.updatedAt}`
+    ];
+
+    const buffer = Buffer.from(csvLines.join('\n'), 'utf-8');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${id}.${format === 'csv' ? 'csv' : 'txt'}"`
+    );
+
+    return res.send(buffer);
+  } catch (error) {
+    console.error('Export report definition error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
+  // Định nghĩa báo cáo (mock, phục vụ UI)
+  getReportsList,
+  getReportTemplates,
+  getReportTypes,
+  getReportById,
+  createReport,
+  updateReport,
+  deleteReportDefinition,
+  // Báo cáo thống kê hiện có
   getSalesReport,
   getInventoryReport,
   getInboundReport,
@@ -734,5 +1094,6 @@ module.exports = {
   getWarehouseReport,
   getSummaryReport,
   getStockMovementReport,
-  getComprehensiveReport
+  getComprehensiveReport,
+  exportReportDefinition
 };
