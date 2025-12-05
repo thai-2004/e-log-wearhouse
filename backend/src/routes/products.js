@@ -99,6 +99,20 @@ const updateProductValidation = [
     .withMessage('isActive phải là giá trị boolean')
 ];
 
+const updateStockLimitsValidation = [
+  param('id')
+    .isMongoId()
+    .withMessage('ID sản phẩm hợp lệ là bắt buộc'),
+  body('minStock')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Tồn kho tối thiểu phải là số nguyên không âm'),
+  body('maxStock')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Tồn kho tối đa phải là số nguyên không âm')
+];
+
 const getProductsValidation = [
   query('page')
     .optional()
@@ -133,6 +147,10 @@ router.get('/export', getProductsValidation, productController.exportProducts);
 router.get('/sku/:sku', param('sku').notEmpty().withMessage('SKU is required'), productController.getProductBySKU);
 router.get('/barcode/:barcode', param('barcode').notEmpty().withMessage('Barcode is required'), productController.getProductByBarcode);
 router.get('/category/:categoryId', param('categoryId').isMongoId().withMessage('Valid category ID is required'), productController.getProductsByCategory);
+
+// Stock limits route - MUST be before /:id route to avoid conflict
+router.patch('/:id/stock-limits', authenticateToken, authorize('admin', 'manager'), updateStockLimitsValidation, productController.updateProductStockLimits);
+router.post('/:id/stock-limits', authenticateToken, authorize('admin', 'manager'), updateStockLimitsValidation, productController.updateProductStockLimits);
 
 // Dynamic routes - MUST be last
 router.get('/:id', param('id').isMongoId().withMessage('Valid product ID is required'), productController.getProductById);

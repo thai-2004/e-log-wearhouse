@@ -119,14 +119,35 @@ const getProducts = async(req, res) => {
       .populate('categoryId', 'name')
       .sort(search ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
     const total = await Product.countDocuments(query);
+
+    // Lấy thông tin tồn kho từ Inventory cho mỗi sản phẩm
+    const productIds = products.map(p => p._id);
+    const inventories = await Inventory.find({ productId: { $in: productIds } });
+    
+    // Tính tổng tồn kho cho mỗi sản phẩm (tổng từ tất cả các kho)
+    const stockMap = {};
+    inventories.forEach(inv => {
+      const productId = inv.productId.toString();
+      if (!stockMap[productId]) {
+        stockMap[productId] = 0;
+      }
+      stockMap[productId] += (inv.quantity || 0);
+    });
+
+    // Thêm field stock vào mỗi product
+    const productsWithStock = products.map(product => ({
+      ...product,
+      stock: stockMap[product._id.toString()] || 0
+    }));
 
     res.json({
       success: true,
       data: {
-        products,
+        products: productsWithStock,
         pagination: {
           page,
           limit,
@@ -150,7 +171,8 @@ const getProductById = async(req, res) => {
     const { id: productId } = req.params;
 
     const product = await Product.findById(productId)
-      .populate('categoryId', 'name description');
+      .populate('categoryId', 'name description')
+      .lean();
 
     if (!product) {
       return res.status(404).json({
@@ -159,15 +181,105 @@ const getProductById = async(req, res) => {
       });
     }
 
+    // Lấy thông tin tồn kho từ Inventory
+    const inventories = await Inventory.find({ productId });
+    const totalStock = inventories.reduce((sum, inv) => sum + (inv.quantity || 0), 0);
+
+    // Thêm field stock vào product
+    const productWithStock = {
+      ...product,
+      stock: totalStock
+    };
+
     res.json({
       success: true,
-      data: { product }
+      data: { product: productWithStock }
     });
   } catch (error) {
     console.error('Get product by ID error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
+    });
+  }
+};
+
+// Cập nhật tồn kho tối thiểu và tối đa
+const updateProductStockLimits = async(req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    const { id: productId } = req.params;
+    const { minStock, maxStock } = req.body;
+
+    // Kiểm tra sản phẩm tồn tại
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Lấy giá trị hiện tại nếu không được cung cấp
+    const newMinStock = minStock !== undefined ? Number(minStock) : product.minStock;
+    const newMaxStock = maxStock !== undefined ? Number(maxStock) : product.maxStock;
+
+    // Validate: minStock và maxStock phải >= 0
+    if (newMinStock < 0 || newMaxStock < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tồn kho tối thiểu và tối đa phải lớn hơn hoặc bằng 0'
+      });
+    }
+
+    // Validate: minStock không được lớn hơn maxStock (trừ khi cả hai đều là 0)
+    if (newMinStock > 0 && newMaxStock > 0 && newMinStock > newMaxStock) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tồn kho tối thiểu không được lớn hơn tồn kho tối đa'
+      });
+    }
+
+    // Cập nhật chỉ minStock và maxStock
+    const updateData = {};
+    if (minStock !== undefined) {
+      updateData.minStock = newMinStock;
+    }
+    if (maxStock !== undefined) {
+      updateData.maxStock = newMaxStock;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      updateData,
+      { new: true, runValidators: true }
+    ).populate('categoryId', 'name');
+
+    res.json({
+      success: true,
+      message: 'Cập nhật tồn kho tối thiểu và tối đa thành công',
+      data: {
+        product: updatedProduct,
+        stockLimits: {
+          minStock: updatedProduct.minStock,
+          maxStock: updatedProduct.maxStock
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Update product stock limits error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
     });
   }
 };
@@ -698,6 +810,7 @@ module.exports = {
   getProducts,
   getProductById,
   updateProduct,
+  updateProductStockLimits,
   deleteProduct,
   searchProducts,
   getProductBySKU,

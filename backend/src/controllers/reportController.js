@@ -1167,6 +1167,115 @@ const removeFromFavorites = async (req, res) => {
   }
 };
 
+// Helper function để lấy dữ liệu report dựa trên type và filters
+const fetchReportData = async (report) => {
+  try {
+    const filters = report.config?.filters || {};
+    const columns = report.config?.columns || [];
+    const reportType = report.type;
+
+    let data = [];
+    let summary = {};
+
+    // Lấy dữ liệu dựa trên loại báo cáo
+    if (reportType === 'inventory') {
+      const matchQuery = {};
+      
+      if (filters.warehouses && filters.warehouses.length > 0) {
+        matchQuery.warehouseId = { $in: filters.warehouses };
+      }
+      if (filters.products && filters.products.length > 0) {
+        matchQuery.productId = { $in: filters.products };
+      }
+      if (filters.categories && filters.categories.length > 0) {
+        matchQuery.categoryId = { $in: filters.categories };
+      }
+
+      const inventories = await Inventory.find(matchQuery)
+        .populate('productId', 'sku name unit price')
+        .populate('warehouseId', 'name code')
+        .populate('categoryId', 'name')
+        .limit(1000);
+
+      data = inventories.map(inv => ({
+        id: inv._id.toString(),
+        product: inv.productId?.name || 'N/A',
+        sku: inv.productId?.sku || 'N/A',
+        warehouse: inv.warehouseId?.name || 'N/A',
+        category: inv.categoryId?.name || 'N/A',
+        quantity: inv.quantity || 0,
+        reservedQuantity: inv.reservedQuantity || 0,
+        availableQuantity: (inv.quantity || 0) - (inv.reservedQuantity || 0),
+        unit: inv.productId?.unit || 'N/A',
+        value: (inv.quantity || 0) * (inv.productId?.price || 0)
+      }));
+
+      summary = {
+        totalItems: data.length,
+        totalQuantity: data.reduce((sum, item) => sum + item.quantity, 0),
+        totalValue: data.reduce((sum, item) => sum + item.value, 0)
+      };
+    } else if (reportType === 'revenue') {
+      const matchQuery = { status: 'completed' };
+      
+      if (filters.dateRange?.startDate) {
+        matchQuery.createdAt = { $gte: new Date(filters.dateRange.startDate) };
+      }
+      if (filters.dateRange?.endDate) {
+        matchQuery.createdAt = {
+          ...matchQuery.createdAt,
+          $lte: new Date(filters.dateRange.endDate)
+        };
+      }
+      if (filters.customers && filters.customers.length > 0) {
+        matchQuery.customerId = { $in: filters.customers };
+      }
+      if (filters.warehouses && filters.warehouses.length > 0) {
+        matchQuery.warehouseId = { $in: filters.warehouses };
+      }
+
+      const outbounds = await Outbound.find(matchQuery)
+        .populate('customerId', 'name email')
+        .populate('warehouseId', 'name')
+        .sort({ createdAt: -1 })
+        .limit(1000);
+
+      data = outbounds.map(out => ({
+        id: out._id.toString(),
+        code: out.code || 'N/A',
+        customer: out.customerId?.name || 'N/A',
+        warehouse: out.warehouseId?.name || 'N/A',
+        totalAmount: out.totalAmount || 0,
+        status: out.status || 'N/A',
+        createdAt: out.createdAt
+      }));
+
+      summary = {
+        totalOrders: data.length,
+        totalRevenue: data.reduce((sum, item) => sum + item.totalAmount, 0),
+        averageOrder: data.length > 0 ? data.reduce((sum, item) => sum + item.totalAmount, 0) / data.length : 0
+      };
+    } else {
+      // Default: trả về mock data
+      data = [];
+      for (let i = 0; i < 10; i++) {
+        data.push({
+          id: `item-${i}`,
+          name: `Item ${i + 1}`,
+          value: Math.floor(Math.random() * 1000),
+          date: new Date().toISOString()
+        });
+      }
+      summary = { total: data.length };
+    }
+
+    return { data, summary, columns };
+  } catch (error) {
+    console.error('Fetch report data error:', error);
+    return { data: [], summary: {}, columns: [] };
+  }
+};
+
 // Export "định nghĩa báo cáo" (mock) dưới dạng file để tránh 404 cho frontend
 const exportReportDefinition = async (req, res) => {
   try {
@@ -1181,8 +1290,9 @@ const exportReportDefinition = async (req, res) => {
       });
     }
 
-    // Có thể lấy dữ liệu báo cáo thực tế từ getReportData nếu cần
-    // const reportData = await getReportData(req, res);
+    // Lấy dữ liệu báo cáo thực tế từ filters
+    const reportDataResult = await fetchReportData(report);
+    const { data: reportData, summary, columns } = reportDataResult;
 
     const exportData = {
       ...report,
@@ -1332,6 +1442,121 @@ const exportReportDefinition = async (req, res) => {
       } catch (e) {
         // Ignore date parsing errors
       }
+    }
+
+    // Hiển thị dữ liệu báo cáo
+    currentY += 30;
+    
+    // Summary box
+    if (summary && Object.keys(summary).length > 0) {
+      doc.rect(50, currentY, doc.page.width - 100, 60).stroke();
+      if (fontToUse) {
+        doc.fontSize(12).font(fontToUse).text('TỔNG HỢP', 60, currentY + 10);
+      } else {
+        doc.fontSize(12).text('TỔNG HỢP', 60, currentY + 10);
+      }
+
+      let summaryY = currentY + 30;
+      doc.fontSize(10);
+      Object.entries(summary).forEach(([key, value]) => {
+        const label = key === 'totalItems' ? 'Tổng số mục' :
+          key === 'totalQuantity' ? 'Tổng số lượng' :
+            key === 'totalValue' ? 'Tổng giá trị' :
+              key === 'totalOrders' ? 'Tổng đơn hàng' :
+                key === 'totalRevenue' ? 'Tổng doanh thu' :
+                  key === 'averageOrder' ? 'Giá trị trung bình' :
+                    key;
+        const displayValue = typeof value === 'number' ?
+          (value % 1 === 0 ? value.toLocaleString('vi-VN') : value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')) :
+          value;
+        doc.text(`${label}: ${displayValue}`, 60, summaryY, { width: (doc.page.width - 120) / 2 });
+        summaryY += 15;
+      });
+      currentY += 70;
+    }
+
+    // Data table
+    if (reportData && reportData.length > 0) {
+      currentY += 20;
+      if (fontToUse) {
+        doc.fontSize(12).font(fontToUse).text('DỮ LIỆU CHI TIẾT', 60, currentY);
+      } else {
+        doc.fontSize(12).text('DỮ LIỆU CHI TIẾT', 60, currentY);
+      }
+      currentY += 20;
+
+      // Xác định columns để hiển thị
+      const displayColumns = columns && columns.length > 0
+        ? columns.filter(col => col.visible !== false).map(col => col.field || col.key)
+        : Object.keys(reportData[0] || {});
+
+      // Header row
+      const headerY = currentY;
+      const colWidth = (doc.page.width - 120) / Math.min(displayColumns.length, 4);
+      let colX = 60;
+
+      doc.fontSize(9);
+      displayColumns.slice(0, 4).forEach((col) => {
+        const label = col === 'product' ? 'Sản phẩm' :
+          col === 'sku' ? 'Mã SKU' :
+            col === 'warehouse' ? 'Kho' :
+              col === 'category' ? 'Danh mục' :
+                col === 'quantity' ? 'Số lượng' :
+                  col === 'value' ? 'Giá trị' :
+                    col === 'customer' ? 'Khách hàng' :
+                      col === 'totalAmount' ? 'Tổng tiền' :
+                        col === 'code' ? 'Mã' :
+                          col === 'createdAt' ? 'Ngày tạo' :
+                            col;
+        if (fontToUse) {
+          doc.font(fontToUse).text(label, colX, headerY, { width: colWidth - 5 });
+        } else {
+          doc.text(label, colX, headerY, { width: colWidth - 5 });
+        }
+        colX += colWidth;
+      });
+
+      currentY += 15;
+      doc.moveTo(60, currentY).lineTo(doc.page.width - 60, currentY).stroke();
+      currentY += 10;
+
+      // Data rows
+      doc.fontSize(8);
+      reportData.slice(0, 30).forEach((row) => {
+        if (currentY > doc.page.height - 100) {
+          doc.addPage();
+          currentY = 50;
+        }
+
+        colX = 60;
+        displayColumns.slice(0, 4).forEach((col) => {
+          let cellValue = row[col];
+          if (cellValue === null || cellValue === undefined) cellValue = '';
+          if (cellValue instanceof Date) {
+            cellValue = `${cellValue.getDate()}/${cellValue.getMonth() + 1}/${cellValue.getFullYear()}`;
+          } else if (typeof cellValue === 'number') {
+            cellValue = cellValue % 1 === 0 ? cellValue.toString() : cellValue.toFixed(2);
+          } else {
+            cellValue = String(cellValue);
+          }
+
+          if (fontToUse) {
+            doc.font(fontToUse).text(cellValue.substring(0, 20), colX, currentY, { width: colWidth - 5 });
+          } else {
+            doc.text(cellValue.substring(0, 20), colX, currentY, { width: colWidth - 5 });
+          }
+          colX += colWidth;
+        });
+        currentY += 15;
+      });
+
+      if (reportData.length > 30) {
+        currentY += 10;
+        doc.fontSize(9).text(`... và ${reportData.length - 30} mục khác`, 60, currentY);
+      }
+    } else {
+      currentY += 20;
+      doc.fontSize(10).text('Không có dữ liệu để hiển thị', 60, currentY);
     }
 
     // Ngày xuất ở góc phải

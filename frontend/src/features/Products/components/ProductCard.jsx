@@ -17,9 +17,11 @@ const ProductCard = ({
   }
 
   const getStockStatus = (stock, minStock) => {
-    if (stock <= minStock) {
+    const stockValue = stock ?? 0
+    const minStockValue = minStock ?? 0
+    if (stockValue <= minStockValue) {
       return { text: 'Sắp hết', color: 'text-red-600 bg-red-100' }
-    } else if (stock <= minStock * 2) {
+    } else if (stockValue <= minStockValue * 2) {
       return { text: 'Cảnh báo', color: 'text-yellow-600 bg-yellow-100' }
     } else {
       return { text: 'Đủ hàng', color: 'text-green-600 bg-green-100' }
@@ -81,7 +83,7 @@ const ProductCard = ({
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Tồn kho:</span>
             <span className="text-sm font-medium text-gray-900">
-              {product.stock} / {product.minStock} min
+              {product.stock ?? 0} / {product.minStock ?? 0} min
             </span>
           </div>
           <div className="mt-1">
