@@ -226,7 +226,7 @@ const updateInventory = async(req, res) => {
     const { quantity, reservedQuantity, notes } = req.body;
 
     const inventory = await Inventory.findById(inventoryId)
-      .populate('productId', 'sku name')
+      .populate('productId', 'sku name maxStock')
       .populate('warehouseId', 'name');
 
     if (!inventory) {
@@ -237,6 +237,19 @@ const updateInventory = async(req, res) => {
     }
 
     const oldQuantity = inventory.quantity;
+
+    // Kiểm tra nếu quantity vượt quá maxStock
+    if (inventory.productId.maxStock > 0 && quantity > inventory.productId.maxStock) {
+      return res.status(400).json({
+        success: false,
+        message: `Tồn kho không được vượt quá tồn kho tối đa (${inventory.productId.maxStock})`,
+        data: {
+          currentQuantity: oldQuantity,
+          requestedQuantity: quantity,
+          maxStock: inventory.productId.maxStock
+        }
+      });
+    }
 
     // Cập nhật inventory
     inventory.quantity = quantity;
@@ -1168,7 +1181,7 @@ const adjustInventory = async(req, res) => {
     const { inventoryId, adjustment, notes } = req.body;
 
     const inventory = await Inventory.findById(inventoryId)
-      .populate('productId', 'sku name')
+      .populate('productId', 'sku name maxStock')
       .populate('warehouseId', 'name');
 
     if (!inventory) {
@@ -1190,6 +1203,20 @@ const adjustInventory = async(req, res) => {
           currentQuantity: oldQuantity,
           adjustment,
           wouldResultIn: newQuantity
+        }
+      });
+    }
+
+    // Kiểm tra nếu quantity sau khi điều chỉnh vượt quá maxStock
+    if (inventory.productId.maxStock > 0 && newQuantity > inventory.productId.maxStock) {
+      return res.status(400).json({
+        success: false,
+        message: `Tồn kho không được vượt quá tồn kho tối đa (${inventory.productId.maxStock})`,
+        data: {
+          currentQuantity: oldQuantity,
+          adjustment,
+          wouldResultIn: newQuantity,
+          maxStock: inventory.productId.maxStock
         }
       });
     }

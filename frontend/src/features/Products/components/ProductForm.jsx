@@ -6,6 +6,27 @@ import Input from '@components/ui/Input'
 import { useCreateProduct, useUpdateProduct, useUploadProductImage } from '../hooks/useProducts'
 import { useCategories } from '../../Categories/hooks/useCategories'
 import { useSuppliers } from '../../Suppliers/hooks/useSuppliers'
+import { API_CONFIG } from '@config'
+
+// Helper function để convert relative URL thành full URL
+const getImageUrl = (url) => {
+  if (!url) return null
+  // Nếu đã là full URL (http/https), return nguyên
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  // Nếu là relative path bắt đầu bằng /uploads, prepend backend URL
+  if (url.startsWith('/uploads/')) {
+    const backendUrl = API_CONFIG.BASE_URL.replace('/api', '')
+    return `${backendUrl}${url}`
+  }
+  // Nếu là blob URL hoặc data URL, return nguyên
+  if (url.startsWith('blob:') || url.startsWith('data:')) {
+    return url
+  }
+  // Mặc định return nguyên
+  return url
+}
 
 const ProductForm = ({ product, onClose }) => {
   const [images, setImages] = useState([])
@@ -58,9 +79,9 @@ const ProductForm = ({ product, onClose }) => {
         sku: product.sku || '',
         barcode: product.barcode || '',
         description: product.description || '',
-        price: product.price || '',
-        cost: product.cost || '',
-        categoryId: product.categoryId || '',
+        price: product.sellingPrice || product.price || '',
+        cost: product.costPrice || product.cost || '',
+        categoryId: (product.categoryId && (product.categoryId._id || product.categoryId)) || '',
         supplierId: (product.supplierId && (product.supplierId._id || product.supplierId)) || '',
         unit: product.unit || '',
         minStock: product.minStock || '',
@@ -75,7 +96,25 @@ const ProductForm = ({ product, onClose }) => {
         tags: product.tags?.join(', ') || '',
         isActive: product.isActive !== false
       })
-      setImages(product.images || [])
+      
+      // Xử lý images: có thể là array hoặc imageUrl (string)
+      if (product.images && Array.isArray(product.images)) {
+        setImages(product.images.filter(img => img != null).map(img => {
+          // Đảm bảo mỗi image có format đúng
+          if (typeof img === 'string') {
+            return { url: img }
+          }
+          return img
+        }))
+      } else if (product.imageUrl) {
+        // Nếu chỉ có imageUrl, convert thành array format
+        setImages([{ url: product.imageUrl }])
+      } else {
+        setImages([])
+      }
+    } else {
+      // Reset khi không có product
+      setImages([])
     }
   }, [product, reset])
 
@@ -151,7 +190,22 @@ const ProductForm = ({ product, onClose }) => {
             id: product.id || product._id,
             formData
           })
-          return result.image
+          // Xử lý response từ API - có thể là object hoặc chỉ có url
+          const imageData = result?.data?.image || result?.image
+          if (imageData) {
+            // Nếu đã là object có url, return nguyên
+            if (imageData.url) {
+              return imageData
+            }
+            // Nếu là string URL, wrap thành object
+            if (typeof imageData === 'string') {
+              return { url: imageData }
+            }
+            // Nếu là object nhưng không có url, thử lấy từ các field khác
+            return { url: imageData.url || imageData.filename || URL.createObjectURL(file) }
+          }
+          // Fallback: tạo preview URL
+          return { url: URL.createObjectURL(file), file: file, isNew: true }
         } else {
           // Tạo preview URL cho hình ảnh mới
           return {
@@ -447,22 +501,34 @@ const ProductForm = ({ product, onClose }) => {
         {/* Image previews */}
         {images.length > 0 && (
           <div className="grid grid-cols-4 gap-4 mt-4">
-            {images.map((image, index) => (
-              <div key={index} className="relative">
-                <img
-                  src={image.url || image}
-                  alt={`Product ${index + 1}`}
-                  className="w-full h-24 object-cover rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                >
-                  <FiX className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
+            {images.map((image, index) => {
+              if (!image) return null
+              const rawImageUrl = image?.url || image
+              if (!rawImageUrl) return null
+              
+              // Convert relative URL thành full URL
+              const imageUrl = getImageUrl(rawImageUrl)
+              
+              return (
+                <div key={index} className="relative">
+                  <img
+                    src={imageUrl}
+                    alt={`Product ${index + 1}`}
+                    className="w-full h-24 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.target.src = '/images/no-image.png'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  >
+                    <FiX className="h-3 w-3" />
+                  </button>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

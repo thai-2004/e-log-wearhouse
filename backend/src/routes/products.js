@@ -8,6 +8,7 @@ const productController = require('../controllers/productController');
 
 // Import middleware
 const { authenticateToken, authorize } = require('../middlewares/auth');
+const { uploadSingleImage } = require('../middlewares/upload');
 
 // Validation rules
 const createProductValidation = [
@@ -151,6 +152,9 @@ router.get('/category/:categoryId', param('categoryId').isMongoId().withMessage(
 // Stock limits route - MUST be before /:id route to avoid conflict
 router.patch('/:id/stock-limits', authenticateToken, authorize('admin', 'manager'), updateStockLimitsValidation, productController.updateProductStockLimits);
 router.post('/:id/stock-limits', authenticateToken, authorize('admin', 'manager'), updateStockLimitsValidation, productController.updateProductStockLimits);
+
+// Image upload route - MUST be before /:id route to avoid conflict
+router.post('/:id/image', authenticateToken, authorize('admin', 'manager'), param('id').isMongoId().withMessage('Valid product ID is required'), uploadSingleImage, productController.uploadProductImage);
 
 // Dynamic routes - MUST be last
 router.get('/:id', param('id').isMongoId().withMessage('Valid product ID is required'), productController.getProductById);

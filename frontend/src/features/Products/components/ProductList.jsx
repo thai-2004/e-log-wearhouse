@@ -8,6 +8,7 @@ import ProductForm from './ProductForm'
 import ProductCard from './ProductCard'
 import ProductFilters from './ProductFilters'
 import { useProducts, useDeleteProduct, useExportProducts } from '../hooks/useProducts'
+import { API_CONFIG } from '@config'
 import Tooltip from '@components/ui/Tooltip'
 
 const ProductList = () => {
@@ -62,6 +63,19 @@ const ProductList = () => {
     })
   }
 
+  // Helper: chuẩn hóa URL hình ảnh (convert relative /uploads -> full backend URL)
+  const getImageUrl = (url) => {
+    if (!url) return '/images/no-image.png'
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
+      return url
+    }
+    if (url.startsWith('/uploads/')) {
+      const backendBase = API_CONFIG.BASE_URL.replace('/api', '')
+      return `${backendBase}${url}`
+    }
+    return url
+  }
+
   // Định nghĩa cột cho bảng
   const columns = useMemo(() => [
     {
@@ -71,8 +85,9 @@ const ProductList = () => {
         <div className="flex-shrink-0 h-10 w-10">
           <img
             className="h-10 w-10 rounded-lg object-cover"
-            src={(row?.imageUrl || row?.image || '/images/no-image.png')}
+            src={getImageUrl(row?.imageUrl || row?.image)}
             alt={row?.name || 'product'}
+            onError={(e) => { e.target.src = '/images/no-image.png' }}
           />
         </div>
       )

@@ -1,6 +1,19 @@
 import React from 'react'
+import { API_CONFIG } from '@config'
 import { FiEdit, FiTrash2, FiEye, FiPackage, FiTag } from 'react-icons/fi'
 import Button from '@components/ui/Button'
+
+const getImageUrl = (url) => {
+  if (!url) return '/images/no-image.png'
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
+    return url
+  }
+  if (url.startsWith('/uploads/')) {
+    const backendBase = API_CONFIG.BASE_URL.replace('/api', '')
+    return `${backendBase}${url}`
+  }
+  return url
+}
 
 const ProductCard = ({ 
   product, 
@@ -35,9 +48,10 @@ const ProductCard = ({
       {/* Product Image */}
       <div className="aspect-w-16 aspect-h-9 bg-gray-200">
         <img
-          src={product.image || '/images/no-image.png'}
+          src={getImageUrl(product.imageUrl || product.image)}
           alt={product.name}
           className="w-full h-48 object-cover"
+          onError={(e) => { e.target.src = '/images/no-image.png' }}
         />
         {product.status === 'inactive' && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">

@@ -34,9 +34,10 @@ app.use(helmet({
       defaultSrc: ['\'self\''],
       styleSrc: ['\'self\'', '\'unsafe-inline\''],
       scriptSrc: ['\'self\''],
-      imgSrc: ['\'self\'', 'data:', 'https:']
+      imgSrc: ['\'self\'', 'data:', 'https:', 'http://localhost:5000', 'http://localhost:3000']
     }
-  }
+  },
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
 // Sanitize data against NoSQL injection attacks
@@ -113,6 +114,24 @@ app.use(express.urlencoded({
   extended: true,
   limit: '10mb'
 }));
+
+// Static file serving for uploads with CORS headers
+const path = require('path');
+app.use('/uploads', (req, res, next) => {
+  // Set CORS headers for static files
+  const origin = req.headers.origin;
+  // Allow all origins in development, or check config in production
+  if (config.app.environment === 'development') {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  } else if (origin && config.security && config.security.corsOrigins && config.security.corsOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {

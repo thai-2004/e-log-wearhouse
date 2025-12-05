@@ -364,7 +364,7 @@ const completeInbound = async(req, res) => {
     const { id: inboundId } = req.params;
 
     const inbound = await Inbound.findById(inboundId)
-      .populate('items.productId', 'sku name')
+      .populate('items.productId', 'sku name maxStock')
       .populate('warehouseId', 'name');
 
     if (!inbound) {
@@ -404,7 +404,26 @@ const completeInbound = async(req, res) => {
       }
 
       const oldQuantity = inventory.quantity;
-      inventory.quantity += item.quantity;
+      const newQuantity = oldQuantity + item.quantity;
+
+      // Kiểm tra nếu quantity sau khi nhập vượt quá maxStock
+      if (item.productId.maxStock > 0 && newQuantity > item.productId.maxStock) {
+        return res.status(400).json({
+          success: false,
+          message: `Tồn kho không được vượt quá tồn kho tối đa (${item.productId.maxStock}) cho sản phẩm ${item.productId.sku || item.productId.name}`,
+          data: {
+            productId: item.productId._id,
+            productSku: item.productId.sku,
+            productName: item.productId.name,
+            currentQuantity: oldQuantity,
+            inboundQuantity: item.quantity,
+            wouldResultIn: newQuantity,
+            maxStock: item.productId.maxStock
+          }
+        });
+      }
+
+      inventory.quantity = newQuantity;
       await inventory.save();
 
       // Tạo stock movement record

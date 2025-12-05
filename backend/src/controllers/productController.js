@@ -6,6 +6,7 @@ const { validationResult } = require('express-validator');
 const { HTTP_STATUS, PRODUCT_STATUS } = require('../config/constants');
 const { handleError, createErrorResponse, createSuccessResponse } = require('../utils/errorHandler');
 const { checkUniqueField, validatePagination, isValidSKU, isValidBarcode } = require('../utils/validation');
+const path = require('path');
 
 // Tạo sản phẩm mới
 const createProduct = async(req, res) => {
@@ -805,6 +806,76 @@ const exportProducts = async(req, res) => {
   }
 };
 
+// Upload hình ảnh sản phẩm
+const uploadProductImage = async(req, res) => {
+  try {
+    const { id: productId } = req.params;
+
+    if (!req.file) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: 'Không có file hình ảnh được upload'
+      });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      // Xóa file đã upload nếu product không tồn tại
+      const fs = require('fs');
+      if (req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Tạo URL cho hình ảnh (relative path từ uploads/)
+    const relativeUrl = `/uploads/${path.basename(req.file.path)}`;
+    
+    // Tạo full URL nếu có thể (cho frontend dễ sử dụng)
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const fullUrl = `${protocol}://${host}${relativeUrl}`;
+
+    // Cập nhật imageUrl của sản phẩm (lưu relative URL để dễ migrate)
+    product.imageUrl = relativeUrl;
+    await product.save();
+
+    res.json({
+      success: true,
+      message: 'Upload hình ảnh thành công',
+      data: {
+        image: {
+          url: fullUrl, // Trả về full URL cho frontend
+          relativeUrl: relativeUrl, // Giữ relative URL để reference
+          filename: req.file.filename,
+          originalName: req.file.originalname,
+          size: req.file.size
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Upload product image error:', error);
+    
+    // Xóa file nếu có lỗi
+    if (req.file && req.file.path) {
+      const fs = require('fs');
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkError) {
+        console.error('Error deleting uploaded file:', unlinkError);
+      }
+    }
+
+    res.status(HTTP_STATUS.SERVER_ERROR).json({
+      success: false,
+      message: 'Server error while uploading image'
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   getProducts,
@@ -818,5 +889,6 @@ module.exports = {
   getProductsByCategory,
   updateProductPrice,
   getLowStockProducts,
-  exportProducts
+  exportProducts,
+  uploadProductImage
 };
