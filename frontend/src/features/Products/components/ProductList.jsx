@@ -8,8 +8,8 @@ import ProductForm from './ProductForm'
 import ProductCard from './ProductCard'
 import ProductFilters from './ProductFilters'
 import { useProducts, useDeleteProduct, useExportProducts } from '../hooks/useProducts'
-import { API_CONFIG } from '@config'
 import Tooltip from '@components/ui/Tooltip'
+import { resolveImageUrl, FALLBACK_IMAGE } from '@utils/image'
 
 const ProductList = () => {
   const [showForm, setShowForm] = useState(false)
@@ -17,7 +17,7 @@ const ProductList = () => {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState({
-    category: '',
+    categoryId: '',
     status: '',
     priceRange: { min: '', max: '' },
     stockRange: { min: '', max: '' }
@@ -30,7 +30,12 @@ const ProductList = () => {
     page: currentPage,
     limit: pageSize,
     search: searchQuery,
-    ...filters
+    categoryId: filters.categoryId || undefined,
+    isActive: filters.status === '' ? undefined : (filters.status === 'active'),
+    minPrice: filters.priceRange?.min || undefined,
+    maxPrice: filters.priceRange?.max || undefined,
+    minStock: filters.stockRange?.min || undefined,
+    maxStock: filters.stockRange?.max || undefined,
   })
 
   const deleteProductMutation = useDeleteProduct()
@@ -59,21 +64,13 @@ const ProductList = () => {
   const handleExport = () => {
     exportProductsMutation.mutate({
       search: searchQuery,
-      ...filters
+      categoryId: filters.categoryId || undefined,
+      isActive: filters.status === '' ? undefined : (filters.status === 'active'),
+      minPrice: filters.priceRange?.min || undefined,
+      maxPrice: filters.priceRange?.max || undefined,
+      minStock: filters.stockRange?.min || undefined,
+      maxStock: filters.stockRange?.max || undefined,
     })
-  }
-
-  // Helper: chuẩn hóa URL hình ảnh (convert relative /uploads -> full backend URL)
-  const getImageUrl = (url) => {
-    if (!url) return '/images/no-image.png'
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
-      return url
-    }
-    if (url.startsWith('/uploads/')) {
-      const backendBase = API_CONFIG.BASE_URL.replace('/api', '')
-      return `${backendBase}${url}`
-    }
-    return url
   }
 
   // Định nghĩa cột cho bảng
@@ -85,9 +82,9 @@ const ProductList = () => {
         <div className="flex-shrink-0 h-10 w-10">
           <img
             className="h-10 w-10 rounded-lg object-cover"
-            src={getImageUrl(row?.imageUrl || row?.image)}
+            src={resolveImageUrl(row?.imageUrl || row?.image)}
             alt={row?.name || 'product'}
-            onError={(e) => { e.target.src = '/images/no-image.png' }}
+            onError={(e) => { e.target.src = FALLBACK_IMAGE }}
           />
         </div>
       )

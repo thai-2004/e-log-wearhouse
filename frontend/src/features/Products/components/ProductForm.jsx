@@ -6,27 +6,7 @@ import Input from '@components/ui/Input'
 import { useCreateProduct, useUpdateProduct, useUploadProductImage } from '../hooks/useProducts'
 import { useCategories } from '../../Categories/hooks/useCategories'
 import { useSuppliers } from '../../Suppliers/hooks/useSuppliers'
-import { API_CONFIG } from '@config'
-
-// Helper function để convert relative URL thành full URL
-const getImageUrl = (url) => {
-  if (!url) return null
-  // Nếu đã là full URL (http/https), return nguyên
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url
-  }
-  // Nếu là relative path bắt đầu bằng /uploads, prepend backend URL
-  if (url.startsWith('/uploads/')) {
-    const backendUrl = API_CONFIG.BASE_URL.replace('/api', '')
-    return `${backendUrl}${url}`
-  }
-  // Nếu là blob URL hoặc data URL, return nguyên
-  if (url.startsWith('blob:') || url.startsWith('data:')) {
-    return url
-  }
-  // Mặc định return nguyên
-  return url
-}
+import { resolveImageUrl, FALLBACK_IMAGE } from '@utils/image'
 
 const ProductForm = ({ product, onClose }) => {
   const [images, setImages] = useState([])
@@ -507,7 +487,7 @@ const ProductForm = ({ product, onClose }) => {
               if (!rawImageUrl) return null
               
               // Convert relative URL thành full URL
-              const imageUrl = getImageUrl(rawImageUrl)
+              const imageUrl = resolveImageUrl(rawImageUrl)
               
               return (
                 <div key={index} className="relative">
@@ -516,7 +496,7 @@ const ProductForm = ({ product, onClose }) => {
                     alt={`Product ${index + 1}`}
                     className="w-full h-24 object-cover rounded-lg"
                     onError={(e) => {
-                      e.target.src = '/images/no-image.png'
+                      e.target.src = FALLBACK_IMAGE
                     }}
                   />
                   <button

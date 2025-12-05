@@ -3,6 +3,7 @@ import { FiArrowUp, FiArrowDown, FiPackage, FiCalendar, FiFilter } from 'react-i
 import Button from '@components/ui/Button'
 import Table from '@components/ui/Table'
 import { useInventoryMovements } from '../hooks/useInventory'
+import { resolveImageUrl, FALLBACK_IMAGE } from '@utils/image'
 
 const InventoryMovements = () => {
   const [filters, setFilters] = useState({
@@ -52,8 +53,9 @@ const InventoryMovements = () => {
           <div className="flex-shrink-0 h-8 w-8">
             <img
               className="h-8 w-8 rounded object-cover"
-              src={movement.product?.image || '/images/no-image.png'}
+              src={resolveImageUrl(movement.product?.imageUrl || movement.product?.image)}
               alt={movement.product?.name}
+              onError={(e) => { e.target.src = FALLBACK_IMAGE }}
             />
           </div>
           <div className="ml-3">

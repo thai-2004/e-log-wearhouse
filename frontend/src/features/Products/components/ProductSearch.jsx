@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { FiSearch, FiX, FiClock } from 'react-icons/fi'
 import { useSearchProducts } from '../hooks/useProducts'
+import { resolveImageUrl, FALLBACK_IMAGE } from '@utils/image'
 
 const ProductSearch = ({ 
   onProductSelect, 
@@ -107,9 +108,10 @@ const ProductSearch = ({
                     >
                       <div className="flex items-center space-x-3">
                         <img
-                          src={product.image || '/images/no-image.png'}
+                          src={resolveImageUrl(product.imageUrl || product.image)}
                           alt={product.name}
                           className="h-10 w-10 rounded-lg object-cover"
+                          onError={(e) => { e.target.src = FALLBACK_IMAGE }}
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">

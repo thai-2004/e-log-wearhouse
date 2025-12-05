@@ -1,10 +1,28 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { FiX, FiSearch } from 'react-icons/fi'
 import Button from '@components/ui/Button'
 import Input from '@components/ui/Input'
+import { useCategories } from '../../Categories/hooks/useCategories'
 
 const ProductFilters = ({ filters, onFiltersChange, onClose }) => {
   const [localFilters, setLocalFilters] = useState(filters)
+  const { data: categoriesData, isLoading: loadingCategories } = useCategories({ limit: 1000 })
+
+  const priceOptions = useMemo(() => ([
+    { value: '', label: 'Tất cả giá', min: '', max: '' },
+    { value: '0-100k', label: '0 - 100K', min: 0, max: 100000 },
+    { value: '100k-500k', label: '100K - 500K', min: 100000, max: 500000 },
+    { value: '500k-1m', label: '500K - 1 triệu', min: 500000, max: 1000000 },
+    { value: '1m-5m', label: '1 - 5 triệu', min: 1000000, max: 5000000 },
+    { value: '5m+', label: 'Trên 5 triệu', min: 5000000, max: '' },
+  ]), [])
+
+  const [priceOption, setPriceOption] = useState(() => {
+    const matched = priceOptions.find(
+      (opt) => `${opt.min}` === `${filters.priceRange?.min ?? ''}` && `${opt.max}` === `${filters.priceRange?.max ?? ''}`
+    )
+    return matched?.value ?? ''
+  })
 
   const handleFilterChange = (key, value) => {
     setLocalFilters(prev => ({
@@ -23,6 +41,18 @@ const ProductFilters = ({ filters, onFiltersChange, onClose }) => {
     }))
   }
 
+  const handlePriceOptionChange = (value) => {
+    setPriceOption(value)
+    const option = priceOptions.find(opt => opt.value === value)
+    setLocalFilters(prev => ({
+      ...prev,
+      priceRange: {
+        min: option?.min ?? '',
+        max: option?.max ?? ''
+      }
+    }))
+  }
+
   const handleApplyFilters = () => {
     onFiltersChange(localFilters)
     onClose()
@@ -30,11 +60,12 @@ const ProductFilters = ({ filters, onFiltersChange, onClose }) => {
 
   const handleResetFilters = () => {
     const resetFilters = {
-      category: '',
+      categoryId: '',
       status: '',
       priceRange: { min: '', max: '' },
       stockRange: { min: '', max: '' }
     }
+    setPriceOption('')
     setLocalFilters(resetFilters)
     onFiltersChange(resetFilters)
     onClose()
@@ -49,15 +80,16 @@ const ProductFilters = ({ filters, onFiltersChange, onClose }) => {
         </label>
         <select
           className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-          value={localFilters.category}
-          onChange={(e) => handleFilterChange('category', e.target.value)}
+          value={localFilters.categoryId}
+          onChange={(e) => handleFilterChange('categoryId', e.target.value)}
+          disabled={loadingCategories}
         >
           <option value="">Tất cả danh mục</option>
-          <option value="electronics">Điện tử</option>
-          <option value="clothing">Quần áo</option>
-          <option value="books">Sách</option>
-          <option value="home">Gia dụng</option>
-          <option value="sports">Thể thao</option>
+          {categoriesData?.data?.categories?.map((cat) => (
+            <option key={cat._id || cat.id} value={cat._id || cat.id}>
+              {cat.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -82,20 +114,15 @@ const ProductFilters = ({ filters, onFiltersChange, onClose }) => {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Khoảng giá (VNĐ)
         </label>
-        <div className="grid grid-cols-2 gap-2">
-          <Input
-            placeholder="Từ"
-            type="number"
-            value={localFilters.priceRange.min}
-            onChange={(e) => handleNestedFilterChange('priceRange', 'min', e.target.value)}
-          />
-          <Input
-            placeholder="Đến"
-            type="number"
-            value={localFilters.priceRange.max}
-            onChange={(e) => handleNestedFilterChange('priceRange', 'max', e.target.value)}
-          />
-        </div>
+        <select
+          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+          value={priceOption}
+          onChange={(e) => handlePriceOptionChange(e.target.value)}
+        >
+          {priceOptions.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
       </div>
 
       {/* Stock Range */}

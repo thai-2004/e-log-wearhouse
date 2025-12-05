@@ -7,6 +7,7 @@ import InventoryForm from './InventoryForm'
 import StockAdjustment from './StockAdjustment'
 import StockAlert from './StockAlert'
 import { useInventory, useLowStockItems, useZeroStockItems, useOverstockItems, useExportInventory } from '../hooks/useInventory'
+import { resolveImageUrl, FALLBACK_IMAGE } from '@utils/image'
 
 const InventoryList = () => {
   const [showForm, setShowForm] = useState(false)
@@ -62,8 +63,9 @@ const InventoryList = () => {
           <div className="flex-shrink-0 h-10 w-10">
             <img
               className="h-10 w-10 rounded-lg object-cover"
-              src={inventory?.product?.image || '/images/no-image.png'}
+              src={resolveImageUrl(inventory?.product?.imageUrl || inventory?.product?.image)}
               alt={inventory?.product?.name}
+              onError={(e) => { e.target.src = FALLBACK_IMAGE }}
             />
           </div>
           <div className="ml-3">

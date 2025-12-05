@@ -1,6 +1,7 @@
 import React from 'react'
 import { FiAlertTriangle, FiTrendingDown, FiTrendingUp, FiPackage, FiEye } from 'react-icons/fi'
 import Button from '@components/ui/Button'
+import { resolveImageUrl, FALLBACK_IMAGE } from '@utils/image'
 
 const StockAlert = ({ 
   type = 'low', // low, zero, overstock
@@ -117,9 +118,10 @@ const StockAlert = ({
           <div key={item.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
             <div className="flex items-center space-x-3">
               <img
-                src={item.product?.image || '/images/no-image.png'}
+                src={resolveImageUrl(item.product?.imageUrl || item.product?.image)}
                 alt={item.product?.name}
                 className="h-8 w-8 rounded object-cover"
+                onError={(e) => { e.target.src = FALLBACK_IMAGE }}
               />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-900 truncate">
