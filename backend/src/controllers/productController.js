@@ -66,7 +66,7 @@ const createProduct = async(req, res) => {
       const minStock = Number(productData.minStock);
       const maxStock = Number(productData.maxStock);
 
-      if (minStock > 0 && maxStock > 0 && minStock > maxStock) {
+      if (minStock > maxStock && !(minStock === 0 && maxStock === 0)) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
           message: 'Tồn kho tối thiểu không được lớn hơn tồn kho tối đa'
@@ -241,7 +241,7 @@ const updateProductStockLimits = async(req, res) => {
     }
 
     // Validate: minStock không được lớn hơn maxStock (trừ khi cả hai đều là 0)
-    if (newMinStock > 0 && newMaxStock > 0 && newMinStock > newMaxStock) {
+    if (newMinStock > newMaxStock && !(newMinStock === 0 && newMaxStock === 0)) {
       return res.status(400).json({
         success: false,
         message: 'Tồn kho tối thiểu không được lớn hơn tồn kho tối đa'
@@ -345,7 +345,7 @@ const updateProduct = async(req, res) => {
       ? Number(updateData.maxStock)
       : currentProduct.maxStock;
 
-    if (minStock > 0 && maxStock > 0 && minStock > maxStock) {
+    if (minStock > maxStock && !(minStock === 0 && maxStock === 0)) {
       return res.status(400).json({
         success: false,
         message: 'Tồn kho tối thiểu không được lớn hơn tồn kho tối đa'
