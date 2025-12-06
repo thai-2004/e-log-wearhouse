@@ -70,8 +70,8 @@ const RealTimeUpdates = ({
     const seconds = Math.floor(diff / 1000)
     const minutes = Math.floor(seconds / 60)
 
-    if (seconds < 60) return `${seconds}s ago`
-    if (minutes < 60) return `${minutes}m ago`
+    if (seconds < 60) return `${seconds} giây trước`
+    if (minutes < 60) return `${minutes} phút trước`
     return date.toLocaleTimeString()
   }
 
@@ -95,9 +95,9 @@ const RealTimeUpdates = ({
         className={`h-4 w-4 ${getStatusColor()} ${isUpdating ? 'animate-spin' : ''}`} 
       />
       <span className={`text-xs ${getStatusColor()}`}>
-        {!isConnected ? 'Offline' : 
-         isUpdating ? 'Updating...' : 
-         'Live'}
+        {!isConnected ? 'Ngoại tuyến' : 
+         isUpdating ? 'Đang cập nhật...' : 
+         'Trực tiếp'}
       </span>
       <span className="text-gray-400 text-xs">
         • {formatLastUpdate(lastUpdate)}
@@ -218,7 +218,7 @@ export const DashboardRealTimeProvider = ({ children, refreshInterval = 30000 })
                 onChange={(e) => handleSettingsChange({ enabled: e.target.checked })}
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <span>Auto-refresh</span>
+              <span>Tự động làm mới</span>
             </label>
           </div>
         </div>

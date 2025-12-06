@@ -25,6 +25,7 @@ import {
   FiChevronDown,
   FiChevronRight
 } from 'react-icons/fi'
+import toast from 'react-hot-toast'
 import Button from '@components/ui/Button'
 import Input from '@components/ui/Input'
 import Select from '@components/ui/Select'
@@ -186,30 +187,45 @@ const ReportForm = ({ reportId, onClose, onSave }) => {
   // Load report data when editing
   useEffect(() => {
     if (report && isEdit) {
-      setFormData({
-        ...formData,
-        ...report,
-        filters: {
-          ...formData.filters,
-          ...report.filters
-        },
+      setFormData(prev => ({
+        ...prev,
+        name: report.name || '',
+        description: report.description || '',
+        type: report.type || '',
+        category: report.category || '',
+        status: report.status || 'draft',
+        isPublic: report.isPublic || false,
+        isFavorite: report.isFavorite || false,
         schedule: {
-          ...formData.schedule,
-          ...report.schedule
+          ...prev.schedule,
+          ...(report.schedule || {})
+        },
+        filters: {
+          ...prev.filters,
+          ...(report.filters || {})
+        },
+        columns: Array.isArray(report.columns) ? report.columns : prev.columns,
+        sorting: {
+          ...prev.sorting,
+          ...(report.sorting || {})
+        },
+        grouping: {
+          ...prev.grouping,
+          ...(report.grouping || {})
         },
         chart: {
-          ...formData.chart,
-          ...report.chart
+          ...prev.chart,
+          ...(report.chart || {})
         },
         export: {
-          ...formData.export,
-          ...report.export
+          ...prev.export,
+          ...(report.export || {})
         },
         notifications: {
-          ...formData.notifications,
-          ...report.notifications
+          ...prev.notifications,
+          ...(report.notifications || {})
         }
-      })
+      }))
     }
   }, [report, isEdit])
 
@@ -513,12 +529,12 @@ const ReportForm = ({ reportId, onClose, onSave }) => {
     try {
       // Validate required fields
       if (!formData.name || !formData.name.trim()) {
-        alert('Vui lòng nhập tên báo cáo')
+        toast.error('Vui lòng nhập tên báo cáo')
         return
       }
       
       if (!formData.type) {
-        alert('Vui lòng chọn loại báo cáo')
+        toast.error('Vui lòng chọn loại báo cáo')
         return
       }
 
@@ -584,19 +600,25 @@ const ReportForm = ({ reportId, onClose, onSave }) => {
       }
       onSave?.()
     } catch (error) {
-      console.error('Save report error:', error)
+      // Error is handled by the mutation hook, but we can add additional handling here if needed
       const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra khi lưu báo cáo'
-      alert(errorMessage)
+      if (!error.response?.data?.message) {
+        toast.error(errorMessage)
+      }
     }
   }
 
   const handleRun = async () => {
+    if (!reportId) {
+      toast.error('Vui lòng lưu báo cáo trước khi chạy')
+      return
+    }
     try {
       setIsRunning(true)
       await runReportMutation.mutateAsync({ id: reportId, params: sanitizedFilters })
       setShowPreview(true)
     } catch (error) {
-      console.error('Run report error:', error)
+      // Error is handled by the mutation hook
     } finally {
       setIsRunning(false)
     }

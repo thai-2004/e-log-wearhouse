@@ -12,38 +12,38 @@ const NotificationSystem = () => {
       {
         id: 1,
         type: 'warning',
-        title: 'Low Stock Alert',
-        message: 'Product "iPhone 15" is running low on stock (5 items remaining)',
+        title: 'Cảnh báo tồn kho thấp',
+        message: 'Sản phẩm "iPhone 15" sắp hết hàng (còn 5 sản phẩm)',
         timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
         read: false,
-        action: 'View Product'
+        action: 'Xem sản phẩm'
       },
       {
         id: 2,
         type: 'success',
-        title: 'Order Completed',
-        message: 'Order #12345 has been successfully processed',
+        title: 'Đơn hàng hoàn thành',
+        message: 'Đơn hàng #12345 đã được xử lý thành công',
         timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
         read: false,
-        action: 'View Order'
+        action: 'Xem đơn hàng'
       },
       {
         id: 3,
         type: 'info',
-        title: 'New Customer Registration',
-        message: 'John Doe has registered as a new customer',
+        title: 'Đăng ký khách hàng mới',
+        message: 'John Doe đã đăng ký làm khách hàng mới',
         timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
         read: true,
-        action: 'View Customer'
+        action: 'Xem khách hàng'
       },
       {
         id: 4,
         type: 'error',
-        title: 'System Error',
-        message: 'Failed to sync inventory data with external system',
+        title: 'Lỗi hệ thống',
+        message: 'Không thể đồng bộ dữ liệu tồn kho với hệ thống bên ngoài',
         timestamp: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
         read: false,
-        action: 'Retry Sync'
+        action: 'Thử lại đồng bộ'
       }
     ]
     
@@ -108,10 +108,10 @@ const NotificationSystem = () => {
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
 
-    if (minutes < 1) return 'Just now'
-    if (minutes < 60) return `${minutes}m ago`
-    if (hours < 24) return `${hours}h ago`
-    return `${days}d ago`
+    if (minutes < 1) return 'Vừa xong'
+    if (minutes < 60) return `${minutes} phút trước`
+    if (hours < 24) return `${hours} giờ trước`
+    return `${days} ngày trước`
   }
 
   return (
@@ -144,7 +144,7 @@ const NotificationSystem = () => {
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Notifications
+                  Thông báo
                 </h3>
                 <div className="flex items-center space-x-2">
                   {unreadCount > 0 && (
@@ -152,7 +152,7 @@ const NotificationSystem = () => {
                       onClick={markAllAsRead}
                       className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                     >
-                      Mark all as read
+                      Đánh dấu tất cả đã đọc
                     </button>
                   )}
                   <button
@@ -170,7 +170,7 @@ const NotificationSystem = () => {
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
                   <FiBell className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No notifications</p>
+                  <p>Không có thông báo</p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-200">
@@ -234,7 +234,7 @@ const NotificationSystem = () => {
             {notifications.length > 0 && (
               <div className="p-4 border-t border-gray-200 bg-gray-50">
                 <button className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium">
-                  View all notifications
+                  Xem tất cả thông báo
                 </button>
               </div>
             )}

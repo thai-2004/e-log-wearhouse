@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 import Button from '@components/ui/Button'
 import Input from '@components/ui/Input'
 import { useCreateInventory } from '../hooks/useInventory'
@@ -60,7 +61,7 @@ const InventoryForm = ({ onClose }) => {
       // Kiểm tra token trước khi submit
       const authStorage = localStorage.getItem('auth-storage')
       if (!authStorage) {
-        alert('Bạn chưa đăng nhập. Vui lòng đăng nhập lại.')
+        toast.error('Bạn chưa đăng nhập. Vui lòng đăng nhập lại.')
         return
       }
 
@@ -68,11 +69,11 @@ const InventoryForm = ({ onClose }) => {
         const parsed = JSON.parse(authStorage)
         const token = parsed?.state?.token
         if (!token) {
-          alert('Token không tồn tại. Vui lòng đăng nhập lại.')
+          toast.error('Token không tồn tại. Vui lòng đăng nhập lại.')
           return
         }
       } catch (parseError) {
-        alert('Lỗi xác thực. Vui lòng đăng nhập lại.')
+        toast.error('Lỗi xác thực. Vui lòng đăng nhập lại.')
         return
       }
 
@@ -103,29 +104,29 @@ const InventoryForm = ({ onClose }) => {
         
         // Nếu là lỗi location code not found, hiển thị thêm danh sách codes có sẵn
         if (errorCode === 'LOCATION_CODE_NOT_FOUND' && errorData?.availableCodes && errorData.availableCodes.length > 0) {
-          const availableCodesList = errorData.availableCodes.join(', ')
-          errorMessage += `\n\nCác mã vị trí có sẵn trong kho:\n${availableCodesList}${errorData.availableCodes.length >= 10 ? '\n...' : ''}`
+          const availableCodesList = errorData.availableCodes.slice(0, 10).join(', ')
+          errorMessage += `\nCác mã vị trí có sẵn trong kho: ${availableCodesList}${errorData.availableCodes.length >= 10 ? '...' : ''}`
         }
         
         const errors = errorData?.errors || []
         const errorDetails = errors.length > 0 
-          ? errors.map(e => e.msg || e.message).join('\n')
+          ? errors.map(e => e.msg || e.message).join(', ')
           : errorMessage
-        alert(`Lỗi validation:\n${errorDetails}`)
+        toast.error(`Lỗi validation: ${errorDetails}`)
       } else if (status === 401) {
         // Unauthorized - token invalid/expired
         // KHÔNG logout ở đây, để apiClient interceptor xử lý
-        alert('Token không hợp lệ hoặc đã hết hạn. Hệ thống sẽ tự động refresh token hoặc yêu cầu đăng nhập lại.')
+        toast.error('Token không hợp lệ hoặc đã hết hạn. Hệ thống sẽ tự động refresh token hoặc yêu cầu đăng nhập lại.')
       } else if (status === 403) {
         // Forbidden - không đủ quyền
-        alert('Bạn không có quyền tạo tồn kho. Vui lòng liên hệ quản trị viên.')
+        toast.error('Bạn không có quyền tạo tồn kho. Vui lòng liên hệ quản trị viên.')
       } else if (status === 500) {
         // Server error
-        alert('Lỗi server. Vui lòng thử lại sau.')
+        toast.error('Lỗi server. Vui lòng thử lại sau.')
       } else {
         // Lỗi khác
         const errorMessage = errorData?.message || error.message || 'Có lỗi xảy ra khi tạo tồn kho'
-        alert(`Lỗi: ${errorMessage}`)
+        toast.error(`Lỗi: ${errorMessage}`)
       }
     }
   }

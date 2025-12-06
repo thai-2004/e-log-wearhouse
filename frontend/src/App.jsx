@@ -8,6 +8,8 @@ import AuthLayout from '@components/layout/AuthLayout'
 
 // Pages
 import LoginPage from '@pages/LoginPage'
+import RegisterPage from '@pages/RegisterPage'
+import ForgotPasswordPage from '@pages/ForgotPasswordPage'
 import DashboardPage from '@pages/DashboardPage'
 import ProductsPage from '@pages/ProductsPage'
 import CategoriesPage from '@pages/CategoriesPage'
@@ -61,6 +63,18 @@ function App() {
         <Route path="/login" element={
           <AuthLayout>
             <LoginPage />
+          </AuthLayout>
+        } />
+
+        <Route path="/register" element={
+          <AuthLayout>
+            <RegisterPage />
+          </AuthLayout>
+        } />
+
+        <Route path="/forgot-password" element={
+          <AuthLayout>
+            <ForgotPasswordPage />
           </AuthLayout>
         } />
 

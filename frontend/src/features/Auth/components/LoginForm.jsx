@@ -53,16 +53,16 @@ const LoginForm = () => {
       <div>
         <div className="relative">
           <Input
-            label="Password"
+            label="Mật khẩu"
             type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
-            placeholder="Enter your password"
+            placeholder="Nhập mật khẩu của bạn"
             error={errors.password?.message}
             {...register('password', {
-              required: 'Password is required',
+              required: 'Mật khẩu là bắt buộc',
               minLength: {
                 value: 6,
-                message: 'Password must be at least 6 characters',
+                message: 'Mật khẩu phải có ít nhất 6 ký tự',
               },
             })}
           />
@@ -89,7 +89,7 @@ const LoginForm = () => {
             className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
           />
           <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-            Remember me
+            Ghi nhớ đăng nhập
           </label>
         </div>
 
@@ -98,7 +98,7 @@ const LoginForm = () => {
             to="/forgot-password"
             className="font-medium text-primary-600 hover:text-primary-500"
           >
-            Forgot your password?
+            Quên mật khẩu?
           </Link>
         </div>
       </div>
@@ -110,18 +110,18 @@ const LoginForm = () => {
           loading={loginMutation.isLoading}
           disabled={loginMutation.isLoading}
         >
-          Sign in
+          Đăng nhập
         </Button>
       </div>
 
       <div className="text-center">
         <p className="text-sm text-gray-600">
-          Don't have an account?{' '}
+          Chưa có tài khoản?{' '}
           <Link
             to="/register"
             className="font-medium text-primary-600 hover:text-primary-500"
           >
-            Sign up
+            Đăng ký
           </Link>
         </p>
       </div>

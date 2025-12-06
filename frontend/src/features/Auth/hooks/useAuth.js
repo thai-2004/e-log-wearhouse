@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { useAuthStore } from '@store/authStore'
+import { authAPI } from '../api/authService'
 import toast from 'react-hot-toast'
 
 export const useLogin = () => {
@@ -31,79 +32,42 @@ export const useLogout = () => {
 }
 
 export const useRegister = () => {
-  return useMutation(async (userData) => {
-    // Mock register for development
-    const response = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    })
-
-    if (!response.ok) {
-      throw new Error('Registration failed')
-    }
-
-    return response.json()
-  }, {
-    onSuccess: () => {
-      toast.success('Đăng ký thành công!')
+  return useMutation(authAPI.register, {
+    onSuccess: (data) => {
+      toast.success('Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.')
     },
     onError: (error) => {
-      toast.error(error.message || 'Đăng ký thất bại')
+      const errorMessage = error.response?.data?.message || error.message || 'Đăng ký thất bại'
+      toast.error(errorMessage)
     },
   })
 }
 
 export const useForgotPassword = () => {
-  return useMutation(async (email) => {
-    const response = await fetch('/api/auth/forgot-password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
-    })
-
-    if (!response.ok) {
-      throw new Error('Forgot password failed')
-    }
-
-    return response.json()
-  }, {
+  return useMutation(authAPI.forgotPassword, {
     onSuccess: () => {
-      toast.success('Email khôi phục mật khẩu đã được gửi!')
+      toast.success('Email khôi phục mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư của bạn.')
     },
     onError: (error) => {
-      toast.error(error.message || 'Gửi email khôi phục thất bại')
+      const errorMessage = error.response?.data?.message || error.message || 'Gửi email khôi phục thất bại'
+      toast.error(errorMessage)
     },
   })
 }
 
 export const useResetPassword = () => {
-  return useMutation(async ({ token, password }) => {
-    const response = await fetch('/api/auth/reset-password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+  return useMutation(
+    ({ token, password }) => authAPI.resetPassword(token, password),
+    {
+      onSuccess: () => {
+        toast.success('Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.')
       },
-      body: JSON.stringify({ token, password }),
-    })
-
-    if (!response.ok) {
-      throw new Error('Reset password failed')
+      onError: (error) => {
+        const errorMessage = error.response?.data?.message || error.message || 'Đặt lại mật khẩu thất bại'
+        toast.error(errorMessage)
+      },
     }
-
-    return response.json()
-  }, {
-    onSuccess: () => {
-      toast.success('Đặt lại mật khẩu thành công!')
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Đặt lại mật khẩu thất bại')
-    },
-  })
+  )
 }
 
 export const useChangePassword = () => {

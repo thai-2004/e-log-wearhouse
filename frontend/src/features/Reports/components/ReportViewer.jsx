@@ -39,6 +39,7 @@ import Modal from '@components/ui/Modal'
 import { useReport, useReportData, useExportReport, useAddToFavorites, useRemoveFromFavorites } from '../hooks/useReports'
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
+import toast from 'react-hot-toast'
 
 const ReportViewer = ({ reportId, onClose, onEdit }) => {
   const [viewMode, setViewMode] = useState('chart') // chart, table, both
@@ -71,7 +72,8 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
     if (reportId) {
       refetch()
     }
-  }, [reportId, filters, currentPage, refetch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reportId, filters, currentPage])
 
   // Reset page when filters change
   useEffect(() => {
@@ -87,14 +89,22 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
   }
 
   const handleExportReport = async (format = 'pdf') => {
+    if (!reportId) {
+      toast.error('Không tìm thấy ID báo cáo')
+      return
+    }
     try {
       await exportReportMutation.mutateAsync({ id: reportId, format, params: filters })
     } catch (error) {
-      console.error('Export report error:', error)
+      // Error is handled by the mutation hook
     }
   }
 
   const handleToggleFavorite = async () => {
+    if (!reportId) {
+      toast.error('Không tìm thấy ID báo cáo')
+      return
+    }
     try {
       if (report?.isFavorite) {
         await removeFromFavoritesMutation.mutateAsync(reportId)
@@ -102,7 +112,7 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
         await addToFavoritesMutation.mutateAsync(reportId)
       }
     } catch (error) {
-      console.error('Toggle favorite error:', error)
+      // Error is handled by the mutation hook
     }
   }
 
@@ -320,27 +330,27 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
         {/* Pagination */}
         {reportData.totalPages > 1 && (
           <div className="px-6 py-4 border-t border-gray-200">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
               <div className="text-sm text-gray-500">
-                Hiển thị {((reportData.page - 1) * reportData.limit) + 1} đến {Math.min(reportData.page * reportData.limit, reportData.totalRecords)} trong tổng số {reportData.totalRecords} bản ghi
+                Hiển thị {((currentPage - 1) * (reportData.limit || 10)) + 1} đến {Math.min(currentPage * (reportData.limit || 10), reportData.totalRecords || 0)} trong tổng số {reportData.totalRecords || 0} bản ghi
               </div>
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={reportData.page === 1}
+                  disabled={currentPage === 1}
                 >
                   Trước
                 </Button>
                 <span className="text-sm text-gray-500">
-                  Trang {reportData.page || currentPage} / {reportData.totalPages || 1}
+                  Trang {currentPage} / {reportData.totalPages || 1}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentPage(prev => Math.min(reportData.totalPages || 1, prev + 1))}
-                  disabled={reportData.page === reportData.totalPages}
+                  disabled={currentPage >= (reportData.totalPages || 1)}
                 >
                   Sau
                 </Button>
@@ -533,9 +543,8 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
                 value={filters.warehouse || ''}
                 onChange={(value) => handleFilterChange('warehouse', value)}
                 options={[
-                  { value: '', label: 'Tất cả kho' },
-                  { value: 'warehouse1', label: 'Kho 1' },
-                  { value: 'warehouse2', label: 'Kho 2' }
+                  { value: '', label: 'Tất cả kho' }
+                  // TODO: Load actual warehouses from API when needed
                 ]}
               />
             </div>
@@ -547,9 +556,8 @@ const ReportViewer = ({ reportId, onClose, onEdit }) => {
                 value={filters.product || ''}
                 onChange={(value) => handleFilterChange('product', value)}
                 options={[
-                  { value: '', label: 'Tất cả sản phẩm' },
-                  { value: 'product1', label: 'Sản phẩm 1' },
-                  { value: 'product2', label: 'Sản phẩm 2' }
+                  { value: '', label: 'Tất cả sản phẩm' }
+                  // TODO: Load actual products from API when needed
                 ]}
               />
             </div>

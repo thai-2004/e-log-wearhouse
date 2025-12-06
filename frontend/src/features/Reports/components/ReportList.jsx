@@ -32,9 +32,10 @@ import Select from '@components/ui/Select'
 import Modal from '@components/ui/Modal'
 import ReportForm from './ReportForm'
 import ReportViewer from './ReportViewer'
-import { useReports, useReportTemplates, useReportTypes, useDeleteReport, useExportReport, useAddToFavorites, useRemoveFromFavorites } from '../hooks/useReports'
+import { useReports, useReportTemplates, useReportTypes, useDeleteReport, useExportReport, useAddToFavorites, useRemoveFromFavorites, useCreateReportFromTemplate } from '../hooks/useReports'
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
+import toast from 'react-hot-toast'
 
 const ReportList = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -77,6 +78,7 @@ const ReportList = () => {
   const exportReportMutation = useExportReport()
   const addToFavoritesMutation = useAddToFavorites()
   const removeFromFavoritesMutation = useRemoveFromFavorites()
+  const createReportFromTemplateMutation = useCreateReportFromTemplate()
 
   const reports = reportsData?.data || []
   const templates = Array.isArray(templatesData?.data)
@@ -91,6 +93,9 @@ const ReportList = () => {
       : []
   const totalPages = reportsData?.totalPages || 1
   const totalItems = reportsData?.totalItems || 0
+
+  // Helper function to get report ID (handle both id and _id)
+  const getReportId = (report) => report.id || report._id || ''
 
   // Filter options
   const statusOptions = [
@@ -172,29 +177,33 @@ const ReportList = () => {
     if (selectedReports.length === reports.length) {
       setSelectedReports([])
     } else {
-      setSelectedReports(reports.map(report => report.id))
+      setSelectedReports(reports.map(report => getReportId(report)))
     }
   }
 
   const handleDeleteReport = async (reportId) => {
+    if (!reportId) return
     try {
       await deleteReportMutation.mutateAsync(reportId)
       setShowDeleteModal(false)
       setReportToDelete(null)
+      setSelectedReports(prev => prev.filter(id => id !== reportId))
     } catch (error) {
-      console.error('Delete report error:', error)
+      // Error is handled by the mutation hook
     }
   }
 
   const handleExportReport = async (reportId, format = 'pdf') => {
+    if (!reportId) return
     try {
       await exportReportMutation.mutateAsync({ id: reportId, format })
     } catch (error) {
-      console.error('Export report error:', error)
+      // Error is handled by the mutation hook
     }
   }
 
   const handleToggleFavorite = async (reportId, isFavorite) => {
+    if (!reportId) return
     try {
       if (isFavorite) {
         await removeFromFavoritesMutation.mutateAsync(reportId)
@@ -202,7 +211,7 @@ const ReportList = () => {
         await addToFavoritesMutation.mutateAsync(reportId)
       }
     } catch (error) {
-      console.error('Toggle favorite error:', error)
+      // Error is handled by the mutation hook
     }
   }
 
@@ -215,22 +224,31 @@ const ReportList = () => {
           // Export multiple reports
           for (const reportId of selectedReports) {
             await handleExportReport(reportId)
+            // Add small delay to avoid overwhelming the server
+            await new Promise(resolve => setTimeout(resolve, 100))
           }
           break
         case 'delete':
           // Delete multiple reports
-          for (const reportId of selectedReports) {
-            await deleteReportMutation.mutateAsync(reportId)
+          if (window.confirm(`Bạn có chắc chắn muốn xóa ${selectedReports.length} báo cáo đã chọn?`)) {
+            for (const reportId of selectedReports) {
+              await deleteReportMutation.mutateAsync(reportId)
+              // Add small delay to avoid overwhelming the server
+              await new Promise(resolve => setTimeout(resolve, 100))
+            }
+          } else {
+            return
           }
           break
         case 'archive':
           // Archive multiple reports - TODO: implement archive API
-          break
+          toast.error('Chức năng lưu trữ đang được phát triển')
+          return
       }
       setSelectedReports([])
       refetch()
     } catch (error) {
-      console.error('Bulk action error:', error)
+      // Error is handled by individual mutation hooks
     }
   }
 
@@ -529,186 +547,189 @@ const ReportList = () => {
         </div>
       ) : (
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
-          {reports.map((report) => (
-            <div
-              key={report.id}
-              className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow ${
-                viewMode === 'list' ? 'p-4' : 'p-4'
-              }`}
-            >
-              {viewMode === 'grid' ? (
-                // Grid View
-                <div className="space-y-4">
-                  {/* Header */}
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        {getReportIcon(report.type)}
+          {reports.map((report) => {
+            const reportId = getReportId(report)
+            return (
+              <div
+                key={reportId}
+                className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow ${
+                  viewMode === 'list' ? 'p-4' : 'p-4'
+                }`}
+              >
+                {viewMode === 'grid' ? (
+                  // Grid View
+                  <div className="space-y-4">
+                    {/* Header */}
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          {getReportIcon(report.type)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-sm font-medium text-gray-900 truncate">
+                            {report.name}
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            {report?.type ? String(report.type) : ''}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="flex items-center space-x-1">
+                        <input
+                          type="checkbox"
+                          checked={selectedReports.includes(reportId)}
+                          onChange={() => handleSelectReport(reportId)}
+                          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                        />
+                        <div className="relative">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {}}
+                          >
+                            <FiMoreVertical className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className="flex items-center justify-between">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
+                        {getStatusText(report.status)}
+                      </span>
+                      {report.isFavorite && (
+                        <FiStar className="h-4 w-4 text-yellow-400 fill-current" />
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {report?.description ? String(report.description) : ''}
+                    </p>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center">
+                        <FiClock className="h-4 w-4 mr-1" />
+                        {formatLastRunDate(report.lastRunAt)}
+                      </div>
+                      <div className="flex items-center">
+                        <FiBarChart className="h-4 w-4 mr-1" />
+                        {report.runCount || 0}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-between pt-2 border-t">
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewReport(reportId)}
+                        >
+                          <FiEye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditReport(reportId)}
+                        >
+                          <FiEdit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleExportReport(reportId)}
+                        >
+                          <FiDownload className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleFavorite(reportId, report.isFavorite)}
+                      >
+                        <FiStar className={`h-4 w-4 ${report.isFavorite ? 'text-yellow-400 fill-current' : 'text-gray-400'}`} />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  // List View
+                  <div className="flex items-center space-x-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedReports.includes(reportId)}
+                      onChange={() => handleSelectReport(reportId)}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    />
+                    <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      {getReportIcon(report.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
                         <h3 className="text-sm font-medium text-gray-900 truncate">
                           {report.name}
                         </h3>
-                        <p className="text-xs text-gray-500">
-                          {report?.type ? String(report.type) : ''}
-                        </p>
+                        <div className="flex items-center space-x-2">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
+                            {getStatusText(report.status)}
+                          </span>
+                          {report.isFavorite && (
+                            <FiStar className="h-4 w-4 text-yellow-400 fill-current" />
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-500 truncate">
+                        {report?.description ? String(report.description) : ''}
+                      </p>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                        <span>Loại: {report.type}</span>
+                        <span>Chạy: {report.runCount || 0} lần</span>
+                        <span>Cuối: {formatLastRunDate(report.lastRunAt)}</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <input
-                        type="checkbox"
-                        checked={selectedReports.includes(report.id)}
-                        onChange={() => handleSelectReport(report.id)}
-                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                      />
-                      <div className="relative">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {}}
-                        >
-                          <FiMoreVertical className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Status */}
-                  <div className="flex items-center justify-between">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
-                      {getStatusText(report.status)}
-                    </span>
-                    {report.isFavorite && (
-                      <FiStar className="h-4 w-4 text-yellow-400 fill-current" />
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {report?.description ? String(report.description) : ''}
-                  </p>
-
-                  {/* Stats */}
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <FiClock className="h-4 w-4 mr-1" />
-                      {formatLastRunDate(report.lastRunAt)}
-                    </div>
-                    <div className="flex items-center">
-                      <FiBarChart className="h-4 w-4 mr-1" />
-                      {report.runCount || 0}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center justify-between pt-2 border-t">
                     <div className="flex items-center space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleViewReport(report.id)}
+                        onClick={() => handleViewReport(reportId)}
                       >
                         <FiEye className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleEditReport(report.id)}
+                        onClick={() => handleEditReport(reportId)}
                       >
                         <FiEdit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleExportReport(report.id)}
+                        onClick={() => handleExportReport(reportId)}
                       >
                         <FiDownload className="h-4 w-4" />
                       </Button>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleToggleFavorite(report.id, report.isFavorite)}
-                    >
-                      <FiStar className={`h-4 w-4 ${report.isFavorite ? 'text-yellow-400 fill-current' : 'text-gray-400'}`} />
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                // List View
-                <div className="flex items-center space-x-4">
-                  <input
-                    type="checkbox"
-                    checked={selectedReports.includes(report.id)}
-                    onChange={() => handleSelectReport(report.id)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    {getReportIcon(report.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">
-                        {report.name}
-                      </h3>
-                      <div className="flex items-center space-x-2">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
-                          {getStatusText(report.status)}
-                        </span>
-                        {report.isFavorite && (
-                          <FiStar className="h-4 w-4 text-yellow-400 fill-current" />
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-500 truncate">
-                      {report?.description ? String(report.description) : ''}
-                    </p>
-                    <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
-                      <span>Loại: {report.type}</span>
-                      <span>Chạy: {report.runCount || 0} lần</span>
-                      <span>Cuối: {formatLastRunDate(report.lastRunAt)}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleFavorite(reportId, report.isFavorite)}
+                      >
+                        <FiStar className={`h-4 w-4 ${report.isFavorite ? 'text-yellow-400 fill-current' : 'text-gray-400'}`} />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewReport(report.id)}
-                    >
-                      <FiEye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditReport(report.id)}
-                    >
-                      <FiEdit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleExportReport(report.id)}
-                    >
-                      <FiDownload className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleToggleFavorite(report.id, report.isFavorite)}
-                    >
-                      <FiStar className={`h-4 w-4 ${report.isFavorite ? 'text-yellow-400 fill-current' : 'text-gray-400'}`} />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
           <div className="text-sm text-gray-500">
             Hiển thị {((page - 1) * pageSize) + 1} đến {Math.min(page * pageSize, totalItems)} trong tổng số {totalItems} báo cáo
           </div>
@@ -716,31 +737,36 @@ const ReportList = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(page - 1)}
+              onClick={() => setPage(Math.max(1, page - 1))}
               disabled={page === 1}
             >
               Trước
             </Button>
             <div className="flex items-center space-x-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = i + 1
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={page === pageNum ? 'primary' : 'outline'}
-                    size="sm"
-                    onClick={() => setPage(pageNum)}
-                  >
-                    {pageNum}
-                  </Button>
-                )
-              })}
+              {(() => {
+                const maxPages = Math.min(5, totalPages)
+                const startPage = Math.max(1, Math.min(page - Math.floor(maxPages / 2), totalPages - maxPages + 1))
+                return Array.from({ length: maxPages }, (_, i) => {
+                  const pageNum = startPage + i
+                  if (pageNum > totalPages) return null
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={page === pageNum ? 'primary' : 'outline'}
+                      size="sm"
+                      onClick={() => setPage(pageNum)}
+                    >
+                      {pageNum}
+                    </Button>
+                  )
+                }).filter(Boolean)
+              })()}
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(page + 1)}
-              disabled={page === totalPages}
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page >= totalPages}
             >
               Sau
             </Button>
@@ -771,41 +797,70 @@ const ReportList = () => {
         size="lg"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Chọn template có sẵn để tạo báo cáo:
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {templates.map((template) => (
-              <div
-                key={template.id}
-                className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 cursor-pointer"
-                onClick={() => {
-                  setShowTemplateModal(false)
-                  // Navigate to create form with template
-                }}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="flex-shrink-0 h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <FiFileText className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900">
-                      {template.name}
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      {template?.description ? String(template.description) : ''}
-                    </p>
-                  </div>
-                </div>
+          {templates.length === 0 ? (
+            <div className="text-center py-8">
+              <FiFileText className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">Không có template</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Hiện tại không có template nào có sẵn.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-gray-600">
+                Chọn template có sẵn để tạo báo cáo:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {templates.map((template) => {
+                  const templateId = template.id || template._id || ''
+                  return (
+                    <div
+                      key={templateId}
+                      className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 cursor-pointer transition-colors"
+                      onClick={async () => {
+                        try {
+                          await createReportFromTemplateMutation.mutateAsync({
+                            templateId,
+                            data: {
+                              name: `${template.name} (Bản sao)`,
+                              description: template.description || ''
+                            }
+                          })
+                          setShowTemplateModal(false)
+                          refetch()
+                        } catch (error) {
+                          // Error is handled by the mutation hook
+                        }
+                      }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0 h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+                          <FiFileText className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-medium text-gray-900 truncate">
+                            {template.name}
+                          </h3>
+                          <p className="text-xs text-gray-500 line-clamp-2">
+                            {template?.description ? String(template.description) : 'Không có mô tả'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
       </Modal>
 
       <Modal
         isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setReportToDelete(null)
+        }}
         title="Xác nhận xóa báo cáo"
         size="sm"
       >
@@ -816,13 +871,20 @@ const ReportList = () => {
           <div className="flex justify-end space-x-3">
             <Button
               variant="outline"
-              onClick={() => setShowDeleteModal(false)}
+              onClick={() => {
+                setShowDeleteModal(false)
+                setReportToDelete(null)
+              }}
             >
               Hủy
             </Button>
             <Button
               variant="danger"
-              onClick={() => handleDeleteReport(reportToDelete)}
+              onClick={() => {
+                if (reportToDelete) {
+                  handleDeleteReport(reportToDelete)
+                }
+              }}
               loading={deleteReportMutation.isLoading}
             >
               Xóa
