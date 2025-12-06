@@ -70,24 +70,25 @@ const StaffDashboard = () => {
 
   const overview = overviewData?.data?.overview || {}
   const stats = statsData?.data?.stats || {}
-  const alerts = alertsData?.data || []
-  const activities = activitiesData?.data || []
+  const alerts = alertsData?.data?.alerts || alertsData?.data || []
+  const activities = activitiesData?.data?.activities || activitiesData?.data || []
 
   // Staff-specific stats (focused on operational tasks)
+  const lowStockProducts = overviewData?.data?.lowStockProducts || []
   const staffStats = [
     {
-      name: 'Sản phẩm cần nhập',
-      value: overview.pendingInboundOrders?.toLocaleString() || '0',
-      change: stats.pendingInboundChange || '+3',
+      name: 'Đơn nhập kho tháng',
+      value: (overview.monthlyInbounds || 0).toLocaleString(),
+      change: stats.inboundChange || '+3',
       changeType: 'positive',
       icon: FiTruck,
       link: '/inbound',
       color: 'text-blue-600'
     },
     {
-      name: 'Đơn hàng chờ xuất',
-      value: overview.pendingOutboundOrders?.toLocaleString() || '0',
-      change: stats.pendingOutboundChange || '+5',
+      name: 'Đơn xuất kho tháng',
+      value: (overview.monthlyOutbounds || 0).toLocaleString(),
+      change: stats.outboundChange || '+5',
       changeType: 'positive',
       icon: FiBox,
       link: '/outbound',
@@ -95,7 +96,7 @@ const StaffDashboard = () => {
     },
     {
       name: 'Sản phẩm sắp hết',
-      value: overview.lowStockProducts?.toLocaleString() || '0',
+      value: lowStockProducts.length.toLocaleString(),
       change: stats.lowStockChange || '+2',
       changeType: 'negative',
       icon: FiAlertCircle,
@@ -103,12 +104,12 @@ const StaffDashboard = () => {
       color: 'text-red-600'
     },
     {
-      name: 'Hoàn thành hôm nay',
-      value: overview.todayCompletedOrders?.toLocaleString() || '0',
-      change: stats.todayCompletedChange || '+8',
+      name: 'Tổng sản phẩm',
+      value: (overview.totalProducts || 0).toLocaleString(),
+      change: stats.productsChange || '+8',
       changeType: 'positive',
       icon: FiCheckCircle,
-      link: '/reports',
+      link: '/products',
       color: 'text-success-600'
     }
   ]
@@ -237,19 +238,24 @@ const StaffDashboard = () => {
                   <span className="ml-2 text-gray-600">Đang tải...</span>
                 </div>
               ) : staffActivities.length > 0 ? (
-                staffActivities.map((activity) => {
+                staffActivities.map((activity, index) => {
                   const Icon = activity.type === 'inbound' ? FiTruck : 
                               activity.type === 'outbound' ? FiBox :
                               activity.type === 'alert' ? FiAlertCircle : 
-                              activity.type === 'inventory' ? FiArchive : FiActivity
+                              activity.type === 'inventory' ? FiArchive :
+                              activity.type === 'product' ? FiPackage : FiActivity
+                  const message = activity.description || activity.message || 'Hoạt động mới'
+                  const time = activity.timestamp 
+                    ? new Date(activity.timestamp).toLocaleString('vi-VN')
+                    : activity.time || 'Vừa xong'
                   return (
-                    <div key={activity.id} className="flex items-start space-x-3">
+                    <div key={activity.id || index} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                       <div className="flex-shrink-0">
                         <Icon className="h-5 w-5 text-gray-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-900">{activity.message}</p>
-                        <p className="text-xs text-gray-500">{activity.time}</p>
+                        <p className="text-sm text-gray-900">{message}</p>
+                        <p className="text-xs text-gray-500">{time}</p>
                       </div>
                     </div>
                   )

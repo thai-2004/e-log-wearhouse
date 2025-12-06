@@ -71,14 +71,14 @@ const ManagerDashboard = () => {
 
   const overview = overviewData?.data?.overview || {}
   const stats = statsData?.data?.stats || {}
-  const alerts = alertsData?.data || []
-  const activities = activitiesData?.data || []
+  const alerts = alertsData?.data?.alerts || alertsData?.data || []
+  const activities = activitiesData?.data?.activities || activitiesData?.data || []
 
   // Manager-specific stats (business focused)
   const managerStats = [
     {
       name: 'Tổng sản phẩm',
-      value: overview.totalProducts?.toLocaleString() || '0',
+      value: (overview.totalProducts || 0).toLocaleString(),
       change: stats.productsChange || '+12%',
       changeType: 'positive',
       icon: FiPackage,
@@ -86,7 +86,7 @@ const ManagerDashboard = () => {
     },
     {
       name: 'Khách hàng',
-      value: overview.totalCustomers?.toLocaleString() || '0',
+      value: (overview.totalCustomers || 0).toLocaleString(),
       change: stats.customersChange || '+8%',
       changeType: 'positive',
       icon: FiUsers,
@@ -94,7 +94,7 @@ const ManagerDashboard = () => {
     },
     {
       name: 'Giá trị tồn kho',
-      value: overview.totalInventoryValue ? `${overview.totalInventoryValue.toLocaleString()}₫` : '0₫',
+      value: `${(overview.totalInventoryValue || 0).toLocaleString()}₫`,
       change: stats.inventoryValueChange || '+18%',
       changeType: 'positive',
       icon: FiDollarSign,
@@ -102,7 +102,7 @@ const ManagerDashboard = () => {
     },
     {
       name: 'Doanh thu tháng',
-      value: overview.monthlyRevenue ? `${overview.monthlyRevenue.toLocaleString()}₫` : '0₫',
+      value: `${(overview.monthlyRevenue || 0).toLocaleString()}₫`,
       change: stats.revenueChange || '+25%',
       changeType: 'positive',
       icon: FiTrendingUp,
@@ -110,19 +110,19 @@ const ManagerDashboard = () => {
     },
     {
       name: 'Nhà cung cấp',
-      value: overview.totalSuppliers?.toLocaleString() || '0',
+      value: (overview.totalSuppliers || 0).toLocaleString(),
       change: stats.suppliersChange || '+3%',
       changeType: 'positive',
       icon: FiTruck,
       link: '/suppliers'
     },
     {
-      name: 'Hiệu suất kho',
-      value: overview.warehouseEfficiency ? `${overview.warehouseEfficiency}%` : '0%',
-      change: stats.efficiencyChange || '+5%',
+      name: 'Đơn xuất kho tháng',
+      value: (overview.monthlyOutbounds || 0).toLocaleString(),
+      change: stats.outboundChange || '+15%',
       changeType: 'positive',
       icon: FiActivity,
-      link: '/warehouses'
+      link: '/outbound'
     }
   ]
 
@@ -245,20 +245,25 @@ const ManagerDashboard = () => {
                   <span className="ml-2 text-gray-600">Đang tải...</span>
                 </div>
               ) : activities.length > 0 ? (
-                activities.map((activity) => {
+                activities.map((activity, index) => {
                   const Icon = activity.type === 'inbound' ? FiTruck : 
+                              activity.type === 'outbound' ? FiActivity :
                               activity.type === 'alert' ? FiAlertCircle : 
                               activity.type === 'user' ? FiUsers : 
                               activity.type === 'customer' ? FiUsers :
                               activity.type === 'product' ? FiPackage : FiActivity
+                  const message = activity.description || activity.message || 'Hoạt động mới'
+                  const time = activity.timestamp 
+                    ? new Date(activity.timestamp).toLocaleString('vi-VN')
+                    : activity.time || 'Vừa xong'
                   return (
-                    <div key={activity.id} className="flex items-start space-x-3">
+                    <div key={activity.id || index} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                       <div className="flex-shrink-0">
                         <Icon className="h-5 w-5 text-gray-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-900">{activity.message}</p>
-                        <p className="text-xs text-gray-500">{activity.time}</p>
+                        <p className="text-sm text-gray-900">{message}</p>
+                        <p className="text-xs text-gray-500">{time}</p>
                       </div>
                     </div>
                   )

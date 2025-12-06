@@ -73,14 +73,23 @@ const AdminDashboard = () => {
 
   const overview = overviewData?.data?.overview || {}
   const stats = statsData?.data?.stats || {}
-  const alerts = alertsData?.data || []
-  const activities = activitiesData?.data || []
+  const alerts = alertsData?.data?.alerts || alertsData?.data || []
+  const activities = activitiesData?.data?.activities || activitiesData?.data || []
+
+  // Map dữ liệu từ backend response
+  const totalProducts = overview.totalProducts || 0
+  const totalUsers = overview.totalUsers || 0
+  const totalInventoryValue = overview.totalInventoryValue || 0
+  const monthlyInbounds = overview.monthlyInbounds || 0
+  const monthlyOutbounds = overview.monthlyOutbounds || 0
+  // Tính doanh thu từ outbound (có thể cần thêm field vào backend)
+  const monthlyRevenue = overview.monthlyRevenue || 0
 
   // Admin-specific stats
   const adminStats = [
     {
       name: 'Tổng sản phẩm',
-      value: overview.totalProducts?.toLocaleString() || '0',
+      value: totalProducts.toLocaleString(),
       change: stats.productsChange || '+12%',
       changeType: 'positive',
       icon: FiPackage,
@@ -88,7 +97,7 @@ const AdminDashboard = () => {
     },
     {
       name: 'Người dùng hệ thống',
-      value: overview.totalUsers?.toLocaleString() || '0',
+      value: totalUsers.toLocaleString(),
       change: stats.usersChange || '+5%',
       changeType: 'positive',
       icon: FiUsers,
@@ -96,7 +105,7 @@ const AdminDashboard = () => {
     },
     {
       name: 'Tổng giá trị tồn kho',
-      value: overview.totalInventoryValue ? `${overview.totalInventoryValue.toLocaleString()}₫` : '0₫',
+      value: `${totalInventoryValue.toLocaleString()}₫`,
       change: stats.inventoryValueChange || '+18%',
       changeType: 'positive',
       icon: FiDollarSign,
@@ -104,7 +113,7 @@ const AdminDashboard = () => {
     },
     {
       name: 'Doanh thu tháng',
-      value: overview.monthlyRevenue ? `${overview.monthlyRevenue.toLocaleString()}₫` : '0₫',
+      value: `${monthlyRevenue.toLocaleString()}₫`,
       change: stats.revenueChange || '+25%',
       changeType: 'positive',
       icon: FiTrendingUp,
@@ -112,7 +121,7 @@ const AdminDashboard = () => {
     },
     {
       name: 'Đơn nhập kho',
-      value: overview.totalInboundOrders?.toLocaleString() || '0',
+      value: monthlyInbounds.toLocaleString(),
       change: stats.inboundChange || '+8%',
       changeType: 'positive',
       icon: FiTruck,
@@ -120,7 +129,7 @@ const AdminDashboard = () => {
     },
     {
       name: 'Đơn xuất kho',
-      value: overview.totalOutboundOrders?.toLocaleString() || '0',
+      value: monthlyOutbounds.toLocaleString(),
       change: stats.outboundChange || '+15%',
       changeType: 'positive',
       icon: FiActivity,
@@ -134,28 +143,28 @@ const AdminDashboard = () => {
       name: 'Quản lý người dùng',
       description: 'Thêm, sửa, xóa người dùng',
       icon: FiUsers,
-      link: '/users',
+      link: '/dashboard/users',
       color: 'text-blue-600'
     },
     {
-      name: 'Cấu hình hệ thống',
-      description: 'Thiết lập hệ thống',
-      icon: FiSettings,
-      link: '/settings',
-      color: 'text-gray-600'
+      name: 'Quản lý sản phẩm',
+      description: 'Thêm, sửa, xóa sản phẩm',
+      icon: FiPackage,
+      link: '/dashboard/products',
+      color: 'text-orange-600'
     },
     {
       name: 'Báo cáo tổng hợp',
       description: 'Xem báo cáo chi tiết',
       icon: FiBarChart,
-      link: '/reports',
+      link: '/dashboard/reports',
       color: 'text-green-600'
     },
     {
       name: 'Quản lý kho',
       description: 'Cấu hình kho và vị trí',
       icon: FiArchive,
-      link: '/warehouses',
+      link: '/dashboard/warehouses',
       color: 'text-purple-600'
     }
   ]
@@ -205,34 +214,32 @@ const AdminDashboard = () => {
           {adminStats.map((stat) => {
             const Icon = stat.icon
             return (
-              <Link key={stat.name} to={stat.link} className="group">
-                <div className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <Icon className="h-6 w-6 text-gray-400 group-hover:text-primary-500 transition-colors" />
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            {stat.name}
-                          </dt>
-                          <dd className="flex items-baseline">
-                            <div className="text-2xl font-semibold text-gray-900">
-                              {stat.value}
-                            </div>
-                            <div className={`ml-2 flex items-baseline text-sm font-semibold ${
-                              stat.changeType === 'positive' ? 'text-success-600' : 'text-error-600'
-                            }`}>
-                              {stat.change}
-                            </div>
-                          </dd>
-                        </dl>
-                      </div>
+              <div key={stat.name} className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="p-5">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <Icon className="h-6 w-6 text-gray-400" />
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">
+                          {stat.name}
+                        </dt>
+                        <dd className="flex items-baseline">
+                          <div className="text-2xl font-semibold text-gray-900">
+                            {stat.value}
+                          </div>
+                          <div className={`ml-2 flex items-baseline text-sm font-semibold ${
+                            stat.changeType === 'positive' ? 'text-success-600' : 'text-error-600'
+                          }`}>
+                            {stat.change}
+                          </div>
+                        </dd>
+                      </dl>
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             )
           })}
         </div>
@@ -259,18 +266,24 @@ const AdminDashboard = () => {
                 <span className="ml-2 text-gray-600">Đang tải...</span>
               </div>
             ) : activities.length > 0 ? (
-              activities.map((activity) => {
+              activities.map((activity, index) => {
                 const Icon = activity.type === 'inbound' ? FiTruck : 
+                            activity.type === 'outbound' ? FiActivity :
                             activity.type === 'alert' ? FiAlertCircle : 
-                            activity.type === 'user' ? FiUsers : FiActivity
+                            activity.type === 'user' ? FiUsers :
+                            activity.type === 'product' ? FiPackage : FiActivity
+                const message = activity.description || activity.message || 'Hoạt động mới'
+                const time = activity.timestamp 
+                  ? new Date(activity.timestamp).toLocaleString('vi-VN')
+                  : activity.time || 'Vừa xong'
                 return (
-                  <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                  <div key={activity.id || index} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                     <div className="flex-shrink-0">
                       <Icon className="h-5 w-5 text-gray-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900">{activity.message}</p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
+                      <p className="text-sm text-gray-900">{message}</p>
+                      <p className="text-xs text-gray-500">{time}</p>
                     </div>
                   </div>
                 )
@@ -288,31 +301,36 @@ const AdminDashboard = () => {
               Cảnh báo hệ thống
             </h3>
             <div className="space-y-3">
-              {alerts.map((alert) => (
-                <div key={alert.id} className={`flex items-start space-x-3 p-3 rounded-lg border ${
-                  alert.severity === 'high' ? 'bg-red-50 border-red-200' :
-                  alert.severity === 'medium' ? 'bg-yellow-50 border-yellow-200' :
-                  'bg-blue-50 border-blue-200'
-                }`}>
-                  <FiAlertCircle className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
-                    alert.severity === 'high' ? 'text-red-600' :
-                    alert.severity === 'medium' ? 'text-yellow-600' :
-                    'text-blue-600'
-                  }`} />
-                  <div className="flex-1">
-                    <p className={`text-sm font-medium ${
-                      alert.severity === 'high' ? 'text-red-800' :
-                      alert.severity === 'medium' ? 'text-yellow-800' :
-                      'text-blue-800'
-                    }`}>{alert.title}</p>
-                    <p className={`text-sm ${
-                      alert.severity === 'high' ? 'text-red-700' :
-                      alert.severity === 'medium' ? 'text-yellow-700' :
-                      'text-blue-700'
-                    }`}>{alert.message}</p>
+              {alerts.map((alert, index) => {
+                const severity = alert.severity || alert.type || 'info'
+                const title = alert.title || 'Cảnh báo'
+                const message = alert.message || alert.description || ''
+                return (
+                  <div key={alert.id || index} className={`flex items-start space-x-3 p-3 rounded-lg border ${
+                    severity === 'error' || severity === 'high' ? 'bg-red-50 border-red-200' :
+                    severity === 'warning' || severity === 'medium' ? 'bg-yellow-50 border-yellow-200' :
+                    'bg-blue-50 border-blue-200'
+                  }`}>
+                    <FiAlertCircle className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
+                      severity === 'error' || severity === 'high' ? 'text-red-600' :
+                      severity === 'warning' || severity === 'medium' ? 'text-yellow-600' :
+                      'text-blue-600'
+                    }`} />
+                    <div className="flex-1">
+                      <p className={`text-sm font-medium ${
+                        severity === 'error' || severity === 'high' ? 'text-red-800' :
+                        severity === 'warning' || severity === 'medium' ? 'text-yellow-800' :
+                        'text-blue-800'
+                      }`}>{title}</p>
+                      <p className={`text-sm ${
+                        severity === 'error' || severity === 'high' ? 'text-red-700' :
+                        severity === 'warning' || severity === 'medium' ? 'text-yellow-700' :
+                        'text-blue-700'
+                      }`}>{message}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

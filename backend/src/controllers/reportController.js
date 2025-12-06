@@ -7,7 +7,17 @@ const Warehouse = require('../models/Warehouse');
 const StockMovement = require('../models/StockMovement');
 const Category = require('../models/Category');
 const PDFDocument = require('pdfkit');
+const ExcelJS = require('exceljs');
+const mongoose = require('mongoose');
 const fs = require('fs');
+
+// Try to load pdfService (optional - only if puppeteer is installed)
+let pdfService = null;
+try {
+  pdfService = require('../services/pdfService');
+} catch (error) {
+  console.warn('PDFService (Puppeteer) not available. Using PDFKit only.');
+}
 
 // NOTE:
 // Module Reports trên frontend mong đợi một tập các API RESTful cho việc quản lý
@@ -1182,13 +1192,37 @@ const fetchReportData = async (report) => {
       const matchQuery = {};
       
       if (filters.warehouses && filters.warehouses.length > 0) {
-        matchQuery.warehouseId = { $in: filters.warehouses };
+        // Convert string IDs to ObjectId
+        const warehouseIds = filters.warehouses.map(id => {
+          try {
+            return mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id;
+          } catch (e) {
+            return id;
+          }
+        });
+        matchQuery.warehouseId = { $in: warehouseIds };
       }
       if (filters.products && filters.products.length > 0) {
-        matchQuery.productId = { $in: filters.products };
+        // Convert string IDs to ObjectId
+        const productIds = filters.products.map(id => {
+          try {
+            return mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id;
+          } catch (e) {
+            return id;
+          }
+        });
+        matchQuery.productId = { $in: productIds };
       }
       if (filters.categories && filters.categories.length > 0) {
-        matchQuery.categoryId = { $in: filters.categories };
+        // Convert string IDs to ObjectId
+        const categoryIds = filters.categories.map(id => {
+          try {
+            return mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id;
+          } catch (e) {
+            return id;
+          }
+        });
+        matchQuery.categoryId = { $in: categoryIds };
       }
 
       const inventories = await Inventory.find(matchQuery)
@@ -1228,10 +1262,24 @@ const fetchReportData = async (report) => {
         };
       }
       if (filters.customers && filters.customers.length > 0) {
-        matchQuery.customerId = { $in: filters.customers };
+        const customerIds = filters.customers.map(id => {
+          try {
+            return mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id;
+          } catch (e) {
+            return id;
+          }
+        });
+        matchQuery.customerId = { $in: customerIds };
       }
       if (filters.warehouses && filters.warehouses.length > 0) {
-        matchQuery.warehouseId = { $in: filters.warehouses };
+        const warehouseIds = filters.warehouses.map(id => {
+          try {
+            return mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id;
+          } catch (e) {
+            return id;
+          }
+        });
+        matchQuery.warehouseId = { $in: warehouseIds };
       }
 
       const outbounds = await Outbound.find(matchQuery)
@@ -1309,33 +1357,204 @@ const exportReportDefinition = async (req, res) => {
       return res.send(JSON.stringify(exportData, null, 2));
     }
 
-    // Export Excel (CSV format)
-    if (format === 'excel' || format === 'csv') {
-      const csvLines = [
-        'field,value',
-        `id,${report.id}`,
-        `name,"${report.name}"`,
-        `description,"${(report.description || '').replace(/"/g, '""')}"`,
-        `type,${report.type}`,
-        `status,${report.status}`,
-        `runCount,${report.runCount}`,
-        `creator,${report.creator?.name || ''}`,
-        `createdAt,${report.createdAt?.toISOString?.() || report.createdAt}`,
-        `updatedAt,${report.updatedAt?.toISOString?.() || report.updatedAt}`
+    // Export Excel/CSV với dữ liệu thực tế
+    if (format === 'excel' || format === 'csv' || format === 'xlsx') {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Báo cáo');
+
+      // Xác định columns để hiển thị
+      let displayColumns = [];
+      if (columns && columns.length > 0) {
+        displayColumns = columns.filter(col => col.visible !== false).map(col => ({
+          field: col.field || col.key,
+          label: col.label || col.field || col.key,
+          width: col.width || 15
+        }));
+      } else if (reportData && reportData.length > 0) {
+        // Tự động tạo columns từ dữ liệu
+        const firstRow = reportData[0];
+        displayColumns = Object.keys(firstRow).map(key => {
+          let label = key;
+          if (key === 'product') label = 'Sản phẩm';
+          else if (key === 'sku') label = 'Mã SKU';
+          else if (key === 'warehouse') label = 'Kho';
+          else if (key === 'category') label = 'Danh mục';
+          else if (key === 'quantity') label = 'Số lượng';
+          else if (key === 'value') label = 'Giá trị';
+          else if (key === 'customer') label = 'Khách hàng';
+          else if (key === 'totalAmount') label = 'Tổng tiền';
+          else if (key === 'code') label = 'Mã';
+          else if (key === 'createdAt') label = 'Ngày tạo';
+          else if (key === 'reservedQuantity') label = 'Số lượng đã đặt';
+          else if (key === 'availableQuantity') label = 'Số lượng có sẵn';
+          else if (key === 'unit') label = 'Đơn vị';
+          return {
+            field: key,
+            label: label,
+            width: 15
+          };
+        });
+      }
+
+      // Định nghĩa columns
+      if (displayColumns.length > 0) {
+        worksheet.columns = displayColumns.map(col => ({
+          header: col.label,
+          key: col.field,
+          width: col.width
+        }));
+
+        // Style header
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE0E0E0' }
+        };
+
+        // Thêm dữ liệu
+        if (reportData && reportData.length > 0) {
+          reportData.forEach((row) => {
+            const rowData = {};
+            displayColumns.forEach(col => {
+              let cellValue = row[col.field];
+              if (cellValue === null || cellValue === undefined) {
+                cellValue = '';
+              } else if (cellValue instanceof Date) {
+                cellValue = cellValue.toLocaleString('vi-VN');
+              } else if (typeof cellValue === 'number') {
+                // Keep number as is
+              } else {
+                cellValue = String(cellValue);
+              }
+              rowData[col.field] = cellValue;
+            });
+            worksheet.addRow(rowData);
+          });
+
+          // Format số cho các cột số
+          displayColumns.forEach(col => {
+            if (col.field === 'quantity' || col.field === 'value' || col.field === 'totalAmount' || 
+                col.field === 'reservedQuantity' || col.field === 'availableQuantity') {
+              worksheet.getColumn(col.field).numFmt = '#,##0';
+            }
+          });
+        }
+      }
+
+      // Thêm sheet thông tin báo cáo
+      const infoSheet = workbook.addWorksheet('Thông tin');
+      infoSheet.columns = [
+        { header: 'Trường', key: 'field', width: 20 },
+        { header: 'Giá trị', key: 'value', width: 50 }
       ];
+      infoSheet.getRow(1).font = { bold: true };
+      infoSheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE0E0E0' }
+      };
+      
+      infoSheet.addRow({ field: 'ID', value: report.id });
+      infoSheet.addRow({ field: 'Tên báo cáo', value: report.name });
+      infoSheet.addRow({ field: 'Mô tả', value: report.description || '' });
+      infoSheet.addRow({ field: 'Loại báo cáo', value: report.type });
+      infoSheet.addRow({ field: 'Trạng thái', value: report.status });
+      infoSheet.addRow({ field: 'Số lần chạy', value: report.runCount || 0 });
+      infoSheet.addRow({ field: 'Người tạo', value: report.creator?.name || '' });
+      if (summary && Object.keys(summary).length > 0) {
+        infoSheet.addRow({ field: '', value: '' });
+        infoSheet.addRow({ field: 'TỔNG HỢP', value: '' });
+        Object.entries(summary).forEach(([key, value]) => {
+          const label = key === 'totalItems' ? 'Tổng số mục' :
+            key === 'totalQuantity' ? 'Tổng số lượng' :
+            key === 'totalValue' ? 'Tổng giá trị' :
+            key === 'totalOrders' ? 'Tổng đơn hàng' :
+            key === 'totalRevenue' ? 'Tổng doanh thu' :
+            key === 'averageOrder' ? 'Giá trị trung bình' :
+            key;
+          infoSheet.addRow({ field: label, value: typeof value === 'number' ? value.toLocaleString('vi-VN') : value });
+        });
+      }
+      infoSheet.addRow({ field: 'Ngày xuất', value: new Date().toLocaleString('vi-VN') });
 
-      const buffer = Buffer.from(csvLines.join('\n'), 'utf-8');
+      // Set response headers
+      const fileExtension = format === 'csv' ? 'csv' : 'xlsx';
+      const contentType = format === 'csv' 
+        ? 'text/csv; charset=utf-8' 
+        : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      
+      const filename = `report_${id}_${new Date().toISOString().split('T')[0]}.${fileExtension}`;
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="report_${id}.csv"`
-      );
-
-      return res.send(buffer);
+      // Write to response
+      if (format === 'csv') {
+        // For CSV, convert to CSV format
+        const csvLines = [];
+        if (displayColumns.length > 0 && reportData && reportData.length > 0) {
+          // Header
+          csvLines.push(displayColumns.map(col => `"${col.label}"`).join(','));
+          // Data rows
+          reportData.forEach(row => {
+            const csvRow = displayColumns.map(col => {
+              let value = row[col.field];
+              if (value === null || value === undefined) value = '';
+              if (value instanceof Date) value = value.toLocaleString('vi-VN');
+              value = String(value).replace(/"/g, '""');
+              return `"${value}"`;
+            });
+            csvLines.push(csvRow.join(','));
+          });
+        }
+        return res.send(Buffer.from(csvLines.join('\n'), 'utf-8'));
+      } else {
+        // For Excel
+        await workbook.xlsx.write(res);
+        res.end();
+      }
     }
 
-    // Export PDF - Tạo PDF thực sự bằng pdfkit với hỗ trợ Unicode
+    // Export PDF - Sử dụng Puppeteer + Handlebars (mới) hoặc PDFKit (cũ)
+    // Có thể chọn engine qua query param: ?pdfEngine=puppeteer hoặc ?pdfEngine=pdfkit
+    const pdfEngine = req.query.pdfEngine || (pdfService ? 'puppeteer' : 'pdfkit'); // Mặc định dùng puppeteer nếu có
+
+    if (pdfEngine === 'puppeteer' && pdfService) {
+      // Sử dụng Puppeteer + Handlebars (khuyến nghị)
+      try {
+        const pdfBuffer = await pdfService.generateReportPDF(
+          report,
+          reportData,
+          summary,
+          {
+            format: 'A4',
+            printBackground: true,
+            margin: {
+              top: '10mm',
+              right: '10mm',
+              bottom: '10mm',
+              left: '10mm'
+            },
+            metadata: {
+              columns: columns
+            }
+          }
+        );
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="report_${id}.pdf"`
+        );
+        return res.send(pdfBuffer);
+      } catch (error) {
+        console.error('Puppeteer PDF generation error:', error);
+        // Fallback to PDFKit nếu có lỗi
+        // Tiếp tục với PDFKit code bên dưới
+      }
+    }
+
+    // Export PDF - Tạo PDF bằng pdfkit (fallback hoặc khi chọn pdfEngine=pdfkit)
     const doc = new PDFDocument({
       margin: 50,
       size: 'A4',

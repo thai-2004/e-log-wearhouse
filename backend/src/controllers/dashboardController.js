@@ -61,6 +61,23 @@ const getDashboardOverview = async(req, res) => {
     const inventoryValue = totalInventory.length > 0 ? totalInventory[0].totalValue : 0;
     const totalQuantity = totalInventory.length > 0 ? totalInventory[0].totalQuantity : 0;
 
+    // Tính doanh thu tháng từ outbound orders đã hoàn thành
+    const monthlyRevenue = await Outbound.aggregate([
+      {
+        $match: {
+          outboundDate: { $gte: startOfMonth },
+          status: 'completed'
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$finalAmount' }
+        }
+      }
+    ]);
+    const revenue = monthlyRevenue.length > 0 ? monthlyRevenue[0].totalRevenue : 0;
+
     // Thống kê theo warehouse
     const warehouseStats = await Inventory.aggregate([
       {
@@ -133,7 +150,8 @@ const getDashboardOverview = async(req, res) => {
           totalInventoryQuantity: totalQuantity,
           totalInventoryValue: inventoryValue,
           monthlyInbounds,
-          monthlyOutbounds
+          monthlyOutbounds,
+          monthlyRevenue: revenue
         },
         warehouseStats,
         lowStockProducts,

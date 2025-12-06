@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hóa đơn {{invoiceCode}}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', 'DejaVu Sans', sans-serif;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #333;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      border-bottom: 3px solid #2563eb;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      color: #2563eb;
+      margin-bottom: 10px;
+    }
+
+    .invoice-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .info-box {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .info-box h3 {
+      color: #2563eb;
+      margin-bottom: 10px;
+      font-size: 14px;
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 5px;
+    }
+
+    .info-box p {
+      margin: 5px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .total-section {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .total-box {
+      width: 300px;
+      background: #eff6ff;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+    }
+
+    .total-row.final {
+      font-size: 16px;
+      font-weight: bold;
+      color: #2563eb;
+      border-top: 2px solid #2563eb;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 10px;
+      color: #666;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 20px;
+    }
+
+    .barcode-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>HÓA ĐƠN BÁN HÀNG</h1>
+    <p><strong>Mã hóa đơn:</strong> {{invoiceCode}}</p>
+    <p><strong>Ngày xuất:</strong> {{formatDate invoiceDate 'DD/MM/YYYY HH:mm'}}</p>
+  </div>
+
+  <div class="invoice-info">
+    <div class="info-box">
+      <h3>Thông tin khách hàng</h3>
+      <p><strong>{{customerName}}</strong></p>
+      <p>{{customerAddress}}</p>
+      <p>Điện thoại: {{customerPhone}}</p>
+      {{#if customerEmail}}
+      <p>Email: {{customerEmail}}</p>
+      {{/if}}
+    </div>
+
+    <div class="info-box">
+      <h3>Thông tin xuất hóa đơn</h3>
+      <p><strong>Nhân viên:</strong> {{staffName}}</p>
+      <p><strong>Kho:</strong> {{warehouseName}}</p>
+      {{#if note}}
+      <p><strong>Ghi chú:</strong> {{note}}</p>
+      {{/if}}
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 50px;">STT</th>
+        <th>Sản phẩm</th>
+        <th class="text-center">Đơn vị</th>
+        <th class="text-right">Số lượng</th>
+        <th class="text-right">Đơn giá</th>
+        <th class="text-right">Thành tiền</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each items}}
+      <tr>
+        <td class="text-center">{{add @index 1}}</td>
+        <td>
+          <strong>{{productName}}</strong>
+          {{#if sku}}
+          <br><small>SKU: {{sku}}</small>
+          {{/if}}
+        </td>
+        <td class="text-center">{{unit}}</td>
+        <td class="text-right">{{formatNumber quantity}}</td>
+        <td class="text-right">{{formatCurrency unitPrice}}</td>
+        <td class="text-right"><strong>{{formatCurrency totalPrice}}</strong></td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <div class="total-section">
+    <div class="total-box">
+      <div class="total-row">
+        <span>Tạm tính:</span>
+        <span>{{formatCurrency subtotal}}</span>
+      </div>
+      {{#if discount}}
+      <div class="total-row">
+        <span>Giảm giá:</span>
+        <span>- {{formatCurrency discount}}</span>
+      </div>
+      {{/if}}
+      {{#if tax}}
+      <div class="total-row">
+        <span>VAT ({{taxRate}}%):</span>
+        <span>{{formatCurrency tax}}</span>
+      </div>
+      {{/if}}
+      {{#if shipping}}
+      <div class="total-row">
+        <span>Phí vận chuyển:</span>
+        <span>{{formatCurrency shipping}}</span>
+      </div>
+      {{/if}}
+      <div class="total-row final">
+        <span>TỔNG CỘNG:</span>
+        <span>{{formatCurrency totalAmount}}</span>
+      </div>
+    </div>
+  </div>
+
+  {{#if barcode}}
+  <div class="barcode-container">
+    <div class="barcode">
+      <svg id="barcode"></svg>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script>
+    JsBarcode("#barcode", "{{barcode}}", {
+      format: "CODE128",
+      width: 2,
+      height: 50,
+      displayValue: true
+    });
+  </script>
+  {{/if}}
+
+  <div class="footer">
+    <p><strong>E-Log Warehouse Management System</strong></p>
+    <p>Cảm ơn quý khách đã sử dụng dịch vụ!</p>
+  </div>
+</body>
+</html>
+

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vận đơn {{deliveryCode}}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', 'DejaVu Sans', sans-serif;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #333;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      border: 3px solid #2563eb;
+      padding: 20px;
+      margin-bottom: 30px;
+      background: #eff6ff;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      color: #2563eb;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .delivery-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .info-box {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      border-left: 4px solid #2563eb;
+    }
+
+    .info-box h3 {
+      color: #2563eb;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .info-box p {
+      margin: 5px 0;
+    }
+
+    .items-section {
+      margin: 30px 0;
+    }
+
+    .items-section h3 {
+      color: #2563eb;
+      margin-bottom: 15px;
+      font-size: 16px;
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .signature-section {
+      margin-top: 50px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 50px;
+    }
+
+    .signature-box {
+      text-align: center;
+    }
+
+    .signature-line {
+      border-top: 2px solid #333;
+      margin-top: 60px;
+      padding-top: 5px;
+    }
+
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 10px;
+      color: #666;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 20px;
+    }
+
+    .qr-code-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>VẬN ĐƠN</h1>
+    <p><strong>Mã vận đơn:</strong> {{deliveryCode}}</p>
+    <p><strong>Ngày tạo:</strong> {{formatDate createdAt 'DD/MM/YYYY HH:mm'}}</p>
+  </div>
+
+  <div class="delivery-info">
+    <div class="info-box">
+      <h3>Thông tin người gửi</h3>
+      <p><strong>{{senderName}}</strong></p>
+      <p>{{senderAddress}}</p>
+      <p>Điện thoại: {{senderPhone}}</p>
+    </div>
+
+    <div class="info-box">
+      <h3>Thông tin người nhận</h3>
+      <p><strong>{{receiverName}}</strong></p>
+      <p>{{receiverAddress}}</p>
+      <p>Điện thoại: {{receiverPhone}}</p>
+      {{#if receiverEmail}}
+      <p>Email: {{receiverEmail}}</p>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="delivery-info">
+    <div class="info-box">
+      <h3>Thông tin vận chuyển</h3>
+      <p><strong>Phương thức:</strong> {{shippingMethod}}</p>
+      <p><strong>Dịch vụ:</strong> {{serviceType}}</p>
+      <p><strong>Trọng lượng:</strong> {{weight}} kg</p>
+      <p><strong>Kích thước:</strong> {{dimensions}}</p>
+    </div>
+
+    <div class="info-box">
+      <h3>Thông tin thanh toán</h3>
+      <p><strong>Phí vận chuyển:</strong> {{formatCurrency shippingFee}}</p>
+      <p><strong>Phí COD:</strong> {{formatCurrency codFee}}</p>
+      <p><strong>Tổng phí:</strong> <strong>{{formatCurrency totalFee}}</strong></p>
+      <p><strong>Trạng thái:</strong> {{status}}</p>
+    </div>
+  </div>
+
+  <div class="items-section">
+    <h3>Danh sách hàng hóa</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 50px;">STT</th>
+          <th>Sản phẩm</th>
+          <th class="text-center">Số lượng</th>
+          <th class="text-center">Đơn vị</th>
+          <th class="text-right">Giá trị</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each items}}
+        <tr>
+          <td class="text-center">{{add @index 1}}</td>
+          <td>
+            <strong>{{productName}}</strong>
+            {{#if sku}}
+            <br><small>SKU: {{sku}}</small>
+            {{/if}}
+          </td>
+          <td class="text-center">{{formatNumber quantity}}</td>
+          <td class="text-center">{{unit}}</td>
+          <td class="text-right">{{formatCurrency value}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" class="text-right"><strong>Tổng giá trị:</strong></td>
+          <td class="text-right"><strong>{{formatCurrency totalValue}}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  {{#if note}}
+  <div class="info-box">
+    <h3>Ghi chú</h3>
+    <p>{{note}}</p>
+  </div>
+  {{/if}}
+
+  {{#if qrCode}}
+  <div class="qr-code-container">
+    <div class="qr-code">
+      <img src="{{qrCode}}" alt="QR Code" style="width: 150px; height: 150px;">
+    </div>
+    <p>Quét mã QR để theo dõi đơn hàng</p>
+  </div>
+  {{/if}}
+
+  <div class="signature-section">
+    <div class="signature-box">
+      <p><strong>Người gửi</strong></p>
+      <div class="signature-line">
+        <p>(Ký và ghi rõ họ tên)</p>
+      </div>
+    </div>
+    <div class="signature-box">
+      <p><strong>Người nhận</strong></p>
+      <div class="signature-line">
+        <p>(Ký và ghi rõ họ tên)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p><strong>E-Log Warehouse Management System</strong></p>
+    <p>Vận đơn được tạo tự động - {{formatDate createdAt 'DD/MM/YYYY HH:mm'}}</p>
+  </div>
+</body>
+</html>
+

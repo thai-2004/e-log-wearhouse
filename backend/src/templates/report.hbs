@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{report.name}}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', 'DejaVu Sans', sans-serif;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #333;
+      background: #fff;
+    }
+
+    .header {
+      text-align: center;
+      border-bottom: 3px solid #2563eb;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      color: #2563eb;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .header .subtitle {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .report-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .report-info table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .report-info td {
+      padding: 5px 10px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .report-info td:first-child {
+      font-weight: bold;
+      width: 150px;
+      color: #555;
+    }
+
+    .summary {
+      background: #eff6ff;
+      padding: 15px;
+      border-left: 4px solid #2563eb;
+      margin-bottom: 20px;
+    }
+
+    .summary h3 {
+      color: #2563eb;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .summary-item {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .summary-item .label {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .summary-item .value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      page-break-inside: avoid;
+    }
+
+    .data-table thead {
+      background: #2563eb;
+      color: white;
+    }
+
+    .data-table th {
+      padding: 12px 8px;
+      text-align: left;
+      font-weight: bold;
+      font-size: 11px;
+      border: 1px solid #1e40af;
+    }
+
+    .data-table td {
+      padding: 10px 8px;
+      border: 1px solid #e5e7eb;
+      font-size: 11px;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    .data-table tbody tr:hover {
+      background: #f3f4f6;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #e5e7eb;
+      text-align: center;
+      font-size: 10px;
+      color: #666;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+      font-style: italic;
+    }
+
+    @media print {
+      .page-break {
+        page-break-after: always;
+      }
+    }
+
+    /* Barcode/QR Code styles */
+    .barcode-container {
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .barcode {
+      display: inline-block;
+      padding: 10px;
+      background: white;
+      border: 1px solid #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>BÁO CÁO</h1>
+    <div class="subtitle">{{report.name}}</div>
+  </div>
+
+  <!-- Report Information -->
+  <div class="report-info">
+    <table>
+      <tr>
+        <td>Mô tả:</td>
+        <td>{{report.description}}</td>
+      </tr>
+      <tr>
+        <td>Loại báo cáo:</td>
+        <td>{{report.type}}</td>
+      </tr>
+      <tr>
+        <td>Trạng thái:</td>
+        <td>{{report.status}}</td>
+      </tr>
+      <tr>
+        <td>Người tạo:</td>
+        <td>{{report.creator.name}}</td>
+      </tr>
+      <tr>
+        <td>Ngày tạo:</td>
+        <td>{{formatDate report.createdAt 'DD/MM/YYYY HH:mm'}}</td>
+      </tr>
+      <tr>
+        <td>Ngày xuất:</td>
+        <td>{{formatDate exportedAt 'DD/MM/YYYY HH:mm'}}</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Summary -->
+  {{#if summary}}
+  <div class="summary">
+    <h3>TỔNG HỢP</h3>
+    <div class="summary-grid">
+      {{#if summary.totalItems}}
+      <div class="summary-item">
+        <div class="label">Tổng số mục</div>
+        <div class="value">{{formatNumber summary.totalItems}}</div>
+      </div>
+      {{/if}}
+      {{#if summary.totalQuantity}}
+      <div class="summary-item">
+        <div class="label">Tổng số lượng</div>
+        <div class="value">{{formatNumber summary.totalQuantity}}</div>
+      </div>
+      {{/if}}
+      {{#if summary.totalValue}}
+      <div class="summary-item">
+        <div class="label">Tổng giá trị</div>
+        <div class="value">{{formatCurrency summary.totalValue}}</div>
+      </div>
+      {{/if}}
+      {{#if summary.totalOrders}}
+      <div class="summary-item">
+        <div class="label">Tổng đơn hàng</div>
+        <div class="value">{{formatNumber summary.totalOrders}}</div>
+      </div>
+      {{/if}}
+      {{#if summary.totalRevenue}}
+      <div class="summary-item">
+        <div class="label">Tổng doanh thu</div>
+        <div class="value">{{formatCurrency summary.totalRevenue}}</div>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- Data Table -->
+  {{#if data}}
+  {{#if (length data)}}
+  <table class="data-table">
+    <thead>
+      <tr>
+        {{#if columns}}
+          {{#each columns}}
+            {{#if visible}}
+            <th>{{label}}</th>
+            {{/if}}
+          {{/each}}
+        {{else}}
+          {{#each (lookup data 0)}}
+            <th>{{@key}}</th>
+          {{/each}}
+        {{/if}}
+      </tr>
+    </thead>
+    <tbody>
+      {{#each data}}
+      <tr>
+        {{#if ../columns}}
+          {{#each ../columns}}
+            {{#if visible}}
+            <td class="{{#if (eq field 'quantity' 'value' 'totalAmount')}}text-right{{/if}}">
+              {{#if (eq field 'quantity' 'value' 'totalAmount' 'reservedQuantity' 'availableQuantity')}}
+                {{formatNumber (lookup ../this field)}}
+              {{else if (eq field 'createdAt')}}
+                {{formatDate (lookup ../this field)}}
+              {{else}}
+                {{lookup ../this field}}
+              {{/if}}
+            </td>
+            {{/if}}
+          {{/each}}
+        {{else}}
+          {{#each this}}
+          <td class="{{#if (or (eq @key 'quantity') (eq @key 'value') (eq @key 'totalAmount'))}}text-right{{/if}}">
+            {{#if (or (eq @key 'quantity') (eq @key 'value') (eq @key 'totalAmount'))}}
+              {{formatNumber this}}
+            {{else if (eq @key 'createdAt')}}
+              {{formatDate this}}
+            {{else}}
+              {{this}}
+            {{/if}}
+          </td>
+          {{/each}}
+        {{/if}}
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{else}}
+  <div class="no-data">Không có dữ liệu để hiển thị</div>
+  {{/if}}
+  {{else}}
+  <div class="no-data">Không có dữ liệu để hiển thị</div>
+  {{/if}}
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>E-Log Warehouse Management System</p>
+    <p>Xuất báo cáo tự động - {{formatDate exportedAt 'DD/MM/YYYY HH:mm'}}</p>
+  </div>
+</body>
+</html>
+
